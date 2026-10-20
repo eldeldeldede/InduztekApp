@@ -6,5 +6,7 @@ data class Instalacion(
     val nombre: String,
     val ubicacion: String,
     val idComuna: Long,
-    val observacionesAcceso: String
+    val observacionesAcceso: String? = null,
+    val comunaNombre: String = "",
+    val clienteNombre: String = ""
 )

@@ -2,14 +2,21 @@ package cl.induztek.app.model
 
 import android.text.BoringLayout
 
+enum class Momento(val etiqueta: String) {
+    UNICA("Única"),
+    PREVIA("Previa al mantenimiento"),
+    POSTERIOR("Posterior al mantenimiento")
+}
+
 data class Prueba(
-    val idPrueba: Long,
+    val idPrueba: Long = 0,
     val idProtocolo: Long,
     val idTipoPrueba: Long,
     val elemento: String,
-    val momento: String,
-    val realizada: Boolean,
-    val motivoNoRealizada: String?,
-    val idInstrumento: Long,
-    val idResultado: Long
+    val momento: Momento = Momento.UNICA,
+    val realizada: Boolean = true,
+    val motivoNoRealizada: String? = null,
+    val idInstrumento: Long? = null,
+    val idResultado: Long? = null,
+    val comentario: String?= null
 )
