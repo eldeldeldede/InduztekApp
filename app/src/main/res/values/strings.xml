@@ -1,3 +1,77 @@
 <resources>
     <string name="app_name">InduztekApp</string>
+
+    <!-- Login -->
+    <string name="login_subtitulo">Protocolos de prueba y mantención eléctrica</string>
+    <string name="login_titulo">Iniciar sesión</string>
+    <string name="login_demo">Datos de prueba — técnico: mgodoy@induztek.ejemplo · ingeniero: acontreras@induztek.ejemplo · jefe técnico: respinoza@induztek.ejemplo · cliente: mfuentes@envpacifico.ejemplo. Contraseña de todos: Induztek2026</string>
+    <string name="campo_correo">Correo electrónico</string>
+    <string name="campo_contrasena">Contraseña</string>
+    <string name="btn_ingresar">Ingresar</string>
+
+    <!-- Menú y sesión -->
+    <string name="saludo">Hola, %1$s</string>
+    <string name="menu_cerrar_sesion">Cerrar sesión</string>
+    <string name="dialogo_titulo">¿Cerrar sesión?</string>
+    <string name="dialogo_mensaje">Tendrás que ingresar de nuevo con tu correo y contraseña.</string>
+    <string name="dialogo_cancelar">Cancelar</string>
+
+    <!-- Instalaciones -->
+    <string name="titulo_instalaciones">Instalaciones</string>
+    <string name="campo_buscar_instalacion">Buscar por nombre, comuna o cliente</string>
+    <string name="lista_vacia_instalaciones">No se encontraron instalaciones</string>
+
+    <!-- Equipos -->
+    <string name="titulo_equipos">Equipos</string>
+    <string name="campo_buscar_equipo">Buscar por TAG, tipo o marca</string>
+    <string name="lista_vacia_equipos">No se encontraron equipos</string>
+    <string name="sin_datos_placa">Sin datos de placa</string>
+    <string name="cd_nuevo_equipo">Registrar equipo nuevo</string>
+    <string name="cd_ver_historial">Ver historial del equipo</string>
+
+    <!-- Alta de equipo -->
+    <string name="titulo_alta_equipo">Nuevo equipo</string>
+    <string name="seccion_identificacion">Identificación</string>
+    <string name="seccion_placa">Datos de placa</string>
+    <string name="campo_tag">TAG del equipo (ej.: TR-01)</string>
+    <string name="campo_tipo_equipo">Tipo de equipo</string>
+    <string name="campo_marca">Marca</string>
+    <string name="campo_modelo">Modelo</string>
+    <string name="campo_serie">Número de serie</string>
+    <string name="campo_anio">Año de fabricación</string>
+    <string name="campo_potencia">Potencia</string>
+    <string name="campo_tension_primaria">Tensión nominal (primaria)</string>
+    <string name="campo_tension_secundaria">Tensión secundaria</string>
+    <string name="campo_corriente">Corriente nominal</string>
+    <string name="campo_max_contactos">Resistencia de contactos máxima (placa)</string>
+    <string name="campo_observaciones">Observaciones</string>
+    <string name="btn_limpiar">Limpiar</string>
+    <string name="btn_guardar_equipo">Guardar equipo</string>
+    <string name="equipo_existente_mensaje">Este equipo ya está registrado en la instalación. Puedes usar el equipo existente en vez de crear uno nuevo.</string>
+    <string name="btn_usar_equipo_existente">Usar el equipo registrado</string>
+
+    <!-- Historial del equipo -->
+    <string name="titulo_historial">Historial del equipo</string>
+    <string name="equipo_no_encontrado">No se encontró el equipo.</string>
+    <string name="seccion_comparacion">Comparación con la prueba anterior</string>
+    <string name="seccion_protocolos">Protocolos</string>
+    <string name="lista_vacia_protocolos">Este equipo aún no tiene protocolos registrados.</string>
+    <string name="primera_medicion">Primera medición registrada</string>
+    <string name="comparacion_anterior">Antes: %1$s %2$s (%3$s vs. %4$s)</string>
+    <string name="variacion_significativa" formatted="false">Variación significativa (más de 25 %)</string>
+    <string name="atrasado">Atrasado</string>
+    <string name="tecnico_responsable">Técnico: %1$s</string>
+    <string name="dato_serie">N.º de serie: %1$s</string>
+    <string name="dato_anio">Año de fabricación: %1$d</string>
+    <string name="dato_potencia">Potencia: %1$s kVA</string>
+    <string name="dato_tension_primaria">Tensión primaria: %1$s kV</string>
+    <string name="dato_tension_secundaria">Tensión secundaria: %1$s kV</string>
+    <string name="dato_corriente">Corriente nominal: %1$s A</string>
+    <string name="dato_max_contactos">Contactos, máximo de placa: %1$s µΩ</string>
+
+    <!-- Accesibilidad -->
+    <string name="cd_menu">Abrir menú</string>
+    <string name="cd_volver">Volver</string>
+    <string name="cd_mostrar_contrasena">Mostrar contraseña</string>
+    <string name="cd_ocultar_contrasena">Ocultar contraseña</string>
 </resources>
