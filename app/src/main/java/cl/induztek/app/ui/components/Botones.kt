@@ -1,0 +1,56 @@
+package cl.induztek.app.ui.components
+
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.height
+import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
+
+
+@Composable
+fun BotonPrincipal(
+    texto: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    icono: Int? = null,
+    habilitado: Boolean = true
+) {
+    Button(
+        onClick = onClick,
+        enabled = habilitado,
+        modifier = modifier.height(48.dp)
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            if (icono != null) {
+                Icon(painter = painterResource(icono), contentDescription = null, modifier = Modifier.size(18.dp))
+                Spacer(Modifier.width(8.dp))
+            }
+            Text(texto)
+        }
+    }
+}
+
+@Composable
+fun BotonSecundario(
+    texto: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    habilitado: Boolean = true
+) {
+    OutlinedButton(
+        onClick = onClick,
+        enabled = habilitado,
+        modifier = modifier.height(48.dp)
+    ) {
+        Text(texto)
+    }
+}

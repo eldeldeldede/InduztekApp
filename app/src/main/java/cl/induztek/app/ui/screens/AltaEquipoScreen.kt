@@ -1,0 +1,331 @@
+package cl.induztek.app.ui.screens
+
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import cl.induztek.app.R
+import cl.induztek.app.model.AltaEquipoUiState
+import cl.induztek.app.model.ClasificacionEquipo
+import cl.induztek.app.model.TipoEquipo
+import cl.induztek.app.ui.components.BotonPrincipal
+import cl.induztek.app.ui.components.BotonSecundario
+import cl.induztek.app.ui.components.CampoTexto
+import cl.induztek.app.ui.components.MensajeError
+import cl.induztek.app.ui.components.TarjetaSeccion
+import cl.induztek.app.ui.styles.EstilosCampo
+import cl.induztek.app.ui.theme.AdvertenciaFondo
+import cl.induztek.app.ui.theme.Dimens
+import cl.induztek.app.ui.theme.InduztekAppTheme
+import cl.induztek.app.viewmodel.AltaEquipoViewModel
+
+@Composable
+fun AltaEquipoScreen(
+    idInstalacion: Long,
+    onVolver: () -> Unit,
+    onGuardado: () -> Unit,
+    onVerExistente: (Long) -> Unit,
+    viewModel: AltaEquipoViewModel = viewModel()
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    AltaEquipoContent(
+        uiState = uiState,
+        onVolver = onVolver,
+        onTagCambia = viewModel::onTagCambia,
+        onTipoSeleccionado = viewModel::onTipoSeleccionado,
+        onMarcaCambia = viewModel::onMarcaCambia,
+        onModeloCambia = viewModel::onModeloCambia,
+        onSerieCambia = viewModel::onSerieCambia,
+        onAnioCambia = viewModel::onAnioCambia,
+        onPotenciaCambia = viewModel::onPotenciaCambia,
+        onTensionPrimariaCambia = viewModel::onTensionPrimariaCambia,
+        onTensionSecundariaCambia = viewModel::onTensionSecundariaCambia,
+        onCorrienteCambia = viewModel::onCorrienteCambia,
+        onMaxContactosCambia = viewModel::onMaxContactosCambia,
+        onObservacionesCambia = viewModel::onObservacionesCambia,
+        onLimpiar = viewModel::onLimpiar,
+        onGuardar = { if (viewModel.onGuardar(idInstalacion)) onGuardado() },
+        onVerExistente = onVerExistente
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AltaEquipoContent(
+    uiState: AltaEquipoUiState,
+    onVolver: () -> Unit,
+    onTagCambia: (String) -> Unit,
+    onTipoSeleccionado: (Long) -> Unit,
+    onMarcaCambia: (String) -> Unit,
+    onModeloCambia: (String) -> Unit,
+    onSerieCambia: (String) -> Unit,
+    onAnioCambia: (String) -> Unit,
+    onPotenciaCambia: (String) -> Unit,
+    onTensionPrimariaCambia: (String) -> Unit,
+    onTensionSecundariaCambia: (String) -> Unit,
+    onCorrienteCambia: (String) -> Unit,
+    onMaxContactosCambia: (String) -> Unit,
+    onObservacionesCambia: (String) -> Unit,
+    onLimpiar: () -> Unit,
+    onGuardar: () -> Unit,
+    onVerExistente: (Long) -> Unit
+) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(R.string.titulo_alta_equipo)) },
+                navigationIcon = {
+                    IconButton(onClick = onVolver) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_volver),
+                            contentDescription = stringResource(R.string.cd_volver)
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
+                )
+            )
+        },
+        containerColor = MaterialTheme.colorScheme.background
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .verticalScroll(rememberScrollState())
+                .padding(Dimens.espacioPantalla),
+            verticalArrangement = Arrangement.spacedBy(Dimens.espacioMedio)
+        ) {
+            TarjetaSeccion(titulo = stringResource(R.string.seccion_identificacion)) {
+                CampoTexto(
+                    valor = uiState.tag,
+                    onValorCambia = onTagCambia,
+                    etiqueta = stringResource(R.string.campo_tag),
+                    icono = R.drawable.ic_rayo,
+                    error = uiState.errorTag
+                )
+
+                AnimatedVisibility(visible = uiState.idEquipoExistente != null) {
+                    Card(colors = CardDefaults.cardColors(containerColor = AdvertenciaFondo)) {
+                        Column(modifier = Modifier.padding(Dimens.espacioMedio)) {
+                            Text(
+                                text = stringResource(R.string.equipo_existente_mensaje),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            TextButton(onClick = { uiState.idEquipoExistente?.let(onVerExistente) }) {
+                                Text(stringResource(R.string.btn_usar_equipo_existente))
+                            }
+                        }
+                    }
+                }
+
+                ListaTipos(
+                    tipos = uiState.tipos,
+                    seleccionado = uiState.nombreTipoSeleccionado,
+                    onSeleccionar = onTipoSeleccionado
+                )
+                CampoTexto(
+                    valor = uiState.marca, onValorCambia = onMarcaCambia,
+                    etiqueta = stringResource(R.string.campo_marca)
+                )
+                CampoTexto(
+                    valor = uiState.modelo, onValorCambia = onModeloCambia,
+                    etiqueta = stringResource(R.string.campo_modelo)
+                )
+                CampoTexto(
+                    valor = uiState.numeroSerie, onValorCambia = onSerieCambia,
+                    etiqueta = stringResource(R.string.campo_serie)
+                )
+                CampoTexto(
+                    valor = uiState.anioFabricacion, onValorCambia = onAnioCambia,
+                    etiqueta = stringResource(R.string.campo_anio),
+                    error = uiState.errorAnio,
+                    tipoTeclado = KeyboardType.Number
+                )
+            }
+
+            TarjetaSeccion(titulo = stringResource(R.string.seccion_placa)) {
+                // Los campos cambian según el tipo de equipo; la unidad queda pegada al campo (RNF-05)
+                if (uiState.mostrarPotencia) {
+                    CampoTexto(
+                        valor = uiState.potenciaKva, onValorCambia = onPotenciaCambia,
+                        etiqueta = stringResource(R.string.campo_potencia), sufijo = "kVA",
+                        error = uiState.errorPotencia, tipoTeclado = KeyboardType.Decimal
+                    )
+                }
+                if (uiState.mostrarTensionPrimaria) {
+                    CampoTexto(
+                        valor = uiState.tensionPrimariaKv, onValorCambia = onTensionPrimariaCambia,
+                        etiqueta = stringResource(R.string.campo_tension_primaria), sufijo = "kV",
+                        error = uiState.errorTensionPrimaria, tipoTeclado = KeyboardType.Decimal
+                    )
+                }
+                if (uiState.mostrarTensionSecundaria) {
+                    CampoTexto(
+                        valor = uiState.tensionSecundariaKv, onValorCambia = onTensionSecundariaCambia,
+                        etiqueta = stringResource(R.string.campo_tension_secundaria), sufijo = "kV",
+                        error = uiState.errorTensionSecundaria, tipoTeclado = KeyboardType.Decimal
+                    )
+                }
+                if (uiState.mostrarCorriente) {
+                    CampoTexto(
+                        valor = uiState.corrienteNominalA, onValorCambia = onCorrienteCambia,
+                        etiqueta = stringResource(R.string.campo_corriente), sufijo = "A",
+                        error = uiState.errorCorriente, tipoTeclado = KeyboardType.Decimal
+                    )
+                }
+                if (uiState.mostrarMaxContactos) {
+                    CampoTexto(
+                        valor = uiState.maxContactosUohm, onValorCambia = onMaxContactosCambia,
+                        etiqueta = stringResource(R.string.campo_max_contactos), sufijo = "µΩ",
+                        error = uiState.errorMaxContactos, tipoTeclado = KeyboardType.Decimal
+                    )
+                }
+                CampoTexto(
+                    valor = uiState.observaciones, onValorCambia = onObservacionesCambia,
+                    etiqueta = stringResource(R.string.campo_observaciones),
+                    lineasMaximas = 3
+                )
+            }
+
+            uiState.errorGeneral?.let { MensajeError(mensaje = it) }
+
+            Row(horizontalArrangement = Arrangement.spacedBy(Dimens.espacioMedio)) {
+                BotonSecundario(
+                    texto = stringResource(R.string.btn_limpiar),
+                    onClick = onLimpiar,
+                    modifier = Modifier.weight(1f)
+                )
+                BotonPrincipal(
+                    texto = stringResource(R.string.btn_guardar_equipo),
+                    onClick = onGuardar,
+                    icono = R.drawable.ic_check,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+            Spacer(Modifier.height(Dimens.espacioGrande))
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ListaTipos(
+    tipos: List<TipoEquipo>,
+    seleccionado: String,
+    onSeleccionar: (Long) -> Unit
+) {
+    var expandido by remember { mutableStateOf(false) }
+
+    ExposedDropdownMenuBox(
+        expanded = expandido,
+        onExpandedChange = { expandido = it }
+    ) {
+        OutlinedTextField(
+            value = seleccionado,
+            onValueChange = {},
+            readOnly = true,
+            label = { Text(stringResource(R.string.campo_tipo_equipo)) },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandido) },
+            shape = EstilosCampo.forma,
+            colors = EstilosCampo.colores(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
+        )
+        ExposedDropdownMenu(
+            expanded = expandido,
+            onDismissRequest = { expandido = false }
+        ) {
+            tipos.forEach { tipo ->
+                DropdownMenuItem(
+                    text = { Text("${tipo.nombre} (${tipo.clasificacion.clasificacion})") },
+                    onClick = {
+                        onSeleccionar(tipo.idTipoEquipo)
+                        expandido = false
+                    }
+                )
+            }
+        }
+    }
+}
+
+private val tiposEjemplo = listOf(
+    TipoEquipo(1, "Transformador", ClasificacionEquipo.PRIMARIO),
+    TipoEquipo(2, "Interruptor", ClasificacionEquipo.PRIMARIO),
+    TipoEquipo(5, "Relé de protección", ClasificacionEquipo.SECUNDARIO)
+)
+
+@Preview(showBackground = true, heightDp = 1400)
+@Composable
+private fun AltaEquipoPreview() {
+    InduztekAppTheme {
+        AltaEquipoContent(
+            uiState = AltaEquipoUiState(tipos = tiposEjemplo),
+            onVolver = {}, onTagCambia = {}, onTipoSeleccionado = {}, onMarcaCambia = {},
+            onModeloCambia = {}, onSerieCambia = {}, onAnioCambia = {}, onPotenciaCambia = {},
+            onTensionPrimariaCambia = {}, onTensionSecundariaCambia = {}, onCorrienteCambia = {},
+            onMaxContactosCambia = {}, onObservacionesCambia = {}, onLimpiar = {}, onGuardar = {},
+            onVerExistente = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, heightDp = 1400, name = "TAG duplicado")
+@Composable
+private fun AltaEquipoDuplicadoPreview() {
+    InduztekAppTheme {
+        AltaEquipoContent(
+            uiState = AltaEquipoUiState(
+                tipos = tiposEjemplo, tag = "TR-01",
+                errorTag = "Ya existe un equipo con este TAG en la instalación",
+                idEquipoExistente = 1
+            ),
+            onVolver = {}, onTagCambia = {}, onTipoSeleccionado = {}, onMarcaCambia = {},
+            onModeloCambia = {}, onSerieCambia = {}, onAnioCambia = {}, onPotenciaCambia = {},
+            onTensionPrimariaCambia = {}, onTensionSecundariaCambia = {}, onCorrienteCambia = {},
+            onMaxContactosCambia = {}, onObservacionesCambia = {}, onLimpiar = {}, onGuardar = {},
+            onVerExistente = {}
+        )
+    }
+}

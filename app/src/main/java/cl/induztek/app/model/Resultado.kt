@@ -5,8 +5,12 @@ data class Resultado(
     val codigo: String
 )
 
-enum class TipoResultado(val codigo: String){
-    APROBADO("APROBADO"),
-    OBSERVADO("OBSERVADO"),
-    RECHAZADO("RECHAZADO")
+enum class TipoResultado(val id: Long, val codigo: String, val etiqueta: String) {
+    APROBADO(1, "APROBADO", "Aprobado"),
+    OBSERVADO(2, "OBSERVADO", "Observado"),
+    RECHAZADO(3, "RECHAZADO", "Rechazado");
+
+    companion object {
+        fun desdeId(id: Long): TipoResultado = entries.first { it.id == id }
+    }
 }

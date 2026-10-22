@@ -1,6 +1,6 @@
 package cl.induztek.app.model
 
-enum class ClasificacionInstrumento(val clasificacion: String){
+enum class ClasificacionEquipo(val clasificacion: String){
     PRIMARIO("Primario"),
     SECUNDARIO("Secundario")
 }
@@ -8,5 +8,5 @@ enum class ClasificacionInstrumento(val clasificacion: String){
 data class TipoEquipo(
     val idTipoEquipo: Long,
     val nombre: String,
-    val clasificacion: ClasificacionInstrumento
+    val clasificacion: ClasificacionEquipo
 )
