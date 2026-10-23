@@ -37,6 +37,10 @@ import cl.induztek.app.ui.theme.Dimens
 import cl.induztek.app.ui.theme.InduztekAppTheme
 import cl.induztek.app.viewmodel.EquiposViewModel
 
+// =====================================================================
+//  EquiposScreen.kt — equipos de una instalación (RF-02).
+//  El botón "+" solo lo ve el personal de Induztek: el cliente consulta pero no crea equipos.
+// =====================================================================
 @Composable
 fun EquiposScreen(
     usuario: Usuario,

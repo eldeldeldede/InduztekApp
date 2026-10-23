@@ -58,6 +58,12 @@ import cl.induztek.app.viewmodel.HistorialEquipoViewModel
 import java.time.LocalDate
 import java.time.LocalDateTime
 
+// =====================================================================
+//  HistorialEquipoScreen.kt — HU-11 / HU-12: historial de protocolos de un equipo.
+//  Para el personal incluye la comparación con la prueba anterior (HU-06, RN-09), que
+//  destaca una "Variación significativa" (más de 25 %) y marca los protocolos atrasados (RN-16).
+//  Para el cliente: sus protocolos registrados o formalizados, con el estado "Pendiente de formalización".
+// =====================================================================
 @Composable
 fun HistorialEquipoScreen(
     usuario: Usuario,
@@ -98,6 +104,7 @@ fun HistorialEquipoContent(
     ) { innerPadding ->
         val equipo = uiState.equipo
         if (equipo == null) {
+            // El equipo no existe o pertenece a otro cliente (RN-18)
             Text(
                 text = stringResource(R.string.equipo_no_encontrado),
                 modifier = Modifier
@@ -116,6 +123,7 @@ fun HistorialEquipoContent(
         ) {
             item { DatosEquipo(equipo) }
 
+            // Comparación con la prueba anterior: solo personal (la lista viene vacía para el cliente)
             if (uiState.comparaciones.isNotEmpty()) {
                 item { Seccion(stringResource(R.string.seccion_comparacion)) }
                 items(uiState.comparaciones, key = { "${it.serie.elemento}-${it.serie.codigoTipoPrueba}-${it.serie.codigoParametro}" }) {
@@ -150,6 +158,7 @@ private fun Seccion(titulo: String) {
     )
 }
 
+// Datos de placa del equipo: solo se muestran los que tienen valor
 @Composable
 private fun DatosEquipo(equipo: Equipo) {
     Card(
@@ -177,6 +186,7 @@ private fun DatosEquipo(equipo: Equipo) {
     }
 }
 
+// "Aislación · AT-T · Lectura a 1 min":  6.100 MΩ  (antes 9.800 MΩ, −37,8 %)  + aviso si es significativa
 @Composable
 private fun TarjetaComparacion(comparacion: ComparacionValor) {
     val colorFondo = if (comparacion.significativa) AdvertenciaFondo else MaterialTheme.colorScheme.surface
@@ -236,8 +246,9 @@ private fun TarjetaComparacion(comparacion: ComparacionValor) {
 
 @Composable
 private fun TarjetaProtocolo(protocolo: ResumenProtocolo, usuario: Usuario, hoy: LocalDate) {
+    // RN-16: solo el personal ve la marca de "Atrasado" (más de 2 días hábiles sin formalizar)
     val atrasado = !usuario.esCliente &&
-            ReglasProtocolo.estaAtrasado(protocolo.fechaHoraPrueba.toLocalDate(), hoy, protocolo.estado)
+        ReglasProtocolo.estaAtrasado(protocolo.fechaHoraPrueba.toLocalDate(), hoy, protocolo.estado)
 
     Card(modifier = Modifier.fillMaxWidth()) {
         ListItem(
@@ -262,6 +273,7 @@ private fun TarjetaProtocolo(protocolo: ResumenProtocolo, usuario: Usuario, hoy:
     }
 }
 
+// ---- Previews ----
 private val usuarioIngeniero = Usuario(
     idUsuario = 2, idRol = 2, codigoRol = CodigoRol.INGENIERO, rut = "12.345.678-5",
     nombre = "A. Contreras", correo = "acontreras@induztek.ejemplo", passwordHash = ""

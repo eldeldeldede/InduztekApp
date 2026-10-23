@@ -9,47 +9,91 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import cl.induztek.app.ui.components.AlReanudar
+import cl.induztek.app.ui.screens.AltaEquipoScreen
+import cl.induztek.app.ui.screens.EquiposScreen
+import cl.induztek.app.ui.screens.HistorialEquipoScreen
+import cl.induztek.app.ui.screens.InstalacionesScreen
+import cl.induztek.app.ui.screens.LoginScreen
+import cl.induztek.app.viewmodel.EquiposViewModel
+import cl.induztek.app.viewmodel.HistorialEquipoViewModel
+import cl.induztek.app.viewmodel.InstalacionesViewModel
+import cl.induztek.app.viewmodel.SesionViewModel
 
 // =====================================================================
-//  AppNavegacion.kt — el mapa de pantallas
+//  AppNavegacion.kt — el mapa de pantallas (como AppNavegacion de MiRegistro)
 //  ---------------------------------------------------------------------
 //  NavHost = el "contenedor" que muestra UNA pantalla a la vez según la ruta actual.
 //  navController.navigate("ruta") cambia de pantalla.
 //
-//  ESQUELETO: cada pantalla es por ahora un PantallaPendiente (un texto y botones para probar
-//  la navegación). A medida que Pedro termine cada pantalla, se reemplaza la línea
-//  `PantallaPendiente(...)` por la pantalla real, por ejemplo:
+//  - Las pantallas NO reciben el navController: reciben funciones (onVolver, onVerEquipos...).
+//    Así no dependen de la navegación y se pueden previsualizar solas (@Preview).
+//  - SesionViewModel se crea UNA vez aquí y guarda quién inició sesión.
+//  - Todas las pantallas, salvo el login, exigen un usuario con sesión: si no hay, vuelven al login.
+//  - Los ViewModels de lista se crean AQUÍ (viewModel()) para poder pedirles que recarguen los
+//    datos cada vez que la pantalla vuelve a mostrarse (AlReanudar).
 //
-//      composable(Rutas.LOGIN) { LoginScreen(onIngresar = { navController.navigate(Rutas.INSTALACIONES) }) }
-//
-//  Las pantallas NO reciben el navController: reciben funciones (onIngresar, onVolver...).
-//  Así no dependen de la navegación y se pueden previsualizar solas (@Preview).
+//  Pantallas que aún son PantallaPendiente (las irá reemplazando el equipo):
+//  mediciones y cierre de visita.
 // =====================================================================
 @Composable
 fun AppNavegacion() {
     val navController = rememberNavController()
+    val sesionViewModel: SesionViewModel = viewModel()
+    val usuarioActual by sesionViewModel.usuarioActual.collectAsStateWithLifecycle()
 
-    NavHost(navController = navController, startDestination = Rutas.LOGIN) {
+    // Si hay sesión guardada se entra directo; si no, al login.
+    // remember { }: se calcula UNA sola vez al abrir la app. Si cambiara en cada recomposición
+    // (al iniciar o cerrar sesión), el NavHost reiniciaría todo el recorrido de pantallas.
+    val destinoInicial = remember {
+        if (sesionViewModel.usuarioActual.value != null) Rutas.INSTALACIONES else Rutas.LOGIN
+    }
+
+    // Al cerrar sesión (usuarioActual pasa a null) se vuelve al login y se borra el historial de pantallas
+    val entradaActual by navController.currentBackStackEntryAsState()
+    LaunchedEffect(usuarioActual, entradaActual?.destination?.route) {
+        val ruta = entradaActual?.destination?.route
+        if (usuarioActual == null && ruta != null && ruta != Rutas.LOGIN) irAlLogin(navController)
+    }
+
+    NavHost(navController = navController, startDestination = destinoInicial) {
 
         composable(Rutas.LOGIN) {
-            PantallaPendiente(
-                titulo = "Login por rol",
-                destinos = listOf("Ir a instalaciones" to { navController.navigate(Rutas.INSTALACIONES) })
+            LoginScreen(
+                onIngresoExitoso = { usuario ->
+                    sesionViewModel.iniciarSesion(usuario)
+                    // popUpTo: el login sale del historial, así "atrás" no vuelve a él
+                    navController.navigate(Rutas.INSTALACIONES) {
+                        popUpTo(Rutas.LOGIN) { inclusive = true }
+                    }
+                }
             )
         }
 
-        composable(Rutas.INSTALACIONES) {
-            PantallaPendiente(
-                titulo = "Instalaciones",
-                destinos = listOf("Ver equipos de la instalación 1" to { navController.navigate(Rutas.equipos(1)) })
+        composable(Rutas.INSTALACIONES) { entrada ->
+            val usuario = usuarioActual ?: return@composable
+            val viewModel: InstalacionesViewModel = viewModel()
+            AlReanudar(entrada) { viewModel.cargar(usuario) }
+            InstalacionesScreen(
+                usuario = usuario,
+                onVerEquipos = { idInstalacion -> navController.navigate(Rutas.equipos(idInstalacion)) },
+                onCerrarSesion = { sesionViewModel.cerrarSesion() },
+                viewModel = viewModel
             )
         }
 
@@ -58,14 +102,16 @@ fun AppNavegacion() {
             route = Rutas.EQUIPOS,
             arguments = listOf(navArgument(Rutas.ARG_ID_INSTALACION) { type = NavType.LongType })
         ) { entrada ->
+            val usuario = usuarioActual ?: return@composable
             val idInstalacion = entrada.arguments?.getLong(Rutas.ARG_ID_INSTALACION) ?: 0L
-            PantallaPendiente(
-                titulo = "Equipos de la instalación $idInstalacion",
-                destinos = listOf(
-                    "Alta de equipo" to { navController.navigate(Rutas.altaEquipo(idInstalacion)) },
-                    "Historial del equipo 1 (TR-01)" to { navController.navigate(Rutas.historialEquipo(1)) },
-                    "Volver" to { navController.popBackStack() }
-                )
+            val viewModel: EquiposViewModel = viewModel()
+            AlReanudar(entrada) { viewModel.cargar(idInstalacion, usuario) }
+            EquiposScreen(
+                usuario = usuario,
+                onVolver = { navController.popBackStack() },
+                onAltaEquipo = { navController.navigate(Rutas.altaEquipo(idInstalacion)) },
+                onVerHistorial = { idEquipo -> navController.navigate(Rutas.historialEquipo(idEquipo)) },
+                viewModel = viewModel
             )
         }
 
@@ -73,10 +119,18 @@ fun AppNavegacion() {
             route = Rutas.ALTA_EQUIPO,
             arguments = listOf(navArgument(Rutas.ARG_ID_INSTALACION) { type = NavType.LongType })
         ) { entrada ->
+            usuarioActual ?: return@composable
             val idInstalacion = entrada.arguments?.getLong(Rutas.ARG_ID_INSTALACION) ?: 0L
-            PantallaPendiente(
-                titulo = "Alta de equipo (instalación $idInstalacion)",
-                destinos = listOf("Volver" to { navController.popBackStack() })
+            AltaEquipoScreen(
+                idInstalacion = idInstalacion,
+                onVolver = { navController.popBackStack() },
+                onGuardado = { navController.popBackStack() },
+                // HU-01: el TAG ya existía -> se abre el historial del equipo ya registrado
+                onVerExistente = { idEquipo ->
+                    navController.navigate(Rutas.historialEquipo(idEquipo)) {
+                        popUpTo(Rutas.ALTA_EQUIPO) { inclusive = true }
+                    }
+                }
             )
         }
 
@@ -84,10 +138,14 @@ fun AppNavegacion() {
             route = Rutas.HISTORIAL_EQUIPO,
             arguments = listOf(navArgument(Rutas.ARG_ID_EQUIPO) { type = NavType.LongType })
         ) { entrada ->
+            val usuario = usuarioActual ?: return@composable
             val idEquipo = entrada.arguments?.getLong(Rutas.ARG_ID_EQUIPO) ?: 0L
-            PantallaPendiente(
-                titulo = "Historial y comparación del equipo $idEquipo",
-                destinos = listOf("Volver" to { navController.popBackStack() })
+            val viewModel: HistorialEquipoViewModel = viewModel()
+            AlReanudar(entrada) { viewModel.cargar(idEquipo, usuario) }
+            HistorialEquipoScreen(
+                usuario = usuario,
+                onVolver = { navController.popBackStack() },
+                viewModel = viewModel
             )
         }
 
@@ -112,6 +170,13 @@ fun AppNavegacion() {
                 destinos = listOf("Volver" to { navController.popBackStack() })
             )
         }
+    }
+}
+
+// Vuelve al login y vacía el historial de pantallas (popUpTo(0) = hasta el principio)
+private fun irAlLogin(navController: NavHostController) {
+    navController.navigate(Rutas.LOGIN) {
+        popUpTo(0) { inclusive = true }
     }
 }
 

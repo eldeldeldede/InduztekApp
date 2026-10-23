@@ -11,6 +11,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
+// Equipos de UNA instalación. La pantalla recibe el id por la ruta ("equipos/{idInstalacion}")
+// y se lo entrega a cargar(), igual que obtener(id) en la pantalla Editar de MiRegistro.
 class EquiposViewModel(application: Application) : AndroidViewModel(application) {
 
     private val db = InduztekDbHelper(application)
@@ -20,6 +22,7 @@ class EquiposViewModel(application: Application) : AndroidViewModel(application)
     val uiState: StateFlow<EquiposUiState> = _uiState.asStateFlow()
 
     fun cargar(idInstalacion: Long, usuario: Usuario) {
+        // buscarInstalacion devuelve null si la instalación es de OTRO cliente (RN-18)
         val instalacion = db.buscarInstalacion(idInstalacion, usuario)
         todos = if (instalacion == null) emptyList() else db.listarEquipos(idInstalacion, usuario)
         _uiState.update { it.copy(instalacion = instalacion) }
@@ -32,8 +35,8 @@ class EquiposViewModel(application: Application) : AndroidViewModel(application)
         val buscado = texto.trim()
         val lista = if (buscado.isEmpty()) todos else todos.filter {
             it.tag.contains(buscado, ignoreCase = true) ||
-                    it.tipoEquipoNombre.contains(buscado, ignoreCase = true) ||
-                    (it.marca ?: "").contains(buscado, ignoreCase = true)
+                it.tipoEquipoNombre.contains(buscado, ignoreCase = true) ||
+                (it.marca ?: "").contains(buscado, ignoreCase = true)
         }
         _uiState.update { it.copy(filtro = texto, equipos = lista) }
     }

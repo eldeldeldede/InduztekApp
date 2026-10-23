@@ -47,4 +47,19 @@ class HistorialEquipoViewModel(application: Application) : AndroidViewModel(appl
                     idEquipo, serie.codigoTipoPrueba, serie.elemento, serie.codigoParametro
                 )
                 val actual = puntos.firstOrNull() ?: return@mapNotNull null
-                val anterior = puntos.getOrNull(1
+                val anterior = puntos.getOrNull(1)
+                val variacion = anterior?.let { CriteriosResultado.variacionPorcentual(it.valor, actual.valor) }
+                ComparacionValor(
+                    serie = serie,
+                    actual = actual,
+                    anterior = anterior,
+                    variacionPct = variacion,
+                    significativa = anterior != null && CriteriosResultado.esVariacionSignificativa(anterior.valor, actual.valor)
+                )
+            }
+
+    override fun onCleared() {
+        db.close()
+        super.onCleared()
+    }
+}

@@ -11,7 +11,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
-class `InstalacionesViewModel.kt`(application: Application) : AndroidViewModel(application) {
+
+class InstalacionesViewModel(application: Application) : AndroidViewModel(application) {
 
     private val db = InduztekDbHelper(application)
 
@@ -33,8 +34,8 @@ class `InstalacionesViewModel.kt`(application: Application) : AndroidViewModel(a
         val buscado = texto.trim()
         val lista = if (buscado.isEmpty()) todas else todas.filter {
             it.nombre.contains(buscado, ignoreCase = true) ||
-                    it.comunaNombre.contains(buscado, ignoreCase = true) ||
-                    it.clienteNombre.contains(buscado, ignoreCase = true)
+                it.comunaNombre.contains(buscado, ignoreCase = true) ||
+                it.clienteNombre.contains(buscado, ignoreCase = true)
         }
         _uiState.update { it.copy(filtro = texto, instalaciones = lista) }
     }

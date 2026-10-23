@@ -54,6 +54,11 @@ import cl.induztek.app.ui.theme.Dimens
 import cl.induztek.app.ui.theme.InduztekAppTheme
 import cl.induztek.app.viewmodel.AltaEquipoViewModel
 
+// =====================================================================
+//  AltaEquipoScreen.kt — HU-01: registrar un equipo en una instalación.
+//  Es el "FormularioScreen" de este proyecto: campos validados, lista desplegable,
+//  errores debajo de cada campo y botones Limpiar / Guardar.
+// =====================================================================
 @Composable
 fun AltaEquipoScreen(
     idInstalacion: Long,
@@ -80,6 +85,7 @@ fun AltaEquipoScreen(
         onMaxContactosCambia = viewModel::onMaxContactosCambia,
         onObservacionesCambia = viewModel::onObservacionesCambia,
         onLimpiar = viewModel::onLimpiar,
+        // onGuardar devuelve true si quedó guardado: recién ahí se vuelve a la lista
         onGuardar = { if (viewModel.onGuardar(idInstalacion)) onGuardado() },
         onVerExistente = onVerExistente
     )
@@ -144,6 +150,7 @@ fun AltaEquipoContent(
                     error = uiState.errorTag
                 )
 
+                // HU-01: si el TAG ya existe se ofrece usar el equipo que ya está registrado
                 AnimatedVisibility(visible = uiState.idEquipoExistente != null) {
                     Card(colors = CardDefaults.cardColors(containerColor = AdvertenciaFondo)) {
                         Column(modifier = Modifier.padding(Dimens.espacioMedio)) {
@@ -248,6 +255,7 @@ fun AltaEquipoContent(
     }
 }
 
+// Lista desplegable de tipos de equipo (mismo ExposedDropdownMenuBox que "Ciudad" en MiRegistro)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ListaTipos(
