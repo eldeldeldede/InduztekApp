@@ -1,33 +1,10 @@
 package cl.induztek.app.data
 
-// =====================================================================
-//  DatosIniciales.kt — el "seeder": datos precargados del Anexo 9
-//  ---------------------------------------------------------------------
-//  Se ejecutan UNA sola vez, cuando la base de datos se crea (InduztekDbHelper.onCreate).
-//  Sirven para poder probar la app desde el primer minuto: ya hay usuarios, equipos,
-//  instrumentos y el historial del TR-01 (el caso estrella: IP 2,5 -> 2,2 -> 1,8).
-//
-//  TODOS los datos son ficticios (así lo declara el Anexo 9).
-//
-//  ¿QUÉ ES "%HASH%"?
-//   Es un marcador. Al crear la base, el helper lo reemplaza por el hash SHA-256 de la
-//   clave de demostración (ver InduztekDbHelper.CLAVE_DEMO). Así NINGUNA clave queda
-//   escrita en texto plano dentro de la base de datos.
-//
-//  DATOS QUE NO ESTÁN EN EL ANEXO 9 Y SE COMPLETARON (marcados con "[COMPLETADO]"):
-//   - La hora de la prueba de los protocolos que solo traen fecha (se usa 09:00).
-//   - Las visitas OT-HIST-*: el Anexo 9 solo da 2 OT, pero cada protocolo necesita
-//     una visita (id_visita es obligatorio).
-//   - Una prueba "de ejemplo" por protocolo sin mediciones, para que la lista de
-//     historial pueda mostrar el resultado global que indica el Anexo 9.
-// =====================================================================
+
 object DatosIniciales {
 
-    // El ORDEN importa: cada INSERT solo puede apuntar a filas que ya existen (claves foráneas).
     val SENTENCIAS: List<String> = listOf(
 
-        // ---------------------------- ROLES ----------------------------
-        // Los ids (1..4) deben coincidir con CodigoRol.kt
         """
         INSERT INTO rol (id_rol, codigo, nombre) VALUES
             (1, 'TECNICO',      'Técnico de terreno'),
@@ -36,7 +13,6 @@ object DatosIniciales {
             (4, 'CLIENTE',      'Usuario cliente')
         """,
 
-        // ------------------------ REGIÓN Y COMUNAS ------------------------
         "INSERT INTO region (id_region, nombre) VALUES (1, 'Región Metropolitana de Santiago')",
         """
         INSERT INTO comuna (id_comuna, id_region, nombre) VALUES
@@ -48,8 +24,6 @@ object DatosIniciales {
             (6, 1, 'Huechuraba')
         """,
 
-        // ------------------- USUARIOS: PERSONAL INDUZTEK -------------------
-        // Ids 1 a 7. Todos con rol según el Anexo 9 y la clave de demostración.
         """
         INSERT INTO usuario (id_usuario, id_rol, rut, nombre, correo, password_hash, activo) VALUES
             (1, 1, '17.284.519-3', 'Matías Godoy Herrera',          'mgodoy@induztek.ejemplo',      '%HASH%', 1),
@@ -61,14 +35,6 @@ object DatosIniciales {
             (7, 3, '13.871.905-7', 'Ricardo Espinoza Lagos',        'respinoza@induztek.ejemplo',   '%HASH%', 1)
         """,
 
-        // -------------------- USUARIOS: EMPRESAS CLIENTE --------------------
-        // Según el MER, cada EMPRESA cliente es una fila de usuario con rol CLIENTE
-        // (rut = RUT de la empresa; nombre = razón social). Ids 8 a 13.
-        // activo = 1 solo para las 3 cuentas que el Anexo 9 lista como "Usuarios cliente"
-        // (Marcela Fuentes, Tomás Leiva y Patricio Navarro). Las otras 3 empresas existen
-        // pero su cuenta está desactivada hasta que el Jefe técnico la habilite (RN-20).
-        // [COMPLETADO] Clínica Los Aromos: el correo de la cuenta es el de Tomás Leiva
-        // (quien tiene acceso), y no el de Carolina Méndez (contacto de la ficha de clientes).
         """
         INSERT INTO usuario (id_usuario, id_rol, rut, nombre, correo, telefono, password_hash, activo,
                              giro, contacto_nombre, contacto_cargo) VALUES
@@ -86,7 +52,6 @@ object DatosIniciales {
                  'Tecnología', 'Felipe Órdenes Vera', NULL)
         """,
 
-        // --------------------------- INSTALACIONES ---------------------------
         """
         INSERT INTO instalacion (id_instalacion, id_usuario_cliente, nombre, ubicacion, id_comuna, observaciones_acceso) VALUES
             (1, 8,  'Planta Lampa',          'Sector industrial',        1, 'Inducción obligatoria de 30 min'),
@@ -97,8 +62,6 @@ object DatosIniciales {
             (6, 13, 'Site Huechuraba',       'Parque empresarial',       6, 'Acompañamiento permanente del cliente')
         """,
 
-        // --------------------------- TIPOS DE EQUIPO ---------------------------
-        // Aclaración nº 1: relé = SECUNDARIO; el resto = PRIMARIO.
         """
         INSERT INTO tipo_equipo (id_tipo_equipo, nombre, clasificacion) VALUES
             (1, 'Transformador',      'PRIMARIO'),
@@ -108,10 +71,6 @@ object DatosIniciales {
             (5, 'Relé de protección', 'SECUNDARIO')
         """,
 
-        // ------------------------------- EQUIPOS -------------------------------
-        // Columnas: id, instalación, tag, tipo, marca, modelo, serie, año,
-        //           kVA, kV primario, kV secundario, corriente A, máx. contactos µΩ, observaciones
-        // El Anexo 9 no entrega "modelo" -> NULL.
         """
         INSERT INTO equipo (id_equipo, id_instalacion, tag, id_tipo_equipo, marca, modelo, numero_serie, anio_fabricacion,
                             potencia_kva, tension_primaria_kv, tension_secundaria_kv, corriente_nominal_a,
@@ -126,7 +85,6 @@ object DatosIniciales {
             (8, 3, 'TR-SS-01',     1, 'ABB',       NULL, 'ABB-1180442',   2011, 5000, 23, 6.6, NULL, NULL, NULL)
         """,
 
-        // ------------------------- TIPOS DE PRUEBA (RN-05) -------------------------
         """
         INSERT INTO tipo_prueba (id_tipo_prueba, codigo, nombre) VALUES
             (1, 'AISLACION',      'Resistencia de aislación'),
@@ -136,7 +94,6 @@ object DatosIniciales {
             (5, 'OPERACION_RELE', 'Prueba de operación de relé')
         """,
 
-        // Qué pruebas corresponden a cada tipo de equipo (tabla RN-05 del Anexo 7).
         """
         INSERT INTO tipo_equipo_prueba (id_tipo_equipo, id_tipo_prueba) VALUES
             (1, 1), (1, 2), (1, 3),   -- Transformador: aislación, TTR, devanados
@@ -146,8 +103,6 @@ object DatosIniciales {
             (5, 5)                    -- Relé:          operación
         """,
 
-        // ------------------------------ PARÁMETROS ------------------------------
-        // Unidad base de cada valor medido (RNF-05). Una lectura en GΩ se guarda en MΩ.
         """
         INSERT INTO parametro (id_parametro, id_tipo_prueba, codigo, nombre, unidad) VALUES
             (1,  1, 'TENSION_PRUEBA',       'Tensión de prueba',                 'kV'),
@@ -164,7 +119,6 @@ object DatosIniciales {
             (12, 5, 'TIEMPO_MEDIDO',        'Tiempo medido',                     'ms')
         """,
 
-        // ------------------------ INSTRUMENTOS Y CALIBRACIONES ------------------------
         """
         INSERT INTO instrumento (id_instrumento, nombre, marca, modelo, numero_serie) VALUES
             (1, 'Megóhmetro 5 kV',                 'Megger', 'MIT525',   'MIT-0045821'),
@@ -173,8 +127,7 @@ object DatosIniciales {
             (4, 'Micro-ohmímetro',                 'Megger', 'DLRO10X',  'DLR-10882'),
             (5, 'Equipo de inyección secundaria',  'Omicron', 'CMC 356', 'CMC-HB411')
         """,
-        // Fíjate: el Megóhmetro 10 kV venció el 10-10-2026 y el micro-ohmímetro el 20-08-2026.
-        // Sirven para probar la RN-11 (no usar instrumentos con calibración vencida).
+
         """
         INSERT INTO calibracion (id_calibracion, id_instrumento, fecha_calibracion, fecha_vencimiento) VALUES
             (1, 1, '2026-03-15', '2027-03-15'),
@@ -184,18 +137,12 @@ object DatosIniciales {
             (5, 5, '2026-01-05', '2027-01-05')
         """,
 
-        // ----------------------- ESTADOS Y RESULTADOS -----------------------
-        // Ids deben coincidir con TipoEstadoProtocolo.kt y TipoResultado.kt
         """
         INSERT INTO estado_protocolo (id_estado, codigo) VALUES
             (1, 'BORRADOR'), (2, 'REGISTRADO_TERRENO'), (3, 'OBSERVADO'), (4, 'FORMALIZADO'), (5, 'ANULADO')
         """,
         "INSERT INTO resultado (id_resultado, codigo) VALUES (1, 'APROBADO'), (2, 'OBSERVADO'), (3, 'RECHAZADO')",
 
-        // ------------------------------- VISITAS -------------------------------
-        // Ids 1 y 2: las dos OT del Anexo 9 (con su recepción del cliente más abajo).
-        // Ids 3 a 6: [COMPLETADO] visitas "históricas" para los demás protocolos. El número
-        // "OT-HIST-..." NO es real; la hora de cierre (17:00) tampoco: son relleno.
         """
         INSERT INTO visita (id_visita, numero_ot, id_instalacion, fecha, tipo_visita, id_ingeniero_cargo, fecha_hora_cierre) VALUES
             (1, 'OT-2026-1187',    1, '2026-09-26', 'SOLO_PRUEBAS', 5, '2026-09-26T13:42:00'),
@@ -206,24 +153,17 @@ object DatosIniciales {
             (6, 'OT-HIST-2026-02', 3, '2026-09-08', 'SOLO_PRUEBAS', 6, '2026-09-08T17:00:00')
         """,
 
-        // Técnico que participó en cada visita (el mismo que registró el protocolo).
         """
         INSERT INTO visita_participante (id_visita, id_usuario) VALUES
             (1, 1), (2, 3), (3, 1), (4, 2), (5, 4), (6, 2)
         """,
 
-        // Quién recibió el acta (RF-08, HU-08). Solo las 2 visitas del Anexo 9.
         """
         INSERT INTO recepcion_acta (id_visita, receptor_nombre, receptor_rut, receptor_cargo, fecha_hora_recepcion) VALUES
             (1, 'Marcela Fuentes Rojas', '14.226.791-8', 'Jefa de Mantenimiento', '2026-09-26T13:42:00'),
             (2, 'Tomás Leiva Araya',     '18.390.452-3', 'Supervisor Eléctrico',  '2026-09-20T09:55:00')
         """,
 
-        // ------------------------------ PROTOCOLOS ------------------------------
-        // Los 7 del Anexo 9. El `uuid` de las filas de ejemplo es "semilla-<número>";
-        // los protocolos que cree la app usarán un UUID aleatorio de verdad.
-        // El estado: 2 = REGISTRADO_TERRENO, 3 = OBSERVADO, 4 = FORMALIZADO.
-        // [COMPLETADO] La hora (T09:00) no viene en el Anexo 9, salvo PT-2026-0401 (09:40, del formulario FT-03).
         """
         INSERT INTO protocolo (id_protocolo, uuid, numero, id_visita, id_equipo, id_usuario_registra, fecha_hora_prueba,
                                temperatura_c, humedad_pct, observaciones, id_estado) VALUES
@@ -236,13 +176,6 @@ object DatosIniciales {
             (7, 'semilla-PT-2026-0360', 'PT-2026-0360', 6, 5, 2, '2026-09-08T09:00:00', 27, 20, NULL, 4)
         """,
 
-        // -------------------------------- PRUEBAS --------------------------------
-        // Pruebas 1 a 3: aislación del devanado AT-T del TR-01, a 5 kV (Anexo 9).
-        //   Los protocolos de 2024 y 2025 no traen instrumento -> NULL. El de 2026 usa el
-        //   Megóhmetro 5 kV (id 1), calibrado el 15-03-2026, vigente el día de la prueba.
-        // Pruebas 4 a 7: [COMPLETADO] una prueba por protocolo, SIN mediciones, solo con el
-        //   resultado que indica el Anexo 9 (elemento inventado). Son datos de relleno.
-        //   resultado: 1 = APROBADO, 2 = OBSERVADO, 3 = RECHAZADO.
         """
         INSERT INTO prueba (id_prueba, id_protocolo, id_tipo_prueba, elemento, momento, realizada, id_instrumento, id_resultado, comentario) VALUES
             (1, 1, 1, 'AT-T',   'UNICA', 1, NULL, 1, 'Sin historial previo'),
@@ -254,11 +187,6 @@ object DatosIniciales {
             (7, 7, 4, 'Polo 1', 'UNICA', 1, NULL, 3, 'Resultado de ejemplo del Anexo 9 (sin mediciones detalladas)')
         """,
 
-        // ------------------------------ MEDICIONES ------------------------------
-        // Parámetros: 1 = TENSION_PRUEBA (kV), 2 = LECTURA_1MIN (MΩ), 3 = LECTURA_10MIN (MΩ).
-        // Comprobación a mano (RN-06, IP = lectura 10 min / lectura 1 min):
-        //   2024: 31250 / 12500 = 2,50      2025: 21560 / 9800 = 2,20      2026: 10980 / 6100 = 1,80
-        // Variación de la lectura de 1 min (RN-09): 2025 = -21,6 %   2026 = -37,8 % (¡significativa, > 25 %!)
         """
         INSERT INTO medicion (id_prueba, id_parametro, valor) VALUES
             (1, 1, 5), (1, 2, 12500), (1, 3, 31250),

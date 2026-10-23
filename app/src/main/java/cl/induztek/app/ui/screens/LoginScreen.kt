@@ -34,6 +34,12 @@ import cl.induztek.app.ui.theme.Dimens
 import cl.induztek.app.ui.theme.InduztekAppTheme
 import cl.induztek.app.viewmodel.LoginViewModel
 
+// =====================================================================
+//  LoginScreen.kt — RF-14: ingreso por correo y contraseña.
+//  Misma estructura que FormularioScreen de MiRegistro:
+//    LoginScreen  -> conecta con el ViewModel (viewModel(), collectAsStateWithLifecycle)
+//    LoginContent -> SOLO dibuja el uiState y avisa con funciones (por eso tiene @Preview)
+// =====================================================================
 @Composable
 fun LoginScreen(
     onIngresoExitoso: (Usuario) -> Unit,

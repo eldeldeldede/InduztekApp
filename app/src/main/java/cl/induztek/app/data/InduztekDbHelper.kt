@@ -21,6 +21,7 @@ import cl.induztek.app.model.Protocolo
 import cl.induztek.app.model.Prueba
 import cl.induztek.app.model.PuntoHistorial
 import cl.induztek.app.model.RecepcionActa
+import cl.induztek.app.model.SerieMedicion
 import cl.induztek.app.model.ResultadoGuardado
 import cl.induztek.app.model.ResultadoLogin
 import cl.induztek.app.model.ResumenProtocolo
@@ -312,6 +313,23 @@ class InduztekDbHelper(context: Context) :
             FROM medicion m
             INNER JOIN parametro pa ON pa.id_parametro = m.id_parametro
             WHERE m.id_prueba = ?
+        """
+
+        // Qué valores se han medido en un equipo (tipo de prueba + elemento + parámetro), sin repetir.
+        // Sirve para armar la comparación histórica: por cada "serie" se pide después
+        // listarHistorialDeParametro. Mismos filtros que SQL_HISTORIAL_PARAMETRO.
+        private const val SQL_SERIES_DE_EQUIPO = """
+            SELECT DISTINCT tp.codigo AS tipo_prueba_codigo, tp.nombre AS tipo_prueba_nombre,
+                            pr.elemento AS elemento, pa.codigo AS parametro_codigo,
+                            pa.nombre AS parametro_nombre, pa.unidad AS unidad,
+                            tp.id_tipo_prueba AS orden_prueba, pa.id_parametro AS orden_parametro
+            FROM medicion m
+            INNER JOIN prueba pr ON pr.id_prueba = m.id_prueba
+            INNER JOIN protocolo p ON p.id_protocolo = pr.id_protocolo
+            INNER JOIN tipo_prueba tp ON tp.id_tipo_prueba = pr.id_tipo_prueba
+            INNER JOIN parametro pa ON pa.id_parametro = m.id_parametro
+            WHERE p.id_equipo = ? AND pr.realizada = 1 AND pr.momento <> 'PREVIA' AND p.id_estado <> 5
+            ORDER BY tp.id_tipo_prueba, pr.elemento, pa.id_parametro
         """
 
         // La misma prueba no puede registrarse dos veces en un protocolo (mismo tipo, elemento y momento).
@@ -813,6 +831,19 @@ class InduztekDbHelper(context: Context) :
                 numeroProtocolo = c.texto("numero"),
                 fechaHoraPrueba = c.texto("fecha_hora_prueba").aFechaHora(),
                 valor = c.decimal("valor")
+            )
+        }
+
+    // Las series medibles de un equipo (ver SQL_SERIES_DE_EQUIPO).
+    fun listarSeriesDeEquipo(idEquipo: Long): List<SerieMedicion> =
+        consultar(SQL_SERIES_DE_EQUIPO, listOf(idEquipo)) { c ->
+            SerieMedicion(
+                codigoTipoPrueba = c.texto("tipo_prueba_codigo"),
+                nombreTipoPrueba = c.texto("tipo_prueba_nombre"),
+                elemento = c.texto("elemento"),
+                codigoParametro = c.texto("parametro_codigo"),
+                nombreParametro = c.texto("parametro_nombre"),
+                unidad = c.texto("unidad")
             )
         }
 

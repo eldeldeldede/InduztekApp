@@ -20,6 +20,14 @@ import cl.induztek.app.R
 import cl.induztek.app.ui.styles.EstilosCampo
 import cl.induztek.app.ui.theme.Dimens
 
+// =====================================================================
+//  Campos.kt — los campos de texto reutilizables (CampoTexto y CampoContrasena de MiRegistro)
+//
+//  Cada uno recibe el valor Y una función para avisar cuando cambia ("state hoisting"):
+//  el campo no guarda nada, el ViewModel es quien guarda el texto (UiState).
+//  `error` viene del UiState: si es null no se muestra nada; si trae un mensaje, el campo
+//  se pinta de rojo y el mensaje aparece debajo.
+// =====================================================================
 @Composable
 fun CampoTexto(
     valor: String,
@@ -29,7 +37,7 @@ fun CampoTexto(
     icono: Int? = null,
     error: String? = null,
     tipoTeclado: KeyboardType = KeyboardType.Text,
-    sufijo: String? = null,
+    sufijo: String? = null,      // por ejemplo "kV" o "MΩ": la unidad queda pegada al campo (RNF-05)
     soloLectura: Boolean = false,
     lineasMaximas: Int = 1
 ) {
@@ -89,6 +97,8 @@ fun CampoContrasena(
     )
 }
 
+// Mensaje de error general de un formulario (por ejemplo "Correo o contraseña incorrectos"),
+// cuando el problema no es de un campo en particular.
 @Composable
 fun MensajeError(mensaje: String, modifier: Modifier = Modifier) {
     Column(modifier = modifier.fillMaxWidth()) {

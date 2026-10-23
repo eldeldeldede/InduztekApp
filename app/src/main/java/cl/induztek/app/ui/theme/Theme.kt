@@ -2,7 +2,6 @@ package cl.induztek.app.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
@@ -30,7 +29,9 @@ private val EsquemaOscuro = darkColorScheme(
     onSecondary = Color(0xFF3B2A00)
 )
 
-
+// Igual que MiRegistroTheme: envuelve toda la app (se usa en MainActivity).
+// Se desactivó el "color dinámico" de Android 12+ para que la app siempre se vea con los
+// colores de Induztek y no con los del fondo de pantalla del celular.
 @Composable
 fun InduztekAppTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),

@@ -15,7 +15,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 
-
+// Botón principal (lleno) y secundario (con borde), como en MiRegistro.
+// Alto mínimo de 48 dp: se usa con guantes y en terreno, los botones no pueden ser chicos.
 @Composable
 fun BotonPrincipal(
     texto: String,

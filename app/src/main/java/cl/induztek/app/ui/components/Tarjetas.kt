@@ -27,6 +27,7 @@ import cl.induztek.app.ui.theme.NeutroFondo
 import cl.induztek.app.ui.theme.Peligro
 import cl.induztek.app.ui.theme.PeligroFondo
 
+// Tarjeta con título que agrupa campos de un formulario (TarjetaSeccion de MiRegistro).
 @Composable
 fun TarjetaSeccion(
     titulo: String,
@@ -48,6 +49,7 @@ fun TarjetaSeccion(
     }
 }
 
+// Etiqueta de color pequeña (pastilla). Base de EtiquetaResultado y EtiquetaEstado.
 @Composable
 fun Etiqueta(texto: String, colorTexto: Color, colorFondo: Color, modifier: Modifier = Modifier) {
     Surface(
@@ -64,7 +66,8 @@ fun Etiqueta(texto: String, colorTexto: Color, colorFondo: Color, modifier: Modi
     }
 }
 
-
+// Resultado de una prueba o del protocolo. Aprobado = verde, Observado = ámbar, Rechazado = rojo.
+// El texto siempre se muestra: el color solo refuerza (accesibilidad).
 @Composable
 fun EtiquetaResultado(resultado: TipoResultado?, modifier: Modifier = Modifier) {
     when (resultado) {
@@ -75,6 +78,7 @@ fun EtiquetaResultado(resultado: TipoResultado?, modifier: Modifier = Modifier) 
     }
 }
 
+// Estado del protocolo. Al CLIENTE se le muestra "Pendiente de formalización" (RN-14, RN-19).
 @Composable
 fun EtiquetaEstado(estado: TipoEstadoProtocolo, esCliente: Boolean, modifier: Modifier = Modifier) {
     val texto = estado.etiquetaPara(esCliente)

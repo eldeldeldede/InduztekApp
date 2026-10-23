@@ -2,21 +2,7 @@ package cl.induztek.app.data
 
 import android.database.Cursor
 
-// =====================================================================
-//  CursorExt.kt — atajos para leer columnas de un Cursor POR NOMBRE
-//  ---------------------------------------------------------------------
-//  Un Cursor es la "tabla de resultados" de un SELECT: se recorre fila por fila.
-//  Sin estos atajos, cada columna se leería así (como en MiRegistro):
-//
-//      cursor.getString(cursor.getColumnIndexOrThrow("nombre"))
-//
-//  Con el atajo:   cursor.texto("nombre")
-//
-//  Las versiones "...ONulo" son para columnas que pueden ser NULL en la base
-//  (por ejemplo telefono, o la fecha de cierre de una visita abierta).
-//  Si usaras getString() en una columna NULL obtendrías null "a escondidas";
-//  aquí el tipo de retorno (String?) te obliga a manejarlo.
-// =====================================================================
+
 fun Cursor.texto(columna: String): String = getString(getColumnIndexOrThrow(columna))
 
 fun Cursor.textoONulo(columna: String): String? =
