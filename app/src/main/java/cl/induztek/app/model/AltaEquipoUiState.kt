@@ -1,5 +1,13 @@
 package cl.induztek.app.model
 
+// =====================================================================
+//  AltaEquipoUiState.kt — el formulario de alta de equipo (HU-01), con sus campos y errores.
+//  Los números llegan como TEXTO porque eso es lo que escribe el usuario; el ViewModel
+//  los convierte con Unidades.parsearDecimal() recién al guardar.
+// =====================================================================
+
+// Ids de la tabla tipo_equipo (ver DatosIniciales.kt). Sirven para decidir qué campos de placa
+// se muestran: un transformador tiene potencia y dos tensiones; un interruptor, corriente y contactos.
 object TiposEquipoIds {
     const val TRANSFORMADOR = 1L
     const val INTERRUPTOR = 2L
@@ -32,17 +40,19 @@ data class AltaEquipoUiState(
     val errorCorriente: String? = null,
     val errorMaxContactos: String? = null,
 
+    // HU-01: si el TAG ya existe en la instalación se ofrece usar el equipo registrado
     val idEquipoExistente: Long? = null,
     val errorGeneral: String? = null,
     val guardadoExitoso: Boolean = false
 ) {
+    // Qué campos de placa mostrar según el tipo elegido
     val mostrarPotencia get() = idTipoEquipo == TiposEquipoIds.TRANSFORMADOR
     val mostrarTensionPrimaria get() = idTipoEquipo != TiposEquipoIds.RELE
     val mostrarTensionSecundaria get() = idTipoEquipo == TiposEquipoIds.TRANSFORMADOR
     val mostrarCorriente get() = idTipoEquipo == TiposEquipoIds.INTERRUPTOR ||
-            idTipoEquipo == TiposEquipoIds.CELDA_MT
+        idTipoEquipo == TiposEquipoIds.CELDA_MT
     val mostrarMaxContactos get() = idTipoEquipo == TiposEquipoIds.INTERRUPTOR ||
-            idTipoEquipo == TiposEquipoIds.CELDA_MT
+        idTipoEquipo == TiposEquipoIds.CELDA_MT
 
     val nombreTipoSeleccionado: String
         get() = tipos.firstOrNull { it.idTipoEquipo == idTipoEquipo }?.nombre ?: ""

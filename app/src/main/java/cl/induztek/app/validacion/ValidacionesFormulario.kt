@@ -2,10 +2,24 @@ package cl.induztek.app.validacion
 
 import java.time.LocalDate
 
+// =====================================================================
+//  ValidacionesFormulario.kt — las validaciones de los CAMPOS de los formularios
+//  ---------------------------------------------------------------------
+//  En MiRegistro, FormularioViewModel.onRegistrar() tenía las comprobaciones escritas
+//  adentro (nombre en blanco, correo sin "@", contraseña de 6 caracteres). Aquí hacemos
+//  lo mismo, pero juntas en un objeto para que cada ViewModel las reutilice:
+//
+//      val errorTag = ValidacionesFormulario.tag(estado.tag)       // String? como errorNombre
+//
+//  Cada función devuelve el mensaje de error o null si el campo está bien.
+//  Los campos numéricos llegan como TEXTO (lo que escribe el usuario en el TextField).
+// =====================================================================
 object ValidacionesFormulario {
 
+    // ---------- Login ----------
     fun correo(correo: String): String? = when {
         correo.isBlank() -> "El correo es obligatorio"
+        // Un patrón simple: algo@algo.algo, sin espacios. (Suficiente para este proyecto.)
         !Regex("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$").matches(correo.trim()) -> "Ingresa un correo válido"
         else -> null
     }
@@ -15,6 +29,11 @@ object ValidacionesFormulario {
         else -> null
     }
 
+    // ---------- Equipo (alta) ----------
+
+    // TAG: lo escribe el técnico mirando la placa ("TR-01", "CEL-MT-03"). Solo letras,
+    // números, guion, punto y guion bajo. RN-01 (que no se repita en la instalación) lo
+    // revisa la base al insertar.
     fun tag(tag: String): String? = when {
         tag.isBlank() -> "El TAG es obligatorio"
         tag.trim().length > 20 -> "Máximo 20 caracteres"
@@ -22,45 +41,56 @@ object ValidacionesFormulario {
         else -> null
     }
 
+    // Año de fabricación: opcional. Si se escribe, entre 1900 y el año actual.
     fun anioFabricacion(texto: String, anioActual: Int = LocalDate.now().year): String? {
         if (texto.isBlank()) return null
         val anio = texto.trim().toIntOrNull() ?: return "Ingresa un año válido"
         return if (anio !in 1900..anioActual) "El año debe estar entre 1900 y $anioActual" else null
     }
 
+    // Dato de placa numérico OPCIONAL y positivo (potencia, tensiones, corriente...).
     fun numeroPositivoOpcional(texto: String): String? {
         if (texto.isBlank()) return null
         val numero = Unidades.parsearDecimal(texto) ?: return "Ingresa un número válido"
         return if (numero <= 0.0) "Debe ser mayor que cero" else null
     }
 
+    // ---------- Protocolo: condiciones ambientales (HU-02) ----------
     fun temperatura(texto: String): String? {
         val valor = Unidades.parsearDecimal(texto) ?: return "Ingresa la temperatura en °C"
         return if (valor !in -30.0..60.0) "Temperatura fuera de rango (-30 a 60 °C)" else null
     }
 
+    // Coincide con el CHECK del esquema: humedad entre 0 y 100.
     fun humedad(texto: String): String? {
         val valor = Unidades.parsearDecimal(texto) ?: return "Ingresa la humedad en %"
         return if (valor !in 0.0..100.0) "La humedad debe estar entre 0 y 100 %" else null
     }
 
+    // ---------- Mediciones ----------
+
+    // Una medición: obligatoria, numérica y no negativa (una resistencia no puede ser negativa).
     fun medicion(texto: String, nombre: String): String? {
         val valor = Unidades.parsearDecimal(texto) ?: return "Ingresa $nombre"
         return if (valor < 0.0) "$nombre no puede ser negativo" else null
     }
 
+    // Motivo de "No realizada" (Aclaración 2), de observación o de anulación.
     fun motivo(texto: String): String? = when {
         texto.isBlank() -> "El motivo es obligatorio"
         texto.trim().length < 5 -> "Describe el motivo (mínimo 5 caracteres)"
         else -> null
     }
 
+    // ---------- Visita ----------
+    // Formato de la orden de trabajo: "OT-2026-1187"
     fun numeroOt(texto: String): String? = when {
         texto.isBlank() -> "El número de OT es obligatorio"
         !Regex("^OT-\\d{4}-\\d{3,5}$").matches(texto.trim().uppercase()) -> "Formato esperado: OT-2026-1187"
         else -> null
     }
 
+    // ---------- Recepción del acta (HU-08) ----------
     fun nombreReceptor(texto: String): String? =
         if (texto.trim().length < 3) "Ingresa el nombre de quien recibe" else null
 

@@ -3,10 +3,13 @@ package cl.induztek.app.validacion
 import cl.induztek.app.model.TipoResultado
 import kotlin.math.abs
 
+
 object CriteriosResultado {
+
 
     fun indicePolarizacion(lectura1Min: Double, lectura10Min: Double): Double? =
         if (lectura1Min > 0.0 && lectura10Min >= 0.0) lectura10Min / lectura1Min else null
+
 
     fun resultadoAislacion(lectura1Min: Double, lectura10Min: Double): TipoResultado? {
         val ip = indicePolarizacion(lectura1Min, lectura10Min) ?: return null
@@ -52,4 +55,24 @@ object CriteriosResultado {
         if (!opero) return TipoResultado.RECHAZADO
         val diferencia = diferenciaTiempo(esperadoMs, medidoMs) ?: return null
         return when {
-            diferencia <= 5.0 -> TipoResultado.AP
+            diferencia <= 5.0 -> TipoResultado.APROBADO
+            diferencia <= 10.0 -> TipoResultado.OBSERVADO
+            else -> TipoResultado.RECHAZADO
+        }
+    }
+
+    const val UMBRAL_VARIACION_PCT = 25.0
+
+    fun variacionPorcentual(anterior: Double, actual: Double): Double? =
+        if (anterior != 0.0) (actual - anterior) / anterior * 100.0 else null
+
+    fun esVariacionSignificativa(anterior: Double, actual: Double): Boolean {
+        val variacion = variacionPorcentual(anterior, actual) ?: return false
+        return abs(variacion) > UMBRAL_VARIACION_PCT
+    }
+
+    // ---------- RN-10 · Resultado global del protocolo ----------
+
+    fun resultadoGlobal(resultados: List<TipoResultado?>): TipoResultado? =
+        resultados.filterNotNull().maxOrNull()
+}

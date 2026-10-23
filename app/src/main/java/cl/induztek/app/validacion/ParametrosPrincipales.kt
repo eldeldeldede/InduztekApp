@@ -1,7 +1,5 @@
 package cl.induztek.app.validacion
 
-package cl.induztek.app.validacion
-
 object ParametrosPrincipales {
 
     private val PRINCIPAL_POR_TIPO_PRUEBA = mapOf(
