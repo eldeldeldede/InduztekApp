@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Carpeta donde se guardan las fotos de placa. FileProvider solo entrega a la cámara
+     archivos de esta carpeta (acceso seguro: el resto del almacenamiento de la app queda privado). -->
+<paths>
+    <files-path name="placas" path="placas/" />
+</paths>
+
+    <!-- hola). -->

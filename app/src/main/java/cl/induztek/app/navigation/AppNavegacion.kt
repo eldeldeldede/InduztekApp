@@ -1,6 +1,7 @@
 package cl.induztek.app.navigation
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -25,6 +26,8 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import cl.induztek.app.ui.components.AlReanudar
+import cl.induztek.app.ui.components.AvisoSinSenal
+import cl.induztek.app.ui.components.rememberHayRed
 import cl.induztek.app.ui.screens.AltaEquipoScreen
 import cl.induztek.app.ui.screens.EquiposScreen
 import cl.induztek.app.ui.screens.HistorialEquipoScreen
@@ -71,105 +74,111 @@ fun AppNavegacion() {
         if (usuarioActual == null && ruta != null && ruta != Rutas.LOGIN) irAlLogin(navController)
     }
 
-    NavHost(navController = navController, startDestination = destinoInicial) {
+    // Recurso nativo: estado de la red. El aviso se dibuja encima de TODAS las pantallas (abajo).
+    val hayRed by rememberHayRed()
 
-        composable(Rutas.LOGIN) {
-            LoginScreen(
-                onIngresoExitoso = { usuario ->
-                    sesionViewModel.iniciarSesion(usuario)
-                    // popUpTo: el login sale del historial, así "atrás" no vuelve a él
-                    navController.navigate(Rutas.INSTALACIONES) {
-                        popUpTo(Rutas.LOGIN) { inclusive = true }
+    Box(modifier = Modifier.fillMaxSize()) {
+        NavHost(navController = navController, startDestination = destinoInicial) {
+
+            composable(Rutas.LOGIN) {
+                LoginScreen(
+                    onIngresoExitoso = { usuario ->
+                        sesionViewModel.iniciarSesion(usuario)
+                        // popUpTo: el login sale del historial, así "atrás" no vuelve a él
+                        navController.navigate(Rutas.INSTALACIONES) {
+                            popUpTo(Rutas.LOGIN) { inclusive = true }
+                        }
                     }
-                }
-            )
-        }
+                )
+            }
 
-        composable(Rutas.INSTALACIONES) { entrada ->
-            val usuario = usuarioActual ?: return@composable
-            val viewModel: InstalacionesViewModel = viewModel()
-            AlReanudar(entrada) { viewModel.cargar(usuario) }
-            InstalacionesScreen(
-                usuario = usuario,
-                onVerEquipos = { idInstalacion -> navController.navigate(Rutas.equipos(idInstalacion)) },
-                onCerrarSesion = { sesionViewModel.cerrarSesion() },
-                viewModel = viewModel
-            )
-        }
+            composable(Rutas.INSTALACIONES) { entrada ->
+                val usuario = usuarioActual ?: return@composable
+                val viewModel: InstalacionesViewModel = viewModel()
+                AlReanudar(entrada) { viewModel.cargar(usuario) }
+                InstalacionesScreen(
+                    usuario = usuario,
+                    onVerEquipos = { idInstalacion -> navController.navigate(Rutas.equipos(idInstalacion)) },
+                    onCerrarSesion = { sesionViewModel.cerrarSesion() },
+                    viewModel = viewModel
+                )
+            }
 
-        // Pantallas con ARGUMENTO: se declara su nombre y tipo, y se lee desde la entrada.
-        composable(
-            route = Rutas.EQUIPOS,
-            arguments = listOf(navArgument(Rutas.ARG_ID_INSTALACION) { type = NavType.LongType })
-        ) { entrada ->
-            val usuario = usuarioActual ?: return@composable
-            val idInstalacion = entrada.arguments?.getLong(Rutas.ARG_ID_INSTALACION) ?: 0L
-            val viewModel: EquiposViewModel = viewModel()
-            AlReanudar(entrada) { viewModel.cargar(idInstalacion, usuario) }
-            EquiposScreen(
-                usuario = usuario,
-                onVolver = { navController.popBackStack() },
-                onAltaEquipo = { navController.navigate(Rutas.altaEquipo(idInstalacion)) },
-                onVerHistorial = { idEquipo -> navController.navigate(Rutas.historialEquipo(idEquipo)) },
-                viewModel = viewModel
-            )
-        }
+            // Pantallas con ARGUMENTO: se declara su nombre y tipo, y se lee desde la entrada.
+            composable(
+                route = Rutas.EQUIPOS,
+                arguments = listOf(navArgument(Rutas.ARG_ID_INSTALACION) { type = NavType.LongType })
+            ) { entrada ->
+                val usuario = usuarioActual ?: return@composable
+                val idInstalacion = entrada.arguments?.getLong(Rutas.ARG_ID_INSTALACION) ?: 0L
+                val viewModel: EquiposViewModel = viewModel()
+                AlReanudar(entrada) { viewModel.cargar(idInstalacion, usuario) }
+                EquiposScreen(
+                    usuario = usuario,
+                    onVolver = { navController.popBackStack() },
+                    onAltaEquipo = { navController.navigate(Rutas.altaEquipo(idInstalacion)) },
+                    onVerHistorial = { idEquipo -> navController.navigate(Rutas.historialEquipo(idEquipo)) },
+                    viewModel = viewModel
+                )
+            }
 
-        composable(
-            route = Rutas.ALTA_EQUIPO,
-            arguments = listOf(navArgument(Rutas.ARG_ID_INSTALACION) { type = NavType.LongType })
-        ) { entrada ->
-            usuarioActual ?: return@composable
-            val idInstalacion = entrada.arguments?.getLong(Rutas.ARG_ID_INSTALACION) ?: 0L
-            AltaEquipoScreen(
-                idInstalacion = idInstalacion,
-                onVolver = { navController.popBackStack() },
-                onGuardado = { navController.popBackStack() },
-                // HU-01: el TAG ya existía -> se abre el historial del equipo ya registrado
-                onVerExistente = { idEquipo ->
-                    navController.navigate(Rutas.historialEquipo(idEquipo)) {
-                        popUpTo(Rutas.ALTA_EQUIPO) { inclusive = true }
+            composable(
+                route = Rutas.ALTA_EQUIPO,
+                arguments = listOf(navArgument(Rutas.ARG_ID_INSTALACION) { type = NavType.LongType })
+            ) { entrada ->
+                usuarioActual ?: return@composable
+                val idInstalacion = entrada.arguments?.getLong(Rutas.ARG_ID_INSTALACION) ?: 0L
+                AltaEquipoScreen(
+                    idInstalacion = idInstalacion,
+                    onVolver = { navController.popBackStack() },
+                    onGuardado = { navController.popBackStack() },
+                    // HU-01: el TAG ya existía -> se abre el historial del equipo ya registrado
+                    onVerExistente = { idEquipo ->
+                        navController.navigate(Rutas.historialEquipo(idEquipo)) {
+                            popUpTo(Rutas.ALTA_EQUIPO) { inclusive = true }
+                        }
                     }
-                }
-            )
-        }
+                )
+            }
 
-        composable(
-            route = Rutas.HISTORIAL_EQUIPO,
-            arguments = listOf(navArgument(Rutas.ARG_ID_EQUIPO) { type = NavType.LongType })
-        ) { entrada ->
-            val usuario = usuarioActual ?: return@composable
-            val idEquipo = entrada.arguments?.getLong(Rutas.ARG_ID_EQUIPO) ?: 0L
-            val viewModel: HistorialEquipoViewModel = viewModel()
-            AlReanudar(entrada) { viewModel.cargar(idEquipo, usuario) }
-            HistorialEquipoScreen(
-                usuario = usuario,
-                onVolver = { navController.popBackStack() },
-                viewModel = viewModel
-            )
-        }
+            composable(
+                route = Rutas.HISTORIAL_EQUIPO,
+                arguments = listOf(navArgument(Rutas.ARG_ID_EQUIPO) { type = NavType.LongType })
+            ) { entrada ->
+                val usuario = usuarioActual ?: return@composable
+                val idEquipo = entrada.arguments?.getLong(Rutas.ARG_ID_EQUIPO) ?: 0L
+                val viewModel: HistorialEquipoViewModel = viewModel()
+                AlReanudar(entrada) { viewModel.cargar(idEquipo, usuario) }
+                HistorialEquipoScreen(
+                    usuario = usuario,
+                    onVolver = { navController.popBackStack() },
+                    viewModel = viewModel
+                )
+            }
 
-        composable(
-            route = Rutas.MEDICIONES,
-            arguments = listOf(navArgument(Rutas.ARG_ID_PROTOCOLO) { type = NavType.LongType })
-        ) { entrada ->
-            val idProtocolo = entrada.arguments?.getLong(Rutas.ARG_ID_PROTOCOLO) ?: 0L
-            PantallaPendiente(
-                titulo = "Mediciones del protocolo $idProtocolo",
-                destinos = listOf("Volver" to { navController.popBackStack() })
-            )
-        }
+            composable(
+                route = Rutas.MEDICIONES,
+                arguments = listOf(navArgument(Rutas.ARG_ID_PROTOCOLO) { type = NavType.LongType })
+            ) { entrada ->
+                val idProtocolo = entrada.arguments?.getLong(Rutas.ARG_ID_PROTOCOLO) ?: 0L
+                PantallaPendiente(
+                    titulo = "Mediciones del protocolo $idProtocolo",
+                    destinos = listOf("Volver" to { navController.popBackStack() })
+                )
+            }
 
-        composable(
-            route = Rutas.CIERRE_VISITA,
-            arguments = listOf(navArgument(Rutas.ARG_ID_VISITA) { type = NavType.LongType })
-        ) { entrada ->
-            val idVisita = entrada.arguments?.getLong(Rutas.ARG_ID_VISITA) ?: 0L
-            PantallaPendiente(
-                titulo = "Cierre de visita $idVisita y recepción del acta",
-                destinos = listOf("Volver" to { navController.popBackStack() })
-            )
+            composable(
+                route = Rutas.CIERRE_VISITA,
+                arguments = listOf(navArgument(Rutas.ARG_ID_VISITA) { type = NavType.LongType })
+            ) { entrada ->
+                val idVisita = entrada.arguments?.getLong(Rutas.ARG_ID_VISITA) ?: 0L
+                PantallaPendiente(
+                    titulo = "Cierre de visita $idVisita y recepción del acta",
+                    destinos = listOf("Volver" to { navController.popBackStack() })
+                )
+            }
         }
+        AvisoSinSenal(visible = !hayRed, modifier = Modifier.align(Alignment.BottomCenter))
     }
 }
 

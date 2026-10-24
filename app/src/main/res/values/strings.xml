@@ -69,7 +69,17 @@
     <string name="dato_corriente">Corriente nominal: %1$s A</string>
     <string name="dato_max_contactos">Contactos, máximo de placa: %1$s µΩ</string>
 
+    <!-- Foto de la placa (cámara) y estado de la red -->
+    <string name="seccion_foto_placa">Foto de la placa</string>
+    <string name="btn_tomar_foto">Tomar foto</string>
+    <string name="btn_repetir_foto">Repetir foto</string>
+    <string name="btn_quitar_foto">Quitar</string>
+    <string name="error_permiso_camara">Sin permiso de cámara. Puedes registrar el equipo sin foto o dar el permiso en Ajustes.</string>
+    <string name="error_foto_no_guardada">No se pudo guardar la foto. Intenta de nuevo.</string>
+    <string name="aviso_sin_senal">Sin señal: modo offline. Tus datos se guardan en el teléfono y puedes consultar el historial de los equipos.</string>
+
     <!-- Accesibilidad -->
+    <string name="cd_foto_placa">Foto de la placa del equipo</string>
     <string name="cd_menu">Abrir menú</string>
     <string name="cd_volver">Volver</string>
     <string name="cd_mostrar_contrasena">Mostrar contraseña</string>

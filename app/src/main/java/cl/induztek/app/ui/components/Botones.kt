@@ -45,6 +45,7 @@ fun BotonSecundario(
     texto: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    icono: Int? = null,
     habilitado: Boolean = true
 ) {
     OutlinedButton(
@@ -52,6 +53,12 @@ fun BotonSecundario(
         enabled = habilitado,
         modifier = modifier.height(48.dp)
     ) {
-        Text(texto)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            if (icono != null) {
+                Icon(painter = painterResource(icono), contentDescription = null, modifier = Modifier.size(18.dp))
+                Spacer(Modifier.width(8.dp))
+            }
+            Text(texto)
+        }
     }
 }
