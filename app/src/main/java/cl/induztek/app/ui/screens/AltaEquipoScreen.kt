@@ -1,6 +1,15 @@
 package cl.induztek.app.ui.screens
 
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.ContextCompat
+import cl.induztek.app.ui.components.FotoPlaca
+import cl.induztek.app.util.FotosPlaca
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -68,9 +77,46 @@ fun AltaEquipoScreen(
     viewModel: AltaEquipoViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val contexto = LocalContext.current
+    val mensajePermiso = stringResource(R.string.error_permiso_camara)
+    val mensajeFoto = stringResource(R.string.error_foto_no_guardada)
+
+    // Ruta del archivo que la cámara está llenando. rememberSaveable: sobrevive si Android
+    // recrea la pantalla (por ejemplo al girar el teléfono) mientras la cámara está abierta.
+    var rutaPendiente by rememberSaveable { mutableStateOf<String?>(null) }
+
+    // 2) La cámara toma la foto y la guarda en la Uri que se le entregó
+    val camara = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { exito ->
+        val ruta = rutaPendiente
+        rutaPendiente = null
+        if (ruta != null) {
+            if (exito) viewModel.onFotoTomada(ruta) else viewModel.onFotoCancelada(ruta)
+        } else if (!exito) {
+            viewModel.onErrorFoto(mensajeFoto)
+        }
+    }
+
+    fun abrirCamara() {
+        val archivo = FotosPlaca.crearArchivo(contexto)
+        rutaPendiente = archivo.absolutePath
+        camara.launch(FotosPlaca.uriDe(contexto, archivo))
+    }
+
+    // 1) Primero el permiso de cámara (se pide en pantalla la primera vez)
+    val pedirPermiso = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { concedido ->
+        if (concedido) abrirCamara() else viewModel.onErrorFoto(mensajePermiso)
+    }
+
+    val onTomarFoto = {
+        val concedido = ContextCompat.checkSelfPermission(contexto, Manifest.permission.CAMERA) ==
+            PackageManager.PERMISSION_GRANTED
+        if (concedido) abrirCamara() else pedirPermiso.launch(Manifest.permission.CAMERA)
+    }
 
     AltaEquipoContent(
         uiState = uiState,
+        onTomarFoto = onTomarFoto,
+        onQuitarFoto = viewModel::onQuitarFoto,
         onVolver = onVolver,
         onTagCambia = viewModel::onTagCambia,
         onTipoSeleccionado = viewModel::onTipoSeleccionado,
@@ -95,6 +141,8 @@ fun AltaEquipoScreen(
 @Composable
 fun AltaEquipoContent(
     uiState: AltaEquipoUiState,
+    onTomarFoto: () -> Unit,
+    onQuitarFoto: () -> Unit,
     onVolver: () -> Unit,
     onTagCambia: (String) -> Unit,
     onTipoSeleccionado: (Long) -> Unit,
@@ -235,6 +283,25 @@ fun AltaEquipoContent(
                 )
             }
 
+            // Recurso nativo: cámara. La foto es opcional; sirve para comprobar después los datos de la placa.
+            TarjetaSeccion(titulo = stringResource(R.string.seccion_foto_placa)) {
+                uiState.fotoPlaca?.let { FotoPlaca(ruta = it) }
+                Row(horizontalArrangement = Arrangement.spacedBy(Dimens.espacioMedio)) {
+                    BotonSecundario(
+                        texto = stringResource(
+                            if (uiState.fotoPlaca == null) R.string.btn_tomar_foto else R.string.btn_repetir_foto
+                        ),
+                        onClick = onTomarFoto,
+                        icono = R.drawable.ic_camara,
+                        modifier = Modifier.weight(1f)
+                    )
+                    AnimatedVisibility(visible = uiState.fotoPlaca != null) {
+                        TextButton(onClick = onQuitarFoto) { Text(stringResource(R.string.btn_quitar_foto)) }
+                    }
+                }
+                uiState.errorFoto?.let { MensajeError(mensaje = it) }
+            }
+
             uiState.errorGeneral?.let { MensajeError(mensaje = it) }
 
             Row(horizontalArrangement = Arrangement.spacedBy(Dimens.espacioMedio)) {
@@ -310,6 +377,7 @@ private fun AltaEquipoPreview() {
     InduztekAppTheme {
         AltaEquipoContent(
             uiState = AltaEquipoUiState(tipos = tiposEjemplo),
+            onTomarFoto = {}, onQuitarFoto = {},
             onVolver = {}, onTagCambia = {}, onTipoSeleccionado = {}, onMarcaCambia = {},
             onModeloCambia = {}, onSerieCambia = {}, onAnioCambia = {}, onPotenciaCambia = {},
             onTensionPrimariaCambia = {}, onTensionSecundariaCambia = {}, onCorrienteCambia = {},
@@ -329,6 +397,7 @@ private fun AltaEquipoDuplicadoPreview() {
                 errorTag = "Ya existe un equipo con este TAG en la instalación",
                 idEquipoExistente = 1
             ),
+            onTomarFoto = {}, onQuitarFoto = {},
             onVolver = {}, onTagCambia = {}, onTipoSeleccionado = {}, onMarcaCambia = {},
             onModeloCambia = {}, onSerieCambia = {}, onAnioCambia = {}, onPotenciaCambia = {},
             onTensionPrimariaCambia = {}, onTensionSecundariaCambia = {}, onCorrienteCambia = {},

@@ -29,6 +29,8 @@ data class Equipo(
     val corrienteNominalA: Double? = null,
     val maxContactosUohm: Double? = null,
     val observaciones: String? = null,
+    // Ruta del archivo con la foto de la placa (recurso nativo: cámara). Es opcional.
+    val fotoPlaca: String? = null,
     // No es columna de "equipo": viene del JOIN con tipo_equipo (para mostrar "Transformador")
     val tipoEquipoNombre: String = ""
 )

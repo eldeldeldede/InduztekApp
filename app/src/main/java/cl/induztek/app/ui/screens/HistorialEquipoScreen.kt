@@ -43,6 +43,7 @@ import cl.induztek.app.model.SerieMedicion
 import cl.induztek.app.model.TipoEstadoProtocolo
 import cl.induztek.app.model.TipoResultado
 import cl.induztek.app.model.Usuario
+import cl.induztek.app.ui.components.FotoPlaca
 import cl.induztek.app.ui.components.Etiqueta
 import cl.induztek.app.ui.components.EtiquetaEstado
 import cl.induztek.app.ui.components.EtiquetaResultado
@@ -182,6 +183,8 @@ private fun DatosEquipo(equipo: Equipo) {
             equipo.corrienteNominalA?.let { Text(stringResource(R.string.dato_corriente, Unidades.formatear(it))) }
             equipo.maxContactosUohm?.let { Text(stringResource(R.string.dato_max_contactos, Unidades.formatear(it))) }
             equipo.observaciones?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
+            // Foto de la placa tomada con la cámara al registrar el equipo
+            equipo.fotoPlaca?.let { FotoPlaca(ruta = it, modifier = Modifier.padding(top = 8.dp)) }
         }
     }
 }

@@ -6,6 +6,7 @@ import cl.induztek.app.data.InduztekDbHelper
 import cl.induztek.app.model.AltaEquipoUiState
 import cl.induztek.app.model.Equipo
 import cl.induztek.app.model.ResultadoGuardado
+import cl.induztek.app.util.FotosPlaca
 import cl.induztek.app.validacion.Unidades
 import cl.induztek.app.validacion.ValidacionesFormulario
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -44,7 +45,21 @@ class AltaEquipoViewModel(application: Application) : AndroidViewModel(applicati
     fun onMaxContactosCambia(valor: String) = _uiState.update { it.copy(maxContactosUohm = valor, errorMaxContactos = null) }
     fun onObservacionesCambia(valor: String) = _uiState.update { it.copy(observaciones = valor) }
 
+    // --- Foto de la placa (recurso nativo: cámara) ---
+    // La pantalla maneja el permiso y la cámara; el ViewModel solo guarda el resultado.
+    fun onFotoTomada(ruta: String) {
+        FotosPlaca.borrar(_uiState.value.fotoPlaca) // si repitió la foto, se descarta la anterior
+        _uiState.update { it.copy(fotoPlaca = ruta, errorFoto = null) }
+    }
+    fun onFotoCancelada(ruta: String) = FotosPlaca.borrar(ruta) // la cámara se cerró sin foto
+    fun onQuitarFoto() {
+        FotosPlaca.borrar(_uiState.value.fotoPlaca)
+        _uiState.update { it.copy(fotoPlaca = null, errorFoto = null) }
+    }
+    fun onErrorFoto(mensaje: String) = _uiState.update { it.copy(errorFoto = mensaje) }
+
     fun onLimpiar() {
+        FotosPlaca.borrar(_uiState.value.fotoPlaca)
         _uiState.update { AltaEquipoUiState(tipos = it.tipos, idTipoEquipo = it.idTipoEquipo) }
     }
 
@@ -90,7 +105,8 @@ class AltaEquipoViewModel(application: Application) : AndroidViewModel(applicati
             tensionSecundariaKv = if (e.mostrarTensionSecundaria) Unidades.parsearDecimal(e.tensionSecundariaKv) else null,
             corrienteNominalA = if (e.mostrarCorriente) Unidades.parsearDecimal(e.corrienteNominalA) else null,
             maxContactosUohm = if (e.mostrarMaxContactos) Unidades.parsearDecimal(e.maxContactosUohm) else null,
-            observaciones = e.observaciones.trim().ifEmpty { null }
+            observaciones = e.observaciones.trim().ifEmpty { null },
+            fotoPlaca = e.fotoPlaca
         )
 
         return when (val resultado = db.insertarEquipo(equipo)) {

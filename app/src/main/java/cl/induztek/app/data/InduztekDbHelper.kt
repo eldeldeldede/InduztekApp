@@ -65,7 +65,7 @@ class InduztekDbHelper(context: Context) :
         const val NOMBRE_BD = "induztek.db"
 
         // Si cambias las tablas, SUBE este número: Android llamará a onUpgrade.
-        const val VERSION_BD = 1
+        const val VERSION_BD = 2 // 2: equipo.foto_placa
 
         // Clave de TODOS los usuarios de demostración (personal y clientes).
         // Es una clave ficticia, solo para probar la app con los datos del Anexo 9.
@@ -918,6 +918,7 @@ class InduztekDbHelper(context: Context) :
         put("corriente_nominal_a", e.corrienteNominalA)
         put("max_contactos_uohm", e.maxContactosUohm)
         put("observaciones", e.observaciones)
+        put("foto_placa", e.fotoPlaca)
     }
 
     // Boolean -> 1 / 0 para guardarlo en SQLite.
@@ -976,6 +977,7 @@ class InduztekDbHelper(context: Context) :
         corrienteNominalA = c.decimalONulo("corriente_nominal_a"),
         maxContactosUohm = c.decimalONulo("max_contactos_uohm"),
         observaciones = c.textoONulo("observaciones"),
+        fotoPlaca = c.textoONulo("foto_placa"),
         tipoEquipoNombre = c.texto("tipo_equipo_nombre")
     )
 

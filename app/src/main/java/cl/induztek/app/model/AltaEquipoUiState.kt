@@ -31,7 +31,9 @@ data class AltaEquipoUiState(
     val corrienteNominalA: String = "",
     val maxContactosUohm: String = "",
     val observaciones: String = "",
+    val fotoPlaca: String? = null,   // ruta de la foto tomada con la cámara
 
+    val errorFoto: String? = null,
     val errorTag: String? = null,
     val errorAnio: String? = null,
     val errorPotencia: String? = null,
