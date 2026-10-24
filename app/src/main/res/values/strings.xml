@@ -101,6 +101,18 @@
     <string name="resultado_calculado">Resultado:</string>
     <string name="btn_guardar_prueba">Guardar prueba</string>
     <string name="btn_registrar_terreno">Registrar en terreno</string>
+    <string name="seccion_revision">Revisión del protocolo</string>
+    <string name="campo_motivo_revision">Motivo (obligatorio para observar o anular)</string>
+    <string name="btn_formalizar">Formalizar</string>
+    <string name="btn_observar">Observar</string>
+    <string name="btn_anular">Anular</string>
+    <string name="btn_confirmar">Confirmar</string>
+    <string name="btn_cancelar">Cancelar</string>
+    <string name="confirmar_formalizar_titulo">¿Formalizar el protocolo?</string>
+    <string name="confirmar_formalizar_texto">Un protocolo formalizado es el documento oficial y ya no se puede modificar ni anular.</string>
+    <string name="confirmar_anular_titulo">¿Anular el protocolo?</string>
+    <string name="confirmar_anular_texto">El protocolo anulado no se podrá modificar y dejará de mostrarse al cliente.</string>
+    <string name="motivo_ultimo_cambio">Motivo indicado: %1$s</string>
 
     <string name="titulo_cierre_visita">Cierre de visita</string>
     <string name="visita_no_encontrada">No se encontró la visita.</string>

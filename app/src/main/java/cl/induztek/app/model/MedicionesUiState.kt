@@ -42,6 +42,12 @@ data class MedicionesUiState(
     val estado: TipoEstadoProtocolo = TipoEstadoProtocolo.BORRADOR,
     val puedeModificar: Boolean = false,
 
+    val puedeRevisar: Boolean = false,
+    val puedeAnular: Boolean = false,
+    val motivoRevision: String = "",
+    val errorMotivoRevision: String? = null,
+    val motivoUltimoCambio: String? = null,
+
     val temperatura: String = "",
     val humedad: String = "",
     val errorTemperatura: String? = null,

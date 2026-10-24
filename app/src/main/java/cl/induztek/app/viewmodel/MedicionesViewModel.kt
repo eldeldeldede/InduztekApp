@@ -48,6 +48,7 @@ class MedicionesViewModel(application: Application) : AndroidViewModel(applicati
         val visita = db.buscarVisita(protocolo.idVisita)
         val estado = TipoEstadoProtocolo.desdeId(protocolo.idEstadoProtocolo)
         val tipos = equipo?.let { db.listarPruebasDeTipoEquipo(it.idTipoEquipo) } ?: emptyList()
+        val posibles = ReglasProtocolo.estadosPosibles(estado, usuarioActual.codigoRol)
         val primeraVez = idCargado != idProtocolo
         idCargado = idProtocolo
 
@@ -62,6 +63,9 @@ class MedicionesViewModel(application: Application) : AndroidViewModel(applicati
                 puedeModificar = ReglasProtocolo.puedeModificar(
                     usuarioActual.codigoRol, usuarioActual.idUsuario, protocolo.idUsuario, estado
                 ),
+                puedeRevisar = TipoEstadoProtocolo.FORMALIZADO in posibles,
+                puedeAnular = TipoEstadoProtocolo.ANULADO in posibles,
+                motivoUltimoCambio = motivoDelUltimoCambio(idProtocolo, estado),
                 tiposPrueba = tipos,
                 instrumentosVigentes = db.listarInstrumentosVigentes(LocalDate.now()),
                 pruebas = armarPruebas(idProtocolo, tipos),
@@ -300,6 +304,53 @@ class MedicionesViewModel(application: Application) : AndroidViewModel(applicati
         } else {
             _uiState.update { it.copy(errorGeneral = "No se pudo cambiar el estado del protocolo.") }
         }
+    }
+
+    fun onMotivoRevisionCambia(valor: String) =
+        _uiState.update { it.copy(motivoRevision = valor, errorMotivoRevision = null) }
+
+    fun onFormalizar() = cambiarEstadoRevision(TipoEstadoProtocolo.FORMALIZADO, "Protocolo formalizado")
+
+    fun onObservar() = cambiarEstadoRevision(TipoEstadoProtocolo.OBSERVADO, "Protocolo devuelto con observaciones")
+
+    fun onAnular() = cambiarEstadoRevision(TipoEstadoProtocolo.ANULADO, "Protocolo anulado")
+
+    private fun cambiarEstadoRevision(nuevo: TipoEstadoProtocolo, mensajeExito: String) {
+        val s = _uiState.value
+        val protocolo = s.protocolo ?: return
+        val u = usuario ?: return
+
+        val pideMotivo = nuevo != TipoEstadoProtocolo.FORMALIZADO
+        if (pideMotivo) {
+            val errorMotivo = ValidacionesFormulario.motivo(s.motivoRevision)
+            if (errorMotivo != null) {
+                _uiState.update { it.copy(errorMotivoRevision = errorMotivo, errorGeneral = null, mensaje = null) }
+                return
+            }
+        }
+        val motivo = if (pideMotivo) s.motivoRevision.trim() else null
+
+        val error = ReglasProtocolo.errorTransicion(s.estado, nuevo, u.codigoRol, motivo)
+        if (error != null) {
+            _uiState.update { it.copy(errorGeneral = error, mensaje = null) }
+            return
+        }
+        if (db.cambiarEstadoProtocolo(protocolo.idProtocolo, nuevo, u.idUsuario, motivo)) {
+            cargar(protocolo.idProtocolo, u)
+            _uiState.update {
+                it.copy(mensaje = mensajeExito, errorGeneral = null, motivoRevision = "", errorMotivoRevision = null)
+            }
+        } else {
+            _uiState.update { it.copy(errorGeneral = "No se pudo cambiar el estado del protocolo.") }
+        }
+    }
+
+    private fun motivoDelUltimoCambio(idProtocolo: Long, estado: TipoEstadoProtocolo): String? {
+        if (estado != TipoEstadoProtocolo.OBSERVADO && estado != TipoEstadoProtocolo.ANULADO) return null
+        return db.listarHistorialEstados(idProtocolo)
+            .filter { it.idEstadoNuevo == estado.id }
+            .maxByOrNull { it.fechaHora }
+            ?.motivo
     }
 
     private fun armarPruebas(idProtocolo: Long, tipos: List<TipoPrueba>): List<PruebaRegistrada> =

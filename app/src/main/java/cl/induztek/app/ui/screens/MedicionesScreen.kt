@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -26,6 +27,9 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -79,7 +83,11 @@ data class MedicionesAcciones(
     val onResultadoManualSeleccionado: (TipoResultado) -> Unit = {},
     val onGuardarPrueba: () -> Unit = {},
     val onEliminarPrueba: (Long) -> Unit = {},
-    val onRegistrarEnTerreno: () -> Unit = {}
+    val onRegistrarEnTerreno: () -> Unit = {},
+    val onMotivoRevisionCambia: (String) -> Unit = {},
+    val onFormalizar: () -> Unit = {},
+    val onObservar: () -> Unit = {},
+    val onAnular: () -> Unit = {}
 )
 
 @Composable
@@ -111,7 +119,11 @@ fun MedicionesScreen(
             onResultadoManualSeleccionado = viewModel::onResultadoManualSeleccionado,
             onGuardarPrueba = viewModel::onGuardarPrueba,
             onEliminarPrueba = viewModel::onEliminarPrueba,
-            onRegistrarEnTerreno = viewModel::onRegistrarEnTerreno
+            onRegistrarEnTerreno = viewModel::onRegistrarEnTerreno,
+            onMotivoRevisionCambia = viewModel::onMotivoRevisionCambia,
+            onFormalizar = viewModel::onFormalizar,
+            onObservar = viewModel::onObservar,
+            onAnular = viewModel::onAnular
         )
     )
 }
@@ -226,6 +238,20 @@ fun MedicionesContent(
                 }
             }
 
+            uiState.motivoUltimoCambio?.let { motivo ->
+                Card(colors = CardDefaults.cardColors(containerColor = AdvertenciaFondo)) {
+                    Text(
+                        text = stringResource(R.string.motivo_ultimo_cambio, motivo),
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(Dimens.espacioMedio)
+                    )
+                }
+            }
+
+            if (uiState.puedeRevisar || uiState.puedeAnular) {
+                TarjetaRevision(uiState, acciones)
+            }
+
             if (uiState.puedeModificar) {
                 FormularioNuevaPrueba(uiState, acciones)
             }
@@ -259,6 +285,70 @@ fun MedicionesContent(
             }
             Spacer(Modifier.height(Dimens.espacioGrande))
         }
+    }
+}
+
+@Composable
+private fun TarjetaRevision(uiState: MedicionesUiState, acciones: MedicionesAcciones) {
+    var confirmando by remember { mutableStateOf<TipoEstadoProtocolo?>(null) }
+
+    TarjetaSeccion(titulo = stringResource(R.string.seccion_revision)) {
+        CampoTexto(
+            valor = uiState.motivoRevision,
+            onValorCambia = acciones.onMotivoRevisionCambia,
+            etiqueta = stringResource(R.string.campo_motivo_revision),
+            icono = R.drawable.ic_nota,
+            error = uiState.errorMotivoRevision,
+            lineasMaximas = 3
+        )
+        if (uiState.puedeRevisar) {
+            BotonPrincipal(
+                texto = stringResource(R.string.btn_formalizar),
+                onClick = { confirmando = TipoEstadoProtocolo.FORMALIZADO },
+                icono = R.drawable.ic_check,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(Dimens.espacioMedio)) {
+            if (uiState.puedeRevisar) {
+                BotonSecundario(
+                    texto = stringResource(R.string.btn_observar),
+                    onClick = acciones.onObservar,
+                    icono = R.drawable.ic_advertencia,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+            if (uiState.puedeAnular) {
+                BotonSecundario(
+                    texto = stringResource(R.string.btn_anular),
+                    onClick = { confirmando = TipoEstadoProtocolo.ANULADO },
+                    icono = R.drawable.ic_salir,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        }
+    }
+
+    confirmando?.let { accion ->
+        val formalizar = accion == TipoEstadoProtocolo.FORMALIZADO
+        AlertDialog(
+            onDismissRequest = { confirmando = null },
+            title = {
+                Text(stringResource(if (formalizar) R.string.confirmar_formalizar_titulo else R.string.confirmar_anular_titulo))
+            },
+            text = {
+                Text(stringResource(if (formalizar) R.string.confirmar_formalizar_texto else R.string.confirmar_anular_texto))
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    confirmando = null
+                    if (formalizar) acciones.onFormalizar() else acciones.onAnular()
+                }) { Text(stringResource(R.string.btn_confirmar)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { confirmando = null }) { Text(stringResource(R.string.btn_cancelar)) }
+            }
+        )
     }
 }
 
