@@ -1,7 +1,6 @@
 <resources>
     <string name="app_name">InduztekApp</string>
 
-    <!-- Login -->
     <string name="login_subtitulo">Protocolos de prueba y mantención eléctrica</string>
     <string name="login_titulo">Iniciar sesión</string>
     <string name="login_demo">Datos de prueba — técnico: mgodoy@induztek.ejemplo · ingeniero: acontreras@induztek.ejemplo · jefe técnico: respinoza@induztek.ejemplo · cliente: mfuentes@envpacifico.ejemplo. Contraseña de todos: Induztek2026</string>
@@ -9,19 +8,16 @@
     <string name="campo_contrasena">Contraseña</string>
     <string name="btn_ingresar">Ingresar</string>
 
-    <!-- Menú y sesión -->
     <string name="saludo">Hola, %1$s</string>
     <string name="menu_cerrar_sesion">Cerrar sesión</string>
     <string name="dialogo_titulo">¿Cerrar sesión?</string>
     <string name="dialogo_mensaje">Tendrás que ingresar de nuevo con tu correo y contraseña.</string>
     <string name="dialogo_cancelar">Cancelar</string>
 
-    <!-- Instalaciones -->
     <string name="titulo_instalaciones">Instalaciones</string>
     <string name="campo_buscar_instalacion">Buscar por nombre, comuna o cliente</string>
     <string name="lista_vacia_instalaciones">No se encontraron instalaciones</string>
 
-    <!-- Equipos -->
     <string name="titulo_equipos">Equipos</string>
     <string name="campo_buscar_equipo">Buscar por TAG, tipo o marca</string>
     <string name="lista_vacia_equipos">No se encontraron equipos</string>
@@ -29,7 +25,6 @@
     <string name="cd_nuevo_equipo">Registrar equipo nuevo</string>
     <string name="cd_ver_historial">Ver historial del equipo</string>
 
-    <!-- Alta de equipo -->
     <string name="titulo_alta_equipo">Nuevo equipo</string>
     <string name="seccion_identificacion">Identificación</string>
     <string name="seccion_placa">Datos de placa</string>
@@ -50,7 +45,6 @@
     <string name="equipo_existente_mensaje">Este equipo ya está registrado en la instalación. Puedes usar el equipo existente en vez de crear uno nuevo.</string>
     <string name="btn_usar_equipo_existente">Usar el equipo registrado</string>
 
-    <!-- Historial del equipo -->
     <string name="titulo_historial">Historial del equipo</string>
     <string name="equipo_no_encontrado">No se encontró el equipo.</string>
     <string name="seccion_comparacion">Comparación con la prueba anterior</string>
@@ -69,7 +63,79 @@
     <string name="dato_corriente">Corriente nominal: %1$s A</string>
     <string name="dato_max_contactos">Contactos, máximo de placa: %1$s µΩ</string>
 
-    <!-- Foto de la placa (cámara) y estado de la red -->
+    <string name="titulo_nuevo_protocolo">Nuevo protocolo</string>
+    <string name="protocolo_para_equipo">Protocolo para %1$s (%2$s)</string>
+    <string name="seccion_visita">Visita</string>
+    <string name="campo_ot">Número de OT (ej.: OT-2026-1187)</string>
+    <string name="campo_tipo_visita">Tipo de visita</string>
+    <string name="campo_ingeniero">Ingeniero a cargo</string>
+    <string name="btn_iniciar_protocolo">Iniciar protocolo</string>
+    <string name="cd_nuevo_protocolo">Iniciar un protocolo para este equipo</string>
+
+    <string name="titulo_mediciones">Mediciones</string>
+    <string name="protocolo_no_encontrado">No se encontró el protocolo.</string>
+    <string name="protocolo_solo_lectura">Solo lectura: no puedes modificar este protocolo en su estado actual.</string>
+    <string name="dato_visita">Visita %1$s · %2$s</string>
+    <string name="seccion_condiciones">Condiciones ambientales</string>
+    <string name="campo_temperatura">Temperatura ambiente</string>
+    <string name="campo_humedad">Humedad relativa</string>
+    <string name="btn_guardar_condiciones">Guardar condiciones</string>
+    <string name="seccion_pruebas_registradas">Pruebas registradas</string>
+    <string name="sin_pruebas">Aún no hay pruebas en este protocolo.</string>
+    <string name="pruebas_faltantes">Faltan pruebas de este tipo de equipo: %1$s. Cada una debe quedar realizada o marcada como no realizada con su motivo.</string>
+    <string name="no_realizada">No realizada</string>
+    <string name="motivo_no_realizada">Motivo: %1$s</string>
+    <string name="btn_eliminar_prueba">Eliminar prueba</string>
+    <string name="seccion_nueva_prueba">Nueva prueba</string>
+    <string name="campo_tipo_prueba">Tipo de prueba</string>
+    <string name="campo_elemento">Elemento medido (ej.: AT-T, Fase H1-X1)</string>
+    <string name="campo_momento">Momento de la medición</string>
+    <string name="pregunta_realizada">¿Se realizó la prueba?</string>
+    <string name="pregunta_opero">¿El relé operó?</string>
+    <string name="campo_motivo_no_realizada">Motivo por el que no se realizó</string>
+    <string name="campo_unidad_lectura">Unidad de la lectura</string>
+    <string name="campo_instrumento">Instrumento utilizado</string>
+    <string name="sin_instrumentos_vigentes">No hay instrumentos con calibración vigente para esta prueba (RN-11). Márcala como no realizada e indica el motivo, por ejemplo: calibración del instrumento vencida.</string>
+    <string name="nota_instrumentos_vigentes">Solo se muestran los instrumentos de esta prueba con calibración vigente.</string>
+    <string name="campo_resultado_manual">Resultado de la prueba</string>
+    <string name="resultado_calculado">Resultado:</string>
+    <string name="btn_guardar_prueba">Guardar prueba</string>
+    <string name="btn_registrar_terreno">Registrar en terreno</string>
+
+    <string name="titulo_cierre_visita">Cierre de visita</string>
+    <string name="visita_no_encontrada">No se encontró la visita.</string>
+    <string name="btn_ir_cierre_visita">Cerrar visita y entregar acta</string>
+    <string name="acta_titulo">Acta de prueba en terreno</string>
+    <string name="acta_pendiente">Pendiente de formalización</string>
+    <string name="acta_sin_protocolos">Esta visita aún no tiene protocolos.</string>
+    <string name="acta_resultado_visita">Resultado de la visita:</string>
+    <string name="dato_ot">Orden de trabajo: %1$s</string>
+    <string name="dato_cliente">Cliente: %1$s</string>
+    <string name="dato_instalacion">Instalación: %1$s</string>
+    <string name="dato_fecha">Fecha: %1$s</string>
+    <string name="dato_tipo_visita">Tipo de visita: %1$s</string>
+    <string name="dato_tecnicos">Técnicos: %1$s</string>
+    <string name="dato_ingeniero">Ingeniero a cargo: %1$s</string>
+    <string name="seccion_pendientes">Protocolos por completar</string>
+    <string name="solo_falta_registrar">Tiene todas sus pruebas; falta registrarlo en terreno.</string>
+    <string name="pruebas_faltantes_cierre">Faltan pruebas: %1$s</string>
+    <string name="btn_ir_protocolo">Ir al protocolo</string>
+    <string name="seccion_cierre">Cierre de la visita</string>
+    <string name="cierre_explicacion">La visita se cierra cuando todos sus protocolos están registrados en terreno (o anulados).</string>
+    <string name="btn_cerrar_visita">Cerrar visita</string>
+    <string name="visita_cerrada_el">Visita cerrada el %1$s</string>
+    <string name="seccion_recepcion">Recepción del acta</string>
+    <string name="recepcion_requiere_cierre">Cierra la visita para registrar quién recibe el acta.</string>
+    <string name="campo_receptor_nombre">Nombre de quien recibe</string>
+    <string name="campo_receptor_rut">RUT de quien recibe</string>
+    <string name="campo_receptor_cargo">Cargo</string>
+    <string name="btn_registrar_recepcion">Registrar recepción</string>
+    <string name="recepcion_registrada">Acta recibida por el cliente</string>
+    <string name="dato_receptor">Nombre: %1$s</string>
+    <string name="dato_receptor_rut">RUT: %1$s</string>
+    <string name="dato_receptor_cargo">Cargo: %1$s</string>
+    <string name="dato_recepcion_fecha">Fecha y hora: %1$s</string>
+
     <string name="seccion_foto_placa">Foto de la placa</string>
     <string name="btn_tomar_foto">Tomar foto</string>
     <string name="btn_repetir_foto">Repetir foto</string>
@@ -78,7 +144,6 @@
     <string name="error_foto_no_guardada">No se pudo guardar la foto. Intenta de nuevo.</string>
     <string name="aviso_sin_senal">Sin señal: modo offline. Tus datos se guardan en el teléfono y puedes consultar el historial de los equipos.</string>
 
-    <!-- Accesibilidad -->
     <string name="cd_foto_placa">Foto de la placa del equipo</string>
     <string name="cd_menu">Abrir menú</string>
     <string name="cd_volver">Volver</string>

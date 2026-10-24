@@ -11,6 +11,8 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.ui.Alignment
+import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
@@ -47,6 +49,7 @@ fun EquiposScreen(
     onVolver: () -> Unit,
     onAltaEquipo: () -> Unit,
     onVerHistorial: (Long) -> Unit,
+    onNuevoProtocolo: (Long) -> Unit,
     viewModel: EquiposViewModel
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -57,7 +60,8 @@ fun EquiposScreen(
         onBuscar = viewModel::buscar,
         onVolver = onVolver,
         onAltaEquipo = onAltaEquipo,
-        onVerHistorial = onVerHistorial
+        onVerHistorial = onVerHistorial,
+        onNuevoProtocolo = onNuevoProtocolo
     )
 }
 
@@ -69,7 +73,8 @@ fun EquiposContent(
     onBuscar: (String) -> Unit,
     onVolver: () -> Unit,
     onAltaEquipo: () -> Unit,
-    onVerHistorial: (Long) -> Unit
+    onVerHistorial: (Long) -> Unit,
+    onNuevoProtocolo: (Long) -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -143,10 +148,21 @@ fun EquiposContent(
                                 Text(detalle.ifEmpty { stringResource(R.string.sin_datos_placa) })
                             },
                             trailingContent = {
-                                Icon(
-                                    painter = painterResource(R.drawable.ic_historial),
-                                    contentDescription = stringResource(R.string.cd_ver_historial)
-                                )
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    // Solo el personal inicia protocolos (el cliente solo consulta)
+                                    if (!usuario.esCliente) {
+                                        IconButton(onClick = { onNuevoProtocolo(equipo.idEquipo) }) {
+                                            Icon(
+                                                painter = painterResource(R.drawable.ic_protocolo),
+                                                contentDescription = stringResource(R.string.cd_nuevo_protocolo)
+                                            )
+                                        }
+                                    }
+                                    Icon(
+                                        painter = painterResource(R.drawable.ic_historial),
+                                        contentDescription = stringResource(R.string.cd_ver_historial)
+                                    )
+                                }
                             }
                         )
                     }
@@ -174,7 +190,7 @@ private fun EquiposPreview() {
                 )
             ),
             usuario = usuarioEjemplo,
-            onBuscar = {}, onVolver = {}, onAltaEquipo = {}, onVerHistorial = {}
+            onBuscar = {}, onVolver = {}, onAltaEquipo = {}, onVerHistorial = {}, onNuevoProtocolo = {}
         )
     }
 }

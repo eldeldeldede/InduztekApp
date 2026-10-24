@@ -69,10 +69,13 @@ import java.time.LocalDateTime
 fun HistorialEquipoScreen(
     usuario: Usuario,
     onVolver: () -> Unit,
+    onAbrirProtocolo: (Long) -> Unit,
     viewModel: HistorialEquipoViewModel
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    HistorialEquipoContent(uiState = uiState, usuario = usuario, onVolver = onVolver)
+    HistorialEquipoContent(
+        uiState = uiState, usuario = usuario, onVolver = onVolver, onAbrirProtocolo = onAbrirProtocolo
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -80,7 +83,8 @@ fun HistorialEquipoScreen(
 fun HistorialEquipoContent(
     uiState: HistorialEquipoUiState,
     usuario: Usuario,
-    onVolver: () -> Unit
+    onVolver: () -> Unit,
+    onAbrirProtocolo: (Long) -> Unit = {}
 ) {
     Scaffold(
         topBar = {
@@ -144,7 +148,7 @@ fun HistorialEquipoContent(
             }
 
             items(uiState.protocolos, key = { it.idProtocolo }) { protocolo ->
-                TarjetaProtocolo(protocolo, usuario, uiState.hoy)
+                TarjetaProtocolo(protocolo, usuario, uiState.hoy, onAbrir = { onAbrirProtocolo(protocolo.idProtocolo) })
             }
         }
     }
@@ -248,12 +252,13 @@ private fun TarjetaComparacion(comparacion: ComparacionValor) {
 }
 
 @Composable
-private fun TarjetaProtocolo(protocolo: ResumenProtocolo, usuario: Usuario, hoy: LocalDate) {
+private fun TarjetaProtocolo(protocolo: ResumenProtocolo, usuario: Usuario, hoy: LocalDate, onAbrir: () -> Unit) {
     // RN-16: solo el personal ve la marca de "Atrasado" (más de 2 días hábiles sin formalizar)
     val atrasado = !usuario.esCliente &&
         ReglasProtocolo.estaAtrasado(protocolo.fechaHoraPrueba.toLocalDate(), hoy, protocolo.estado)
 
-    Card(modifier = Modifier.fillMaxWidth()) {
+    // Solo el personal abre un protocolo (para continuarlo o revisar sus mediciones); el cliente solo lo ve
+    Card(onClick = onAbrir, enabled = !usuario.esCliente, modifier = Modifier.fillMaxWidth()) {
         ListItem(
             overlineContent = { Text(protocolo.fechaHoraPrueba.aTextoLegible()) },
             headlineContent = { Text(protocolo.numero) },
