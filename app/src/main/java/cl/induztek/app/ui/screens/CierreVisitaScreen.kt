@@ -192,13 +192,13 @@ fun CierreVisitaContent(
                         CampoTexto(
                             valor = uiState.receptorRut,
                             onValorCambia = onRutCambia,
-                            etiqueta = stringResource(R.string.campo_receptor_rut),
+                            etiqueta = stringResource(R.string.campo_receptor_rut), icono = R.drawable.ic_credencial,
                             error = uiState.errorRut
                         )
                         CampoTexto(
                             valor = uiState.receptorCargo,
                             onValorCambia = onCargoCambia,
-                            etiqueta = stringResource(R.string.campo_receptor_cargo),
+                            etiqueta = stringResource(R.string.campo_receptor_cargo), icono = R.drawable.ic_cargo,
                             error = uiState.errorCargo
                         )
                         BotonPrincipal(

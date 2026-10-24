@@ -213,19 +213,19 @@ fun AltaEquipoContent(
                 )
                 CampoTexto(
                     valor = uiState.marca, onValorCambia = onMarcaCambia,
-                    etiqueta = stringResource(R.string.campo_marca)
+                    etiqueta = stringResource(R.string.campo_marca), icono = R.drawable.ic_etiqueta
                 )
                 CampoTexto(
                     valor = uiState.modelo, onValorCambia = onModeloCambia,
-                    etiqueta = stringResource(R.string.campo_modelo)
+                    etiqueta = stringResource(R.string.campo_modelo), icono = R.drawable.ic_modelo
                 )
                 CampoTexto(
                     valor = uiState.numeroSerie, onValorCambia = onSerieCambia,
-                    etiqueta = stringResource(R.string.campo_serie)
+                    etiqueta = stringResource(R.string.campo_serie), icono = R.drawable.ic_serie
                 )
                 CampoTexto(
                     valor = uiState.anioFabricacion, onValorCambia = onAnioCambia,
-                    etiqueta = stringResource(R.string.campo_anio),
+                    etiqueta = stringResource(R.string.campo_anio), icono = R.drawable.ic_calendario,
                     error = uiState.errorAnio,
                     tipoTeclado = KeyboardType.Number
                 )
@@ -236,41 +236,41 @@ fun AltaEquipoContent(
                 if (uiState.mostrarPotencia) {
                     CampoTexto(
                         valor = uiState.potenciaKva, onValorCambia = onPotenciaCambia,
-                        etiqueta = stringResource(R.string.campo_potencia), sufijo = "kVA",
+                        etiqueta = stringResource(R.string.campo_potencia), icono = R.drawable.ic_rayo, sufijo = "kVA",
                         error = uiState.errorPotencia, tipoTeclado = KeyboardType.Decimal
                     )
                 }
                 if (uiState.mostrarTensionPrimaria) {
                     CampoTexto(
                         valor = uiState.tensionPrimariaKv, onValorCambia = onTensionPrimariaCambia,
-                        etiqueta = stringResource(R.string.campo_tension_primaria), sufijo = "kV",
+                        etiqueta = stringResource(R.string.campo_tension_primaria), icono = R.drawable.ic_rayo, sufijo = "kV",
                         error = uiState.errorTensionPrimaria, tipoTeclado = KeyboardType.Decimal
                     )
                 }
                 if (uiState.mostrarTensionSecundaria) {
                     CampoTexto(
                         valor = uiState.tensionSecundariaKv, onValorCambia = onTensionSecundariaCambia,
-                        etiqueta = stringResource(R.string.campo_tension_secundaria), sufijo = "kV",
+                        etiqueta = stringResource(R.string.campo_tension_secundaria), icono = R.drawable.ic_rayo, sufijo = "kV",
                         error = uiState.errorTensionSecundaria, tipoTeclado = KeyboardType.Decimal
                     )
                 }
                 if (uiState.mostrarCorriente) {
                     CampoTexto(
                         valor = uiState.corrienteNominalA, onValorCambia = onCorrienteCambia,
-                        etiqueta = stringResource(R.string.campo_corriente), sufijo = "A",
+                        etiqueta = stringResource(R.string.campo_corriente), icono = R.drawable.ic_medidor, sufijo = "A",
                         error = uiState.errorCorriente, tipoTeclado = KeyboardType.Decimal
                     )
                 }
                 if (uiState.mostrarMaxContactos) {
                     CampoTexto(
                         valor = uiState.maxContactosUohm, onValorCambia = onMaxContactosCambia,
-                        etiqueta = stringResource(R.string.campo_max_contactos), sufijo = "µΩ",
+                        etiqueta = stringResource(R.string.campo_max_contactos), icono = R.drawable.ic_medidor, sufijo = "µΩ",
                         error = uiState.errorMaxContactos, tipoTeclado = KeyboardType.Decimal
                     )
                 }
                 CampoTexto(
                     valor = uiState.observaciones, onValorCambia = onObservacionesCambia,
-                    etiqueta = stringResource(R.string.campo_observaciones),
+                    etiqueta = stringResource(R.string.campo_observaciones), icono = R.drawable.ic_nota,
                     lineasMaximas = 3
                 )
             }
@@ -331,6 +331,7 @@ private fun ListaTipos(
             onValueChange = {},
             readOnly = true,
             label = { Text(stringResource(R.string.campo_tipo_equipo)) },
+            leadingIcon = { Icon(painter = painterResource(R.drawable.ic_lista), contentDescription = null) },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandido) },
             shape = EstilosCampo.forma,
             colors = EstilosCampo.colores(),

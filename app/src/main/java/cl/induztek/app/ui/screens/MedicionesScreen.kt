@@ -178,7 +178,7 @@ fun MedicionesContent(
                 CampoTexto(
                     valor = uiState.temperatura,
                     onValorCambia = acciones.onTemperaturaCambia,
-                    etiqueta = stringResource(R.string.campo_temperatura),
+                    etiqueta = stringResource(R.string.campo_temperatura), icono = R.drawable.ic_termometro,
                     sufijo = "°C",
                     error = uiState.errorTemperatura,
                     tipoTeclado = KeyboardType.Decimal,
@@ -187,7 +187,7 @@ fun MedicionesContent(
                 CampoTexto(
                     valor = uiState.humedad,
                     onValorCambia = acciones.onHumedadCambia,
-                    etiqueta = stringResource(R.string.campo_humedad),
+                    etiqueta = stringResource(R.string.campo_humedad), icono = R.drawable.ic_gota,
                     sufijo = "%",
                     error = uiState.errorHumedad,
                     tipoTeclado = KeyboardType.Decimal,
@@ -327,7 +327,7 @@ private fun FormularioNuevaPrueba(uiState: MedicionesUiState, acciones: Medicion
 
     TarjetaSeccion(titulo = stringResource(R.string.seccion_nueva_prueba)) {
         ListaDesplegable(
-            etiqueta = stringResource(R.string.campo_tipo_prueba),
+            etiqueta = stringResource(R.string.campo_tipo_prueba), icono = R.drawable.ic_protocolo,
             seleccionado = tipo?.nombre ?: "",
             opciones = uiState.tiposPrueba,
             textoDe = { it.nombre },
@@ -338,12 +338,12 @@ private fun FormularioNuevaPrueba(uiState: MedicionesUiState, acciones: Medicion
             CampoTexto(
                 valor = f.elemento,
                 onValorCambia = acciones.onElementoCambia,
-                etiqueta = stringResource(R.string.campo_elemento),
+                etiqueta = stringResource(R.string.campo_elemento), icono = R.drawable.ic_buscar,
                 error = f.errores["elemento"]
             )
             if (uiState.momentosPermitidos.size > 1) {
                 ListaDesplegable(
-                    etiqueta = stringResource(R.string.campo_momento),
+                    etiqueta = stringResource(R.string.campo_momento), icono = R.drawable.ic_historial,
                     seleccionado = f.momento.etiqueta,
                     opciones = uiState.momentosPermitidos,
                     textoDe = { it.etiqueta },
@@ -364,7 +364,7 @@ private fun FormularioNuevaPrueba(uiState: MedicionesUiState, acciones: Medicion
                 CampoTexto(
                     valor = f.motivo,
                     onValorCambia = acciones.onMotivoCambia,
-                    etiqueta = stringResource(R.string.campo_motivo_no_realizada),
+                    etiqueta = stringResource(R.string.campo_motivo_no_realizada), icono = R.drawable.ic_nota,
                     error = f.errores["motivo"],
                     lineasMaximas = 3
                 )
@@ -386,14 +386,14 @@ private fun CamposDeMedicion(uiState: MedicionesUiState, acciones: MedicionesAcc
 
     when (codigoTipo) {
         "AISLACION" -> ListaDesplegable(
-            etiqueta = stringResource(R.string.campo_unidad_lectura),
+            etiqueta = stringResource(R.string.campo_unidad_lectura), icono = R.drawable.ic_medidor,
             seleccionado = f.unidadAislacion.simbolo,
             opciones = UnidadAislacion.entries.toList(),
             textoDe = { it.simbolo },
             onSeleccionar = acciones.onUnidadAislacionCambia
         )
         "DEVANADOS", "CONTACTOS" -> ListaDesplegable(
-            etiqueta = stringResource(R.string.campo_unidad_lectura),
+            etiqueta = stringResource(R.string.campo_unidad_lectura), icono = R.drawable.ic_medidor,
             seleccionado = f.unidadBaja.simbolo,
             opciones = UnidadBaja.entries.toList(),
             textoDe = { it.simbolo },
@@ -411,6 +411,7 @@ private fun CamposDeMedicion(uiState: MedicionesUiState, acciones: MedicionesAcc
             valor = f.valores[parametro.codigo].orEmpty(),
             onValorCambia = { acciones.onValorCambia(parametro.codigo, it) },
             etiqueta = parametro.nombre,
+            icono = R.drawable.ic_medidor,
             sufijo = sufijoDe(parametro, f),
             error = f.errores[parametro.codigo],
             tipoTeclado = KeyboardType.Decimal
@@ -428,7 +429,7 @@ private fun CamposDeMedicion(uiState: MedicionesUiState, acciones: MedicionesAcc
         f.errores["instrumento"]?.let { MensajeError(mensaje = it) }
     } else {
         ListaDesplegable(
-            etiqueta = stringResource(R.string.campo_instrumento),
+            etiqueta = stringResource(R.string.campo_instrumento), icono = R.drawable.ic_modelo,
             seleccionado = uiState.instrumentosParaPrueba.firstOrNull { it.idInstrumento == f.idInstrumento }?.nombre ?: "",
             opciones = uiState.instrumentosParaPrueba,
             textoDe = { it.nombre },
@@ -440,7 +441,7 @@ private fun CamposDeMedicion(uiState: MedicionesUiState, acciones: MedicionesAcc
 
     if (uiState.requiereResultadoManual) {
         ListaDesplegable(
-            etiqueta = stringResource(R.string.campo_resultado_manual),
+            etiqueta = stringResource(R.string.campo_resultado_manual), icono = R.drawable.ic_check,
             seleccionado = f.resultadoManual?.etiqueta ?: "",
             opciones = TipoResultado.entries.toList(),
             textoDe = { it.etiqueta },

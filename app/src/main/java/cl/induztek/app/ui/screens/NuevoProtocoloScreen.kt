@@ -122,14 +122,14 @@ fun NuevoProtocoloContent(
                     error = uiState.errorOt
                 )
                 ListaDesplegable(
-                    etiqueta = stringResource(R.string.campo_tipo_visita),
+                    etiqueta = stringResource(R.string.campo_tipo_visita), icono = R.drawable.ic_lista,
                     seleccionado = uiState.tipoVisita.etiqueta,
                     opciones = TipoVisita.entries.toList(),
                     textoDe = { it.etiqueta },
                     onSeleccionar = onTipoVisitaCambia
                 )
                 ListaDesplegable(
-                    etiqueta = stringResource(R.string.campo_ingeniero),
+                    etiqueta = stringResource(R.string.campo_ingeniero), icono = R.drawable.ic_persona,
                     seleccionado = uiState.nombreIngeniero,
                     opciones = uiState.ingenieros,
                     textoDe = { it.nombre },
