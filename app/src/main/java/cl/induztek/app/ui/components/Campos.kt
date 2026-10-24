@@ -1,5 +1,11 @@
 package cl.induztek.app.ui.components
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -10,6 +16,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -20,14 +30,6 @@ import cl.induztek.app.R
 import cl.induztek.app.ui.styles.EstilosCampo
 import cl.induztek.app.ui.theme.Dimens
 
-// =====================================================================
-//  Campos.kt — los campos de texto reutilizables (CampoTexto y CampoContrasena de MiRegistro)
-//
-//  Cada uno recibe el valor Y una función para avisar cuando cambia ("state hoisting"):
-//  el campo no guarda nada, el ViewModel es quien guarda el texto (UiState).
-//  `error` viene del UiState: si es null no se muestra nada; si trae un mensaje, el campo
-//  se pinta de rojo y el mensaje aparece debajo.
-// =====================================================================
 @Composable
 fun CampoTexto(
     valor: String,
@@ -37,10 +39,12 @@ fun CampoTexto(
     icono: Int? = null,
     error: String? = null,
     tipoTeclado: KeyboardType = KeyboardType.Text,
-    sufijo: String? = null,      // por ejemplo "kV" o "MΩ": la unidad queda pegada al campo (RNF-05)
+    sufijo: String? = null,
     soloLectura: Boolean = false,
     lineasMaximas: Int = 1
 ) {
+    var ultimoError by remember { mutableStateOf("") }
+    if (error != null) ultimoError = error
     OutlinedTextField(
         value = valor,
         onValueChange = onValorCambia,
@@ -50,7 +54,13 @@ fun CampoTexto(
         },
         suffix = sufijo?.let { texto -> { Text(texto) } },
         isError = error != null,
-        supportingText = error?.let { mensaje -> { Text(mensaje) } },
+        supportingText = {
+            AnimatedVisibility(
+                visible = error != null,
+                enter = fadeIn() + expandVertically(),
+                exit = fadeOut() + shrinkVertically()
+            ) { Text(ultimoError) }
+        },
         readOnly = soloLectura,
         singleLine = lineasMaximas == 1,
         maxLines = lineasMaximas,
@@ -71,6 +81,8 @@ fun CampoContrasena(
     modifier: Modifier = Modifier,
     error: String? = null
 ) {
+    var ultimoError by remember { mutableStateOf("") }
+    if (error != null) ultimoError = error
     OutlinedTextField(
         value = valor,
         onValueChange = onValorCambia,
@@ -88,7 +100,13 @@ fun CampoContrasena(
         },
         visualTransformation = if (visible) VisualTransformation.None else PasswordVisualTransformation(),
         isError = error != null,
-        supportingText = error?.let { mensaje -> { Text(mensaje) } },
+        supportingText = {
+            AnimatedVisibility(
+                visible = error != null,
+                enter = fadeIn() + expandVertically(),
+                exit = fadeOut() + shrinkVertically()
+            ) { Text(ultimoError) }
+        },
         singleLine = true,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
         shape = EstilosCampo.forma,
@@ -97,16 +115,21 @@ fun CampoContrasena(
     )
 }
 
-// Mensaje de error general de un formulario (por ejemplo "Correo o contraseña incorrectos"),
-// cuando el problema no es de un campo en particular.
 @Composable
 fun MensajeError(mensaje: String, modifier: Modifier = Modifier) {
-    Column(modifier = modifier.fillMaxWidth()) {
-        Text(
-            text = mensaje,
-            color = MaterialTheme.colorScheme.error,
-            style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.padding(start = Dimens.espacioChico)
-        )
+    val estadoVisible = remember { MutableTransitionState(false).apply { targetState = true } }
+    AnimatedVisibility(
+        visibleState = estadoVisible,
+        enter = fadeIn() + expandVertically(),
+        exit = fadeOut() + shrinkVertically()
+    ) {
+        Column(modifier = modifier.fillMaxWidth()) {
+            Text(
+                text = mensaje,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(start = Dimens.espacioChico)
+            )
+        }
     }
 }
