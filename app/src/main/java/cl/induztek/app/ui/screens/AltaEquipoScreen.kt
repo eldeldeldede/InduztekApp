@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -63,11 +64,6 @@ import cl.induztek.app.ui.theme.Dimens
 import cl.induztek.app.ui.theme.InduztekAppTheme
 import cl.induztek.app.viewmodel.AltaEquipoViewModel
 
-// =====================================================================
-//  AltaEquipoScreen.kt — HU-01: registrar un equipo en una instalación.
-//  Es el "FormularioScreen" de este proyecto: campos validados, lista desplegable,
-//  errores debajo de cada campo y botones Limpiar / Guardar.
-// =====================================================================
 @Composable
 fun AltaEquipoScreen(
     idInstalacion: Long,
@@ -81,11 +77,8 @@ fun AltaEquipoScreen(
     val mensajePermiso = stringResource(R.string.error_permiso_camara)
     val mensajeFoto = stringResource(R.string.error_foto_no_guardada)
 
-    // Ruta del archivo que la cámara está llenando. rememberSaveable: sobrevive si Android
-    // recrea la pantalla (por ejemplo al girar el teléfono) mientras la cámara está abierta.
     var rutaPendiente by rememberSaveable { mutableStateOf<String?>(null) }
 
-    // 2) La cámara toma la foto y la guarda en la Uri que se le entregó
     val camara = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { exito ->
         val ruta = rutaPendiente
         rutaPendiente = null
@@ -102,7 +95,6 @@ fun AltaEquipoScreen(
         camara.launch(FotosPlaca.uriDe(contexto, archivo))
     }
 
-    // 1) Primero el permiso de cámara (se pide en pantalla la primera vez)
     val pedirPermiso = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { concedido ->
         if (concedido) abrirCamara() else viewModel.onErrorFoto(mensajePermiso)
     }
@@ -131,7 +123,7 @@ fun AltaEquipoScreen(
         onMaxContactosCambia = viewModel::onMaxContactosCambia,
         onObservacionesCambia = viewModel::onObservacionesCambia,
         onLimpiar = viewModel::onLimpiar,
-        // onGuardar devuelve true si quedó guardado: recién ahí se vuelve a la lista
+
         onGuardar = { if (viewModel.onGuardar(idInstalacion)) onGuardado() },
         onVerExistente = onVerExistente
     )
@@ -185,6 +177,7 @@ fun AltaEquipoContent(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
+                .imePadding()
                 .verticalScroll(rememberScrollState())
                 .padding(Dimens.espacioPantalla),
             verticalArrangement = Arrangement.spacedBy(Dimens.espacioMedio)
@@ -198,7 +191,6 @@ fun AltaEquipoContent(
                     error = uiState.errorTag
                 )
 
-                // HU-01: si el TAG ya existe se ofrece usar el equipo que ya está registrado
                 AnimatedVisibility(visible = uiState.idEquipoExistente != null) {
                     Card(colors = CardDefaults.cardColors(containerColor = AdvertenciaFondo)) {
                         Column(modifier = Modifier.padding(Dimens.espacioMedio)) {
@@ -240,7 +232,7 @@ fun AltaEquipoContent(
             }
 
             TarjetaSeccion(titulo = stringResource(R.string.seccion_placa)) {
-                // Los campos cambian según el tipo de equipo; la unidad queda pegada al campo (RNF-05)
+
                 if (uiState.mostrarPotencia) {
                     CampoTexto(
                         valor = uiState.potenciaKva, onValorCambia = onPotenciaCambia,
@@ -283,7 +275,6 @@ fun AltaEquipoContent(
                 )
             }
 
-            // Recurso nativo: cámara. La foto es opcional; sirve para comprobar después los datos de la placa.
             TarjetaSeccion(titulo = stringResource(R.string.seccion_foto_placa)) {
                 uiState.fotoPlaca?.let { FotoPlaca(ruta = it) }
                 Row(horizontalArrangement = Arrangement.spacedBy(Dimens.espacioMedio)) {
@@ -322,7 +313,6 @@ fun AltaEquipoContent(
     }
 }
 
-// Lista desplegable de tipos de equipo (mismo ExposedDropdownMenuBox que "Ciudad" en MiRegistro)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ListaTipos(

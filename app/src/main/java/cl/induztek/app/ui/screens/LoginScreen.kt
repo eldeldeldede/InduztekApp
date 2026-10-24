@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -34,12 +35,6 @@ import cl.induztek.app.ui.theme.Dimens
 import cl.induztek.app.ui.theme.InduztekAppTheme
 import cl.induztek.app.viewmodel.LoginViewModel
 
-// =====================================================================
-//  LoginScreen.kt — RF-14: ingreso por correo y contraseña.
-//  Misma estructura que FormularioScreen de MiRegistro:
-//    LoginScreen  -> conecta con el ViewModel (viewModel(), collectAsStateWithLifecycle)
-//    LoginContent -> SOLO dibuja el uiState y avisa con funciones (por eso tiene @Preview)
-// =====================================================================
 @Composable
 fun LoginScreen(
     onIngresoExitoso: (Usuario) -> Unit,
@@ -52,7 +47,7 @@ fun LoginScreen(
         onCorreoCambia = viewModel::onCorreoCambia,
         onClaveCambia = viewModel::onClaveCambia,
         onAlternarVisibilidad = viewModel::onAlternarVisibilidad,
-        // Si las credenciales son correctas, onIngresar() devuelve el usuario y se avisa hacia arriba
+
         onIngresar = { viewModel.onIngresar()?.let { usuario -> onIngresoExitoso(usuario) } }
     )
 }
@@ -70,6 +65,7 @@ fun LoginContent(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
+                .imePadding()
                 .verticalScroll(rememberScrollState())
         ) {
             EncabezadoMarca(
@@ -99,7 +95,6 @@ fun LoginContent(
                         error = uiState.errorClave
                     )
 
-                    // ANIMACIÓN: el mensaje de error aparece y desaparece suavemente
                     AnimatedVisibility(visible = uiState.errorGeneral != null) {
                         MensajeError(mensaje = uiState.errorGeneral ?: "")
                     }
@@ -112,7 +107,6 @@ fun LoginContent(
                     )
                 }
 
-                // Ayuda para probar la app (datos de demostración). Se puede borrar al terminar.
                 Text(
                     text = stringResource(R.string.login_demo),
                     style = MaterialTheme.typography.bodySmall,

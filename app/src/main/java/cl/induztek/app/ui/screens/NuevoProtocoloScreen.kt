@@ -3,6 +3,7 @@ package cl.induztek.app.ui.screens
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -36,11 +37,6 @@ import cl.induztek.app.ui.theme.Dimens
 import cl.induztek.app.ui.theme.InduztekAppTheme
 import cl.induztek.app.viewmodel.NuevoProtocoloViewModel
 
-// =====================================================================
-//  NuevoProtocoloScreen.kt — HU-02: iniciar un protocolo para un equipo.
-//  Formulario corto: orden de trabajo, tipo de visita e ingeniero a cargo.
-//  Al guardar se crea el protocolo en Borrador y se abre la pantalla de mediciones.
-// =====================================================================
 @Composable
 fun NuevoProtocoloScreen(
     idEquipo: Long,
@@ -53,7 +49,6 @@ fun NuevoProtocoloScreen(
 
     LaunchedEffect(idEquipo) { viewModel.cargar(idEquipo, usuario) }
 
-    // Cuando el protocolo queda creado se navega UNA vez a sus mediciones
     LaunchedEffect(uiState.idProtocoloCreado) {
         uiState.idProtocoloCreado?.let {
             onProtocoloListo(it)
@@ -106,6 +101,7 @@ fun NuevoProtocoloContent(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
+                .imePadding()
                 .verticalScroll(rememberScrollState())
                 .padding(Dimens.espacioPantalla),
             verticalArrangement = Arrangement.spacedBy(Dimens.espacioMedio)
