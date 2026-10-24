@@ -46,6 +46,7 @@ import cl.induztek.app.model.Visita
 import cl.induztek.app.ui.components.BotonPrincipal
 import cl.induztek.app.ui.components.CampoTexto
 import cl.induztek.app.ui.components.Etiqueta
+import cl.induztek.app.ui.components.EtiquetaEstado
 import cl.induztek.app.ui.components.EtiquetaResultado
 import cl.induztek.app.ui.components.MensajeError
 import cl.induztek.app.ui.components.TarjetaSeccion
@@ -93,7 +94,9 @@ fun CierreVisitaContent(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.titulo_cierre_visita)) },
+                title = {
+                    Text(stringResource(if (uiState.soloConsulta) R.string.titulo_acta_visita else R.string.titulo_cierre_visita))
+                },
                 navigationIcon = {
                     IconButton(onClick = onVolver) {
                         Icon(
@@ -133,7 +136,7 @@ fun CierreVisitaContent(
         ) {
             ActaDeTerreno(uiState, visita)
 
-            if (!uiState.estaCerrada && uiState.pendientes.isNotEmpty()) {
+            if (!uiState.soloConsulta && !uiState.estaCerrada && uiState.pendientes.isNotEmpty()) {
                 TarjetaSeccion(titulo = stringResource(R.string.seccion_pendientes)) {
                     uiState.pendientes.forEach { pendiente ->
                         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
@@ -155,7 +158,7 @@ fun CierreVisitaContent(
                 }
             }
 
-            TarjetaSeccion(titulo = stringResource(R.string.seccion_cierre)) {
+            if (!uiState.soloConsulta) TarjetaSeccion(titulo = stringResource(R.string.seccion_cierre)) {
                 if (uiState.estaCerrada) {
                     Text(
                         text = stringResource(
@@ -179,6 +182,8 @@ fun CierreVisitaContent(
                 val recepcion = uiState.recepcion
                 when {
                     recepcion != null -> DatosRecepcion(recepcion)
+                    uiState.soloConsulta ->
+                        Text(stringResource(R.string.recepcion_pendiente_consulta), style = MaterialTheme.typography.bodyMedium)
                     !uiState.estaCerrada ->
                         Text(stringResource(R.string.recepcion_requiere_cierre), style = MaterialTheme.typography.bodyMedium)
                     else -> {
@@ -268,6 +273,7 @@ private fun ActaDeTerreno(uiState: CierreVisitaUiState, visita: Visita) {
                         )
                         EtiquetaResultado(protocolo.resultado)
                     }
+                    protocolo.estado?.let { EtiquetaEstado(it, uiState.soloConsulta) }
                     protocolo.lineas.forEach { Text(it, style = MaterialTheme.typography.bodySmall) }
                 }
             }

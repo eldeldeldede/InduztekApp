@@ -24,8 +24,10 @@ import androidx.navigation.navArgument
 import cl.induztek.app.ui.components.AlReanudar
 import cl.induztek.app.ui.components.AvisoSinSenal
 import cl.induztek.app.ui.components.rememberHayRed
+import cl.induztek.app.ui.screens.ActasScreen
 import cl.induztek.app.ui.screens.AltaEquipoScreen
 import cl.induztek.app.ui.screens.CierreVisitaScreen
+import cl.induztek.app.viewmodel.ActasViewModel
 import cl.induztek.app.viewmodel.CierreVisitaViewModel
 import cl.induztek.app.ui.screens.EquiposScreen
 import cl.induztek.app.ui.screens.HistorialEquipoScreen
@@ -113,6 +115,7 @@ fun AppNavegacion() {
                     onAltaEquipo = { navController.navigate(Rutas.altaEquipo(idInstalacion)) },
                     onVerHistorial = { idEquipo -> navController.navigate(Rutas.historialEquipo(idEquipo)) },
                     onNuevoProtocolo = { idEquipo -> navController.navigate(Rutas.nuevoProtocolo(idEquipo)) },
+                    onVerActas = { navController.navigate(Rutas.actas(idInstalacion)) },
                     viewModel = viewModel
                 )
             }
@@ -183,6 +186,21 @@ fun AppNavegacion() {
                 MedicionesScreen(
                     onVolver = { navController.popBackStack() },
                     onCerrarVisita = { idVisita -> navController.navigate(Rutas.cierreVisita(idVisita)) },
+                    viewModel = viewModel
+                )
+            }
+
+            composable(
+                route = Rutas.ACTAS,
+                arguments = listOf(navArgument(Rutas.ARG_ID_INSTALACION) { type = NavType.LongType })
+            ) { entrada ->
+                val usuario = usuarioActual ?: return@composable
+                val idInstalacion = entrada.arguments?.getLong(Rutas.ARG_ID_INSTALACION) ?: 0L
+                val viewModel: ActasViewModel = viewModel()
+                AlReanudar(entrada) { viewModel.cargar(idInstalacion, usuario) }
+                ActasScreen(
+                    onVolver = { navController.popBackStack() },
+                    onAbrirVisita = { idVisita -> navController.navigate(Rutas.cierreVisita(idVisita)) },
                     viewModel = viewModel
                 )
             }

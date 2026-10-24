@@ -115,6 +115,14 @@
     <string name="motivo_ultimo_cambio">Motivo indicado: %1$s</string>
 
     <string name="titulo_cierre_visita">Cierre de visita</string>
+    <string name="titulo_acta_visita">Acta de la visita</string>
+    <string name="titulo_actas">Visitas y actas</string>
+    <string name="btn_ver_actas">Visitas y actas</string>
+    <string name="lista_vacia_actas_cliente">Aún no hay actas de visitas cerradas para esta instalación.</string>
+    <string name="lista_vacia_visitas">No hay visitas registradas en esta instalación.</string>
+    <string name="visita_estado_cerrada">Cerrada</string>
+    <string name="visita_estado_abierta">Abierta</string>
+    <string name="recepcion_pendiente_consulta">Aún no se registra quién recibió el acta.</string>
     <string name="visita_no_encontrada">No se encontró la visita.</string>
     <string name="btn_ir_cierre_visita">Cerrar visita y entregar acta</string>
     <string name="acta_titulo">Acta de prueba en terreno</string>

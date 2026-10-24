@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -34,15 +35,12 @@ import cl.induztek.app.model.Equipo
 import cl.induztek.app.model.EquiposUiState
 import cl.induztek.app.model.Instalacion
 import cl.induztek.app.model.Usuario
+import cl.induztek.app.ui.components.BotonSecundario
 import cl.induztek.app.ui.components.CampoTexto
 import cl.induztek.app.ui.theme.Dimens
 import cl.induztek.app.ui.theme.InduztekAppTheme
 import cl.induztek.app.viewmodel.EquiposViewModel
 
-// =====================================================================
-//  EquiposScreen.kt — equipos de una instalación (RF-02).
-//  El botón "+" solo lo ve el personal de Induztek: el cliente consulta pero no crea equipos.
-// =====================================================================
 @Composable
 fun EquiposScreen(
     usuario: Usuario,
@@ -50,6 +48,7 @@ fun EquiposScreen(
     onAltaEquipo: () -> Unit,
     onVerHistorial: (Long) -> Unit,
     onNuevoProtocolo: (Long) -> Unit,
+    onVerActas: () -> Unit,
     viewModel: EquiposViewModel
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -61,7 +60,8 @@ fun EquiposScreen(
         onVolver = onVolver,
         onAltaEquipo = onAltaEquipo,
         onVerHistorial = onVerHistorial,
-        onNuevoProtocolo = onNuevoProtocolo
+        onNuevoProtocolo = onNuevoProtocolo,
+        onVerActas = onVerActas
     )
 }
 
@@ -74,7 +74,8 @@ fun EquiposContent(
     onVolver: () -> Unit,
     onAltaEquipo: () -> Unit,
     onVerHistorial: (Long) -> Unit,
-    onNuevoProtocolo: (Long) -> Unit
+    onNuevoProtocolo: (Long) -> Unit,
+    onVerActas: () -> Unit = {}
 ) {
     Scaffold(
         topBar = {
@@ -119,6 +120,16 @@ fun EquiposContent(
                 icono = R.drawable.ic_buscar,
                 modifier = Modifier.padding(horizontal = Dimens.espacioMedio, vertical = Dimens.espacioChico)
             )
+            if (uiState.instalacion != null) {
+                BotonSecundario(
+                    texto = stringResource(R.string.btn_ver_actas),
+                    onClick = onVerActas,
+                    icono = R.drawable.ic_protocolo,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = Dimens.espacioMedio)
+                )
+            }
 
             if (uiState.equipos.isEmpty()) {
                 Text(
@@ -142,14 +153,14 @@ fun EquiposContent(
                             },
                             headlineContent = { Text(equipo.tag) },
                             supportingContent = {
-                                // Solo se muestran los datos que existen (marca y serie son opcionales)
+
                                 val detalle = listOfNotNull(equipo.marca, equipo.modelo, equipo.numeroSerie)
                                     .joinToString(" · ")
                                 Text(detalle.ifEmpty { stringResource(R.string.sin_datos_placa) })
                             },
                             trailingContent = {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    // Solo el personal inicia protocolos (el cliente solo consulta)
+
                                     if (!usuario.esCliente) {
                                         IconButton(onClick = { onNuevoProtocolo(equipo.idEquipo) }) {
                                             Icon(

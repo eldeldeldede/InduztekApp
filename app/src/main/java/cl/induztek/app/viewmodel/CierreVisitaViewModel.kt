@@ -38,6 +38,11 @@ class CierreVisitaViewModel(application: Application) : AndroidViewModel(applica
             _uiState.value = CierreVisitaUiState(cargado = true)
             return
         }
+        val instalacion = db.buscarInstalacion(visita.idInstalacion, usuarioActual)
+        if (instalacion == null || (usuarioActual.esCliente && !visita.estaCerrada)) {
+            _uiState.value = CierreVisitaUiState(cargado = true)
+            return
+        }
         val protocolos = db.listarProtocolosPorVisita(idVisita, usuarioActual)
         val primeraVez = idCargado != idVisita
         idCargado = idVisita
@@ -47,7 +52,8 @@ class CierreVisitaViewModel(application: Application) : AndroidViewModel(applica
             base.copy(
                 cargado = true,
                 visita = visita,
-                instalacion = db.buscarInstalacion(visita.idInstalacion, usuarioActual),
+                instalacion = instalacion,
+                soloConsulta = usuarioActual.esCliente,
                 ingenieroNombre = db.buscarUsuarioPorId(visita.idUsuario)?.nombre ?: "",
                 participantes = db.listarNombresParticipantes(idVisita),
                 protocolos = protocolos,
@@ -158,7 +164,7 @@ class CierreVisitaViewModel(application: Application) : AndroidViewModel(applica
                     prueba.motivoNoRealizada?.let { lineas += "    Motivo: $it" }
                 }
             }
-            ActaProtocolo(resumen.numero, resumen.tagEquipo, resumen.resultadoGlobal, lineas)
+            ActaProtocolo(resumen.numero, resumen.tagEquipo, resumen.resultadoGlobal, lineas, resumen.estado)
         }
 
     override fun onCleared() {

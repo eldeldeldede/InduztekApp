@@ -4,7 +4,8 @@ data class ActaProtocolo(
     val numero: String,
     val tagEquipo: String,
     val resultado: TipoResultado?,
-    val lineas: List<String>
+    val lineas: List<String>,
+    val estado: TipoEstadoProtocolo? = null
 )
 
 data class ProtocoloPendiente(
@@ -25,6 +26,7 @@ data class CierreVisitaUiState(
     val acta: List<ActaProtocolo> = emptyList(),
     val pendientes: List<ProtocoloPendiente> = emptyList(),
     val recepcion: RecepcionActa? = null,
+    val soloConsulta: Boolean = false,
 
     val receptorNombre: String = "",
     val receptorRut: String = "",
