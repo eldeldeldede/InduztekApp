@@ -19,6 +19,7 @@ import cl.induztek.app.validacion.ReglasProtocolo
 import cl.induztek.app.validacion.UnidadAislacion
 import cl.induztek.app.validacion.UnidadBaja
 import cl.induztek.app.validacion.Unidades
+import cl.induztek.app.validacion.PruebaElectrica
 import cl.induztek.app.validacion.ValidacionesFormulario
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -200,7 +201,10 @@ class MedicionesViewModel(application: Application) : AndroidViewModel(applicati
                 errores["instrumento"] = "Elige el instrumento (calibración vigente, RN-11)"
             }
             s.parametrosVisibles.forEach { p ->
-                ValidacionesFormulario.medicion(f.valores[p.codigo].orEmpty(), p.nombre)?.let { errores[p.codigo] = it }
+                val texto = f.valores[p.codigo].orEmpty()
+                val error = PruebaElectrica.desdeCodigo(tipo.codigo)?.errorParametro(p.codigo, p.nombre, texto)
+                    ?: ValidacionesFormulario.medicion(texto, p.nombre)
+                error?.let { errores[p.codigo] = it }
             }
             if (s.requiereResultadoManual && f.resultadoManual == null) errores["resultado"] = "Elige el resultado de la prueba"
         }

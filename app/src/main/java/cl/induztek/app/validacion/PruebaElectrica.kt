@@ -20,6 +20,9 @@ sealed class PruebaElectrica(val codigo: String) {
 
     abstract fun evaluar(datos: DatosPrueba): EvaluadorPrueba.Evaluacion
 
+    open fun errorParametro(codigoParametro: String, nombre: String, texto: String): String? =
+        ValidacionesFormulario.medicion(texto, nombre)
+
     fun esPrincipal(codigoParametro: String): Boolean = parametroPrincipal == codigoParametro
 
     fun filtrarInstrumentos(vigentes: List<Instrumento>): List<Instrumento> =
@@ -37,6 +40,13 @@ sealed class PruebaElectrica(val codigo: String) {
 object PruebaAislacion : PruebaElectrica("AISLACION") {
     override val idsInstrumentos = setOf(1L, 2L)
     override val parametroPrincipal = "LECTURA_1MIN"
+
+    override fun errorParametro(codigoParametro: String, nombre: String, texto: String): String? =
+        when (codigoParametro) {
+            "TENSION_PRUEBA" -> ValidacionesFormulario.medicionEnRango(texto, nombre, 0.25, 15.0, "kV")
+            "LECTURA_1MIN" -> ValidacionesFormulario.medicionPositiva(texto, nombre)
+            else -> super.errorParametro(codigoParametro, nombre, texto)
+        }
 
     override fun evaluar(datos: DatosPrueba): EvaluadorPrueba.Evaluacion {
         val l1 = datos.valores["LECTURA_1MIN"]
@@ -61,6 +71,13 @@ object PruebaTtr : PruebaElectrica("TTR") {
     override val idsInstrumentos = setOf(3L)
     override val parametroPrincipal = "RELACION_MEDIDA"
 
+    override fun errorParametro(codigoParametro: String, nombre: String, texto: String): String? =
+        when (codigoParametro) {
+            "POSICION_TAP" -> ValidacionesFormulario.posicionCambiador(texto)
+            "RELACION_TEORICA", "RELACION_MEDIDA" -> ValidacionesFormulario.medicionPositiva(texto, nombre)
+            else -> super.errorParametro(codigoParametro, nombre, texto)
+        }
+
     override fun evaluar(datos: DatosPrueba): EvaluadorPrueba.Evaluacion {
         val teorica = datos.valores["RELACION_TEORICA"]
         val medida = datos.valores["RELACION_MEDIDA"]
@@ -75,6 +92,13 @@ object PruebaTtr : PruebaElectrica("TTR") {
 object PruebaOperacionRele : PruebaElectrica("OPERACION_RELE") {
     override val idsInstrumentos = setOf(5L)
     override val parametroPrincipal = "TIEMPO_MEDIDO"
+
+    override fun errorParametro(codigoParametro: String, nombre: String, texto: String): String? =
+        when (codigoParametro) {
+            "CORRIENTE_AJUSTE", "TIEMPO_ESPERADO", "TIEMPO_MEDIDO" ->
+                ValidacionesFormulario.medicionPositiva(texto, nombre)
+            else -> super.errorParametro(codigoParametro, nombre, texto)
+        }
 
     override fun evaluar(datos: DatosPrueba): EvaluadorPrueba.Evaluacion {
         val esperado = datos.valores["TIEMPO_ESPERADO"]
@@ -93,6 +117,10 @@ object PruebaOperacionRele : PruebaElectrica("OPERACION_RELE") {
 
 sealed class PruebaDeResistencia(codigo: String) : PruebaElectrica(codigo) {
     override val idsInstrumentos = setOf(4L)
+
+    override fun errorParametro(codigoParametro: String, nombre: String, texto: String): String? =
+        if (codigoParametro == parametroPrincipal) ValidacionesFormulario.medicionPositiva(texto, nombre)
+        else super.errorParametro(codigoParametro, nombre, texto)
 }
 
 object PruebaDevanados : PruebaDeResistencia("DEVANADOS") {
