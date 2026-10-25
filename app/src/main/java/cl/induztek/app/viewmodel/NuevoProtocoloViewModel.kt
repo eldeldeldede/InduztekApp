@@ -16,18 +16,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import java.time.LocalDate
 
-// =====================================================================
-//  NuevoProtocoloViewModel.kt — HU-02: iniciar un protocolo para un equipo.
-//  Pasos al guardar:  1) crear la visita (o reutilizar la de esa OT)  2) crear el protocolo
-//  en estado Borrador.  Después la pantalla navega a "Mediciones".
-//  Las reglas viven en la base (OT única, un protocolo por equipo y visita) y se traducen
-//  aquí en mensajes para el usuario, igual que en AltaEquipoViewModel.
-// =====================================================================
 class NuevoProtocoloViewModel(application: Application) : AndroidViewModel(application) {
 
     private val db = InduztekDbHelper(application)
 
-    // Los ingenieros no cambian mientras la app corre: se leen una sola vez
     private val _uiState = MutableStateFlow(
         NuevoProtocoloUiState(ingenieros = db.listarUsuariosActivosPorRol(CodigoRol.INGENIERO))
     )
@@ -54,7 +46,6 @@ class NuevoProtocoloViewModel(application: Application) : AndroidViewModel(appli
             return
         }
 
-        // 1) La visita. Aclaración 7: toda visita tiene un ingeniero a cargo, aunque no asista.
         val visita = Visita(
             numeroOt = e.numeroOt.trim(),
             idInstalacion = equipo.idInstalacion,
@@ -65,7 +56,7 @@ class NuevoProtocoloViewModel(application: Application) : AndroidViewModel(appli
         val idVisita = when (val r = db.insertarVisita(visita, listOf(usuario.idUsuario))) {
             is ResultadoGuardado.Creado -> r.id
             is ResultadoGuardado.Duplicado -> {
-                // La OT ya existía: se reutiliza SOLO si es de esta instalación y sigue abierta
+
                 val existente = db.buscarVisita(r.idExistente)
                 when {
                     existente == null || existente.idInstalacion != equipo.idInstalacion -> {
@@ -85,7 +76,6 @@ class NuevoProtocoloViewModel(application: Application) : AndroidViewModel(appli
             }
         }
 
-        // 2) El protocolo en Borrador. Si el equipo ya tenía uno en esa visita, se continúa ese.
         when (val r = db.insertarProtocoloBorrador(idVisita, equipo.idEquipo, usuario.idUsuario)) {
             is ResultadoGuardado.Creado -> _uiState.update { it.copy(idProtocoloCreado = r.id) }
             is ResultadoGuardado.Duplicado -> _uiState.update { it.copy(idProtocoloCreado = r.idExistente) }
@@ -94,7 +84,6 @@ class NuevoProtocoloViewModel(application: Application) : AndroidViewModel(appli
         }
     }
 
-    // La pantalla ya navegó: se limpia para que, al volver, no navegue otra vez
     fun onNavegado() = _uiState.update { it.copy(idProtocoloCreado = null) }
 
     override fun onCleared() {

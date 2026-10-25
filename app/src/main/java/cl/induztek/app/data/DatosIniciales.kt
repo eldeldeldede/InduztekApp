@@ -1,6 +1,5 @@
 package cl.induztek.app.data
 
-
 object DatosIniciales {
 
     val SENTENCIAS: List<String> = listOf(
@@ -96,11 +95,11 @@ object DatosIniciales {
 
         """
         INSERT INTO tipo_equipo_prueba (id_tipo_equipo, id_tipo_prueba) VALUES
-            (1, 1), (1, 2), (1, 3),   -- Transformador: aislación, TTR, devanados
-            (2, 1), (2, 4),           -- Interruptor:   aislación, contactos
-            (3, 1), (3, 4),           -- Celda MT:      aislación, contactos
-            (4, 1),                   -- Cable:         aislación
-            (5, 5)                    -- Relé:          operación
+            (1, 1), (1, 2), (1, 3),
+            (2, 1), (2, 4),
+            (3, 1), (3, 4),
+            (4, 1),
+            (5, 5)
         """,
 
         """

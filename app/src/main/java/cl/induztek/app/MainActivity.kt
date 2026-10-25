@@ -13,7 +13,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             InduztekAppTheme {
-                // AppNavegacion decide qué pantalla mostrar (ver navigation/AppNavegacion.kt)
+
                 AppNavegacion()
             }
         }

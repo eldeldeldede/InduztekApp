@@ -15,8 +15,6 @@ import androidx.compose.ui.unit.dp
 import cl.induztek.app.R
 import cl.induztek.app.util.FotosPlaca
 
-// Muestra la foto de la placa guardada en `ruta`. Si el archivo no existe, no dibuja nada.
-// remember(ruta): la foto se decodifica una sola vez mientras la ruta no cambie.
 @Composable
 fun FotoPlaca(ruta: String, modifier: Modifier = Modifier) {
     val imagen = remember(ruta) { FotosPlaca.cargarReducida(ruta)?.asImageBitmap() }

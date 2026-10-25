@@ -17,8 +17,6 @@ import androidx.compose.ui.unit.dp
 import cl.induztek.app.R
 import cl.induztek.app.ui.theme.Dimens
 
-// Cabecera con el nombre de la app (hace el papel de ImagenEncabezado en MiRegistro,
-// pero sin imagen: es un bloque de color con el rayo de la marca).
 @Composable
 fun EncabezadoMarca(titulo: String, subtitulo: String, modifier: Modifier = Modifier) {
     Column(

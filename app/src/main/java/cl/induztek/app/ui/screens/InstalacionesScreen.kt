@@ -38,12 +38,6 @@ import cl.induztek.app.ui.theme.Dimens
 import cl.induztek.app.ui.theme.InduztekAppTheme
 import cl.induztek.app.viewmodel.InstalacionesViewModel
 
-// =====================================================================
-//  InstalacionesScreen.kt — pantalla de inicio después del login (RF-01).
-//  Equivale a UsuariosScreen de MiRegistro: buscador arriba + lista con LazyColumn.
-//  Para el cliente la lista trae solo las instalaciones de su empresa (RN-18).
-//  La carga de datos la dispara AppNavegacion con AlReanudar { viewModel.cargar(usuario) }.
-// =====================================================================
 @Composable
 fun InstalacionesScreen(
     usuario: Usuario,
@@ -108,7 +102,6 @@ fun InstalacionesContent(
                 modifier = Modifier.padding(horizontal = Dimens.espacioMedio, vertical = Dimens.espacioChico)
             )
 
-            // Mensaje cuando el SELECT (o el filtro) no devuelve filas
             if (uiState.instalaciones.isEmpty()) {
                 Text(
                     text = stringResource(R.string.lista_vacia_instalaciones),
@@ -122,9 +115,9 @@ fun InstalacionesContent(
                 contentPadding = PaddingValues(Dimens.espacioMedio),
                 verticalArrangement = Arrangement.spacedBy(Dimens.espacioChico)
             ) {
-                // key = id: Compose identifica cada tarjeta por su clave primaria
+
                 items(uiState.instalaciones, key = { it.idInstalacion }) { instalacion ->
-                    // El cliente solo ve su propia empresa: el nombre del cliente sobra
+
                     val sobreTitulo: (@Composable () -> Unit)? =
                         if (usuario.esCliente) null else ({ Text(instalacion.clienteNombre) })
                     Card(onClick = { onVerEquipos(instalacion.idInstalacion) }) {
@@ -145,7 +138,6 @@ fun InstalacionesContent(
     }
 }
 
-// ---- Previews: se ven en Android Studio sin ejecutar la app ----
 private val instalacionesEjemplo = listOf(
     Instalacion(1, 8, "Planta Lampa", "Sector industrial", 1, null, "Lampa", "Envasadora del Pacífico S.A."),
     Instalacion(2, 9, "Planta Elevadora Sur", "Sector rural poniente", 2, null, "Buin", "Sanitaria Valle Central S.A.")

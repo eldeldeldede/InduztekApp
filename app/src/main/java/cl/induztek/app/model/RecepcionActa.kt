@@ -3,7 +3,7 @@ package cl.induztek.app.model
 import java.time.LocalDateTime
 
 data class RecepcionActa(
-    val idVisita: Long, // Primary key y foreign key a la vez
+    val idVisita: Long,
     val receptorNombre: String,
     val receptorRut: String,
     val receptorCargo: String,

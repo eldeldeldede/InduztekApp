@@ -14,17 +14,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
-// =====================================================================
-//  AltaEquipoViewModel.kt — HU-01: registrar un equipo nuevo en una instalación.
-//  Estructura idéntica a FormularioViewModel: un onXxxCambia por campo + onGuardar().
-//  RN-01 (TAG único en la instalación) la hace cumplir la base de datos; aquí solo se
-//  convierte su respuesta (ResultadoGuardado.Duplicado) en un mensaje para el usuario.
-// =====================================================================
 class AltaEquipoViewModel(application: Application) : AndroidViewModel(application) {
 
     private val db = InduztekDbHelper(application)
 
-    // Los tipos de equipo no cambian mientras la app corre: se leen una sola vez (como `roles` en MiRegistro)
     private val _uiState = MutableStateFlow(AltaEquipoUiState(tipos = db.listarTiposEquipo()))
     val uiState: StateFlow<AltaEquipoUiState> = _uiState.asStateFlow()
 
@@ -45,13 +38,11 @@ class AltaEquipoViewModel(application: Application) : AndroidViewModel(applicati
     fun onMaxContactosCambia(valor: String) = _uiState.update { it.copy(maxContactosUohm = valor, errorMaxContactos = null) }
     fun onObservacionesCambia(valor: String) = _uiState.update { it.copy(observaciones = valor) }
 
-    // --- Foto de la placa (recurso nativo: cámara) ---
-    // La pantalla maneja el permiso y la cámara; el ViewModel solo guarda el resultado.
     fun onFotoTomada(ruta: String) {
-        FotosPlaca.borrar(_uiState.value.fotoPlaca) // si repitió la foto, se descarta la anterior
+        FotosPlaca.borrar(_uiState.value.fotoPlaca)
         _uiState.update { it.copy(fotoPlaca = ruta, errorFoto = null) }
     }
-    fun onFotoCancelada(ruta: String) = FotosPlaca.borrar(ruta) // la cámara se cerró sin foto
+    fun onFotoCancelada(ruta: String) = FotosPlaca.borrar(ruta)
     fun onQuitarFoto() {
         FotosPlaca.borrar(_uiState.value.fotoPlaca)
         _uiState.update { it.copy(fotoPlaca = null, errorFoto = null) }
@@ -63,11 +54,9 @@ class AltaEquipoViewModel(application: Application) : AndroidViewModel(applicati
         _uiState.update { AltaEquipoUiState(tipos = it.tipos, idTipoEquipo = it.idTipoEquipo) }
     }
 
-    // Valida todo y, si está bien, guarda. Devuelve true cuando el equipo quedó guardado.
     fun onGuardar(idInstalacion: Long): Boolean {
         val e = _uiState.value
 
-        // Los errores solo se calculan para los campos que están visibles
         val errorTag = ValidacionesFormulario.tag(e.tag)
         val errorAnio = ValidacionesFormulario.anioFabricacion(e.anioFabricacion)
         val errorPotencia = if (e.mostrarPotencia) ValidacionesFormulario.numeroPositivoOpcional(e.potenciaKva) else null
@@ -91,7 +80,6 @@ class AltaEquipoViewModel(application: Application) : AndroidViewModel(applicati
             return false
         }
 
-        // Los campos ocultos NO se guardan aunque tengan texto (si cambió de tipo de equipo)
         val equipo = Equipo(
             idInstalacion = idInstalacion,
             tag = e.tag,
@@ -115,7 +103,7 @@ class AltaEquipoViewModel(application: Application) : AndroidViewModel(applicati
                 true
             }
             is ResultadoGuardado.Duplicado -> {
-                // HU-01: se avisa que el equipo ya existe y se ofrece usar el registrado
+
                 _uiState.update {
                     it.copy(
                         errorTag = "Ya existe un equipo con este TAG en la instalación",

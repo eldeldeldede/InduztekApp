@@ -2,7 +2,6 @@ package cl.induztek.app.data
 
 import android.database.Cursor
 
-
 fun Cursor.texto(columna: String): String = getString(getColumnIndexOrThrow(columna))
 
 fun Cursor.textoONulo(columna: String): String? =
@@ -23,5 +22,4 @@ fun Cursor.decimal(columna: String): Double = getDouble(getColumnIndexOrThrow(co
 fun Cursor.decimalONulo(columna: String): Double? =
     getColumnIndexOrThrow(columna).let { if (isNull(it)) null else getDouble(it) }
 
-// SQLite guarda los Boolean como 0 / 1.
 fun Cursor.booleano(columna: String): Boolean = getInt(getColumnIndexOrThrow(columna)) == 1

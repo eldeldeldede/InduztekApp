@@ -2,10 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Recursos del dispositivo: cámara (foto de la placa) y estado de la red (aviso sin señal) -->
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <!-- required=false: la app también se instala en equipos sin cámara -->
+
     <uses-feature android:name="android.hardware.camera" android:required="false" />
 
     <application
@@ -30,7 +29,6 @@
             </intent-filter>
         </activity>
 
-        <!-- Permite entregar a la cámara una Uri segura para guardar la foto (ver res/xml/rutas_fotos.xml) -->
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"

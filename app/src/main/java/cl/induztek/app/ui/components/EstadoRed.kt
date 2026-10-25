@@ -37,22 +37,11 @@ import cl.induztek.app.ui.theme.Advertencia
 import cl.induztek.app.ui.theme.AdvertenciaFondo
 import cl.induztek.app.ui.theme.InduztekAppTheme
 
-// =====================================================================
-//  EstadoRed.kt — recurso nativo: ESTADO DE LA RED (ConnectivityManager)
-//  ---------------------------------------------------------------------
-//  En terreno muchas veces no hay señal (Aclaración 9 de Induztek). La app guarda todo en el
-//  teléfono (SQLite), así que sigue funcionando: este aviso solo le explica al técnico por qué
-//  no hay sincronización y que sus datos están a salvo.
-//  Se necesita el permiso ACCESS_NETWORK_STATE (permiso normal: no se pide en pantalla).
-// =====================================================================
-
-// Devuelve un estado que cambia solo cuando el teléfono gana o pierde conexión.
 @Composable
 fun rememberHayRed(): State<Boolean> {
     val contexto = LocalContext.current
     val hayRed = remember { mutableStateOf(redDisponible(contexto)) }
 
-    // DisposableEffect: registra el "oyente" al entrar y lo quita al salir (evita fugas de memoria)
     DisposableEffect(contexto) {
         val administrador = contexto.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val oyente = object : ConnectivityManager.NetworkCallback() {
@@ -71,7 +60,6 @@ private fun redDisponible(contexto: Context): Boolean {
     return capacidades?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
 }
 
-// Franja de aviso que aparece y desaparece con animación
 @Composable
 fun AvisoSinSenal(visible: Boolean, modifier: Modifier = Modifier) {
     AnimatedVisibility(

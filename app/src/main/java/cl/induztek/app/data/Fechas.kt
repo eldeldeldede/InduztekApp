@@ -6,7 +6,7 @@ import java.time.format.DateTimeFormatter
 
 private val FORMATO_FECHA_HORA = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
 
-fun LocalDate.aTexto(): String = toString() // "2026-09-26"
+fun LocalDate.aTexto(): String = toString()
 fun LocalDateTime.aTexto(): String = format(FORMATO_FECHA_HORA)
 
 fun String.aFecha(): LocalDate = LocalDate.parse(this)

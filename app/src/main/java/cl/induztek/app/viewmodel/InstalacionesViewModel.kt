@@ -11,7 +11,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
-
 class InstalacionesViewModel(application: Application) : AndroidViewModel(application) {
 
     private val db = InduztekDbHelper(application)

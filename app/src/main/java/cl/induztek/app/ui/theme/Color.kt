@@ -2,23 +2,15 @@ package cl.induztek.app.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// =====================================================================
-//  Color.kt — paleta de InduztekApp (ingeniería eléctrica: azul industrial + ámbar de advertencia)
-// =====================================================================
-
-// Colores de la marca
 val AzulInduztek = Color(0xFF0B3C6F)
 val AzulInduztekClaro = Color(0xFFD6E4F5)
 val AmbarInduztek = Color(0xFFE8A200)
 val AmbarInduztekClaro = Color(0xFFFFEFC2)
 
-// Modo oscuro
 val AzulOscuro80 = Color(0xFFA9C8F0)
 val AzulOscuroContenedor = Color(0xFF15406F)
 val Ambar80 = Color(0xFFFFD166)
 
-// Colores SEMÁNTICOS: el resultado de una prueba (RN-06 a RN-10) se entiende por color,
-// pero nunca SOLO por color: siempre va acompañado del texto "Aprobado / Observado / Rechazado".
 val Exito = Color(0xFF1B6E3C)
 val ExitoFondo = Color(0xFFDDF3E4)
 val Advertencia = Color(0xFF8A5A00)

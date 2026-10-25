@@ -12,13 +12,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
-// =====================================================================
-//  LoginViewModel.kt — igual que FormularioViewModel de MiRegistro:
-//    - uiState (StateFlow) que la pantalla observa
-//    - una función onXxxCambia por cada campo (borra el error de ese campo al escribir)
-//    - onIngresar() valida, consulta la BD y devuelve el Usuario (o null si algo falló)
-//  Es AndroidViewModel porque InduztekDbHelper necesita el Context (la Application).
-// =====================================================================
 class LoginViewModel(application: Application) : AndroidViewModel(application) {
 
     private val db = InduztekDbHelper(application)
@@ -38,11 +31,9 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
         _uiState.update { it.copy(claveVisible = !it.claveVisible) }
     }
 
-    // Devuelve el usuario si las credenciales son correctas; si no, null y deja los errores en el uiState.
     fun onIngresar(): Usuario? {
         val estado = _uiState.value
 
-        // 1) Validación de los campos (antes de tocar la base de datos)
         val errorCorreo = ValidacionesFormulario.correo(estado.correo)
         val errorClave = ValidacionesFormulario.clave(estado.clave)
         if (errorCorreo != null || errorClave != null) {
@@ -50,7 +41,6 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
             return null
         }
 
-        // 2) Consulta a SQLite (compara el HASH de la clave, nunca el texto)
         return when (val resultado = db.iniciarSesion(estado.correo, estado.clave)) {
             is ResultadoLogin.Exito -> {
                 _uiState.update { it.copy(clave = "", errorGeneral = null) }

@@ -4,7 +4,6 @@ object Esquema {
 
     val TABLAS: List<Pair<String, String>> = listOf(
 
-        // ---------------------------- SEGURIDAD ----------------------------
         "rol" to """
             CREATE TABLE rol (
                 id_rol INTEGER PRIMARY KEY AUTOINCREMENT,

@@ -26,11 +26,6 @@ import cl.induztek.app.model.Usuario
 import cl.induztek.app.ui.theme.Dimens
 import kotlinx.coroutines.launch
 
-// =====================================================================
-//  MenuLateral.kt — el menú que se abre con el ícono de las tres rayas (el drawer de FormularioScreen
-//  en MiRegistro): saludo con el nombre y el rol, y "Cerrar sesión" con confirmación.
-//  `contenido` recibe la función para ABRIR el menú (la usa el ícono de la barra superior).
-// =====================================================================
 @Composable
 fun MenuLateral(
     usuario: Usuario,
@@ -41,7 +36,6 @@ fun MenuLateral(
     val scope = rememberCoroutineScope()
     var mostrarDialogo by remember { mutableStateOf(false) }
 
-    // Confirmación antes de cerrar sesión (AlertDialog, como en MiRegistro)
     if (mostrarDialogo) {
         AlertDialog(
             onDismissRequest = { mostrarDialogo = false },
