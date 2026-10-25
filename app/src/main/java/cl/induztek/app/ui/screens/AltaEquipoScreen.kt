@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenuItem
@@ -59,7 +60,9 @@ import cl.induztek.app.ui.components.CampoTexto
 import cl.induztek.app.ui.components.MensajeError
 import cl.induztek.app.ui.components.TarjetaSeccion
 import cl.induztek.app.ui.styles.EstilosCampo
+import cl.induztek.app.ui.theme.Advertencia
 import cl.induztek.app.ui.theme.AdvertenciaFondo
+import cl.induztek.app.ui.theme.AzulInduztek
 import cl.induztek.app.ui.theme.Dimens
 import cl.induztek.app.ui.theme.InduztekAppTheme
 import cl.induztek.app.viewmodel.AltaEquipoViewModel
@@ -192,14 +195,17 @@ fun AltaEquipoContent(
                 )
 
                 AnimatedVisibility(visible = uiState.idEquipoExistente != null) {
-                    Card(colors = CardDefaults.cardColors(containerColor = AdvertenciaFondo)) {
+                    Card(colors = CardDefaults.cardColors(containerColor = AdvertenciaFondo, contentColor = Advertencia)) {
                         Column(modifier = Modifier.padding(Dimens.espacioMedio)) {
                             Text(
                                 text = stringResource(R.string.equipo_existente_mensaje),
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurface
+                                color = Advertencia
                             )
-                            TextButton(onClick = { uiState.idEquipoExistente?.let(onVerExistente) }) {
+                            TextButton(
+                                onClick = { uiState.idEquipoExistente?.let(onVerExistente) },
+                                colors = ButtonDefaults.textButtonColors(contentColor = AzulInduztek)
+                            ) {
                                 Text(stringResource(R.string.btn_usar_equipo_existente))
                             }
                         }

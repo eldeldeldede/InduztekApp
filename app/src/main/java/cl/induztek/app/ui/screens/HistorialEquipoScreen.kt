@@ -59,12 +59,6 @@ import cl.induztek.app.viewmodel.HistorialEquipoViewModel
 import java.time.LocalDate
 import java.time.LocalDateTime
 
-// =====================================================================
-//  HistorialEquipoScreen.kt — HU-11 / HU-12: historial de protocolos de un equipo.
-//  Para el personal incluye la comparación con la prueba anterior (HU-06, RN-09), que
-//  destaca una "Variación significativa" (más de 25 %) y marca los protocolos atrasados (RN-16).
-//  Para el cliente: sus protocolos registrados o formalizados, con el estado "Pendiente de formalización".
-// =====================================================================
 @Composable
 fun HistorialEquipoScreen(
     usuario: Usuario,
@@ -109,7 +103,7 @@ fun HistorialEquipoContent(
     ) { innerPadding ->
         val equipo = uiState.equipo
         if (equipo == null) {
-            // El equipo no existe o pertenece a otro cliente (RN-18)
+
             Text(
                 text = stringResource(R.string.equipo_no_encontrado),
                 modifier = Modifier
@@ -128,7 +122,6 @@ fun HistorialEquipoContent(
         ) {
             item { DatosEquipo(equipo) }
 
-            // Comparación con la prueba anterior: solo personal (la lista viene vacía para el cliente)
             if (uiState.comparaciones.isNotEmpty()) {
                 item { Seccion(stringResource(R.string.seccion_comparacion)) }
                 items(uiState.comparaciones, key = { "${it.serie.elemento}-${it.serie.codigoTipoPrueba}-${it.serie.codigoParametro}" }) {
@@ -163,7 +156,6 @@ private fun Seccion(titulo: String) {
     )
 }
 
-// Datos de placa del equipo: solo se muestran los que tienen valor
 @Composable
 private fun DatosEquipo(equipo: Equipo) {
     Card(
@@ -187,19 +179,21 @@ private fun DatosEquipo(equipo: Equipo) {
             equipo.corrienteNominalA?.let { Text(stringResource(R.string.dato_corriente, Unidades.formatear(it))) }
             equipo.maxContactosUohm?.let { Text(stringResource(R.string.dato_max_contactos, Unidades.formatear(it))) }
             equipo.observaciones?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
-            // Foto de la placa tomada con la cámara al registrar el equipo
+
             equipo.fotoPlaca?.let { FotoPlaca(ruta = it, modifier = Modifier.padding(top = 8.dp)) }
         }
     }
 }
 
-// "Aislación · AT-T · Lectura a 1 min":  6.100 MΩ  (antes 9.800 MΩ, −37,8 %)  + aviso si es significativa
 @Composable
 private fun TarjetaComparacion(comparacion: ComparacionValor) {
     val colorFondo = if (comparacion.significativa) AdvertenciaFondo else MaterialTheme.colorScheme.surface
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = colorFondo)
+        colors = CardDefaults.cardColors(
+            containerColor = colorFondo,
+            contentColor = if (comparacion.significativa) Advertencia else MaterialTheme.colorScheme.onSurface
+        )
     ) {
         Column(
             modifier = Modifier.padding(Dimens.espacioMedio),
@@ -253,11 +247,10 @@ private fun TarjetaComparacion(comparacion: ComparacionValor) {
 
 @Composable
 private fun TarjetaProtocolo(protocolo: ResumenProtocolo, usuario: Usuario, hoy: LocalDate, onAbrir: () -> Unit) {
-    // RN-16: solo el personal ve la marca de "Atrasado" (más de 2 días hábiles sin formalizar)
+
     val atrasado = !usuario.esCliente &&
         ReglasProtocolo.estaAtrasado(protocolo.fechaHoraPrueba.toLocalDate(), hoy, protocolo.estado)
 
-    // Solo el personal abre un protocolo (para continuarlo o revisar sus mediciones); el cliente solo lo ve
     Card(onClick = onAbrir, enabled = !usuario.esCliente, modifier = Modifier.fillMaxWidth()) {
         ListItem(
             overlineContent = { Text(protocolo.fechaHoraPrueba.aTextoLegible()) },
@@ -281,7 +274,6 @@ private fun TarjetaProtocolo(protocolo: ResumenProtocolo, usuario: Usuario, hoy:
     }
 }
 
-// ---- Previews ----
 private val usuarioIngeniero = Usuario(
     idUsuario = 2, idRol = 2, codigoRol = CodigoRol.INGENIERO, rut = "12.345.678-5",
     nombre = "A. Contreras", correo = "acontreras@induztek.ejemplo", passwordHash = ""

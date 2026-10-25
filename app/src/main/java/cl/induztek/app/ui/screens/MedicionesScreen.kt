@@ -58,6 +58,7 @@ import cl.induztek.app.ui.components.EtiquetaResultado
 import cl.induztek.app.ui.components.ListaDesplegable
 import cl.induztek.app.ui.components.MensajeError
 import cl.induztek.app.ui.components.TarjetaSeccion
+import cl.induztek.app.ui.theme.Advertencia
 import cl.induztek.app.ui.theme.AdvertenciaFondo
 import cl.induztek.app.ui.theme.Dimens
 import cl.induztek.app.ui.theme.Exito
@@ -226,7 +227,7 @@ fun MedicionesContent(
             }
 
             if (uiState.tiposSinRegistro.isNotEmpty()) {
-                Card(colors = CardDefaults.cardColors(containerColor = AdvertenciaFondo)) {
+                Card(colors = CardDefaults.cardColors(containerColor = AdvertenciaFondo, contentColor = Advertencia)) {
                     Text(
                         text = stringResource(
                             R.string.pruebas_faltantes,
@@ -239,7 +240,7 @@ fun MedicionesContent(
             }
 
             uiState.motivoUltimoCambio?.let { motivo ->
-                Card(colors = CardDefaults.cardColors(containerColor = AdvertenciaFondo)) {
+                Card(colors = CardDefaults.cardColors(containerColor = AdvertenciaFondo, contentColor = Advertencia)) {
                     Text(
                         text = stringResource(R.string.motivo_ultimo_cambio, motivo),
                         style = MaterialTheme.typography.bodyMedium,
@@ -509,7 +510,7 @@ private fun CamposDeMedicion(uiState: MedicionesUiState, acciones: MedicionesAcc
     }
 
     if (uiState.instrumentosParaPrueba.isEmpty()) {
-        Card(colors = CardDefaults.cardColors(containerColor = AdvertenciaFondo)) {
+        Card(colors = CardDefaults.cardColors(containerColor = AdvertenciaFondo, contentColor = Advertencia)) {
             Text(
                 text = stringResource(R.string.sin_instrumentos_vigentes),
                 style = MaterialTheme.typography.bodyMedium,
