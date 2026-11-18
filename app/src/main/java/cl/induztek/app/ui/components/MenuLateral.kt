@@ -22,7 +22,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import cl.induztek.app.R
-import cl.induztek.app.model.CodigoRol
 import cl.induztek.app.model.Usuario
 import cl.induztek.app.ui.theme.Dimens
 import kotlinx.coroutines.launch
@@ -32,12 +31,15 @@ import kotlinx.coroutines.launch
 //  en MiRegistro): saludo con el nombre y el rol, y "Cerrar sesión" con confirmación.
 //  `contenido` recibe la función para ABRIR el menú (la usa el ícono de la barra superior).
 // =====================================================================
+// Un ítem del menú: lo que dice, su ícono y qué hace. Cada rol recibe SU lista (la arma AppNavegacion).
+data class AccionMenu(val etiqueta: String, val icono: Int, val onClick: () -> Unit)
+
 @Composable
 fun MenuLateral(
     usuario: Usuario,
     estadoMenu: DrawerState,
     onCerrarSesion: () -> Unit,
-    onCrearUsuario: (() -> Unit)? = null,   // solo se muestra al Jefe técnico
+    acciones: List<AccionMenu> = emptyList(),   // ítems según el rol (perfil, clientes, reportes...)
     contenido: @Composable (abrirMenu: () -> Unit) -> Unit
 ) {
     val scope = rememberCoroutineScope()
@@ -78,15 +80,15 @@ fun MenuLateral(
                     modifier = Modifier.padding(start = Dimens.espacioMedio, bottom = Dimens.espacioMedio)
                 )
                 HorizontalDivider()
-                // Solo el Jefe técnico crea usuarios (regla del profesor); para el resto el ítem no existe
-                if (onCrearUsuario != null && usuario.codigoRol == CodigoRol.JEFE_TECNICO) {
+                // Los ítems dependen del rol: para el que no corresponde, el ítem simplemente no existe
+                acciones.forEach { accion ->
                     NavigationDrawerItem(
-                        label = { Text(stringResource(R.string.menu_crear_usuario)) },
-                        icon = { Icon(painterResource(R.drawable.ic_persona), contentDescription = null) },
+                        label = { Text(accion.etiqueta) },
+                        icon = { Icon(painterResource(accion.icono), contentDescription = null) },
                         selected = false,
                         onClick = {
                             scope.launch { estadoMenu.close() }
-                            onCrearUsuario()
+                            accion.onClick()
                         }
                     )
                 }

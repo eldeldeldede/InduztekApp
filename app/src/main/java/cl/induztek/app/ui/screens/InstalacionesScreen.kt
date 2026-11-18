@@ -10,6 +10,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
@@ -33,6 +35,7 @@ import cl.induztek.app.model.Instalacion
 import cl.induztek.app.model.InstalacionesUiState
 import cl.induztek.app.model.Usuario
 import cl.induztek.app.ui.components.CampoTexto
+import cl.induztek.app.ui.components.AccionMenu
 import cl.induztek.app.ui.components.MenuLateral
 import cl.induztek.app.ui.theme.Dimens
 import cl.induztek.app.ui.theme.InduztekAppTheme
@@ -50,7 +53,9 @@ fun InstalacionesScreen(
     onVerEquipos: (Long) -> Unit,
     onCerrarSesion: () -> Unit,
     viewModel: InstalacionesViewModel,
-    onCrearUsuario: (() -> Unit)? = null
+    acciones: List<AccionMenu> = emptyList(),
+    onNuevaInstalacion: () -> Unit = {},
+    onEditarInstalacion: (Long) -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val estadoMenu = rememberDrawerState(DrawerValue.Closed)
@@ -59,14 +64,16 @@ fun InstalacionesScreen(
         usuario = usuario,
         estadoMenu = estadoMenu,
         onCerrarSesion = onCerrarSesion,
-        onCrearUsuario = onCrearUsuario
+        acciones = acciones
     ) { abrirMenu ->
         InstalacionesContent(
             uiState = uiState,
             usuario = usuario,
             onBuscar = viewModel::buscar,
             onAbrirMenu = abrirMenu,
-            onVerEquipos = onVerEquipos
+            onVerEquipos = onVerEquipos,
+            onNuevaInstalacion = onNuevaInstalacion,
+            onEditarInstalacion = onEditarInstalacion
         )
     }
 }
@@ -78,9 +85,19 @@ fun InstalacionesContent(
     usuario: Usuario,
     onBuscar: (String) -> Unit,
     onAbrirMenu: () -> Unit,
-    onVerEquipos: (Long) -> Unit
+    onVerEquipos: (Long) -> Unit,
+    onNuevaInstalacion: () -> Unit = {},
+    onEditarInstalacion: (Long) -> Unit = {}
 ) {
     Scaffold(
+        // Solo el personal de Induztek crea instalaciones; el cliente no ve el botón
+        floatingActionButton = {
+            if (!usuario.esCliente) {
+                FloatingActionButton(onClick = onNuevaInstalacion) {
+                    Icon(painterResource(R.drawable.ic_agregar), contentDescription = stringResource(R.string.btn_nueva_instalacion))
+                }
+            }
+        },
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.titulo_instalaciones)) },
@@ -142,7 +159,12 @@ fun InstalacionesContent(
                             headlineContent = { Text(instalacion.nombre) },
                             supportingContent = {
                                 Text("${instalacion.comunaNombre} · ${instalacion.ubicacion}")
-                            }
+                            },
+                            trailingContent = if (usuario.esCliente) null else ({
+                                TextButton(onClick = { onEditarInstalacion(instalacion.idInstalacion) }) {
+                                    Text(stringResource(R.string.btn_editar))
+                                }
+                            })
                         )
                     }
                 }

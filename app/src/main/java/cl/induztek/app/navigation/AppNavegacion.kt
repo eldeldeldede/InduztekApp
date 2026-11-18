@@ -26,6 +26,12 @@ import cl.induztek.app.ui.components.AvisoSinSenal
 import cl.induztek.app.ui.components.BarraSincronizacion
 import androidx.compose.foundation.layout.Column
 import cl.induztek.app.ui.components.rememberHayRed
+import cl.induztek.app.R
+import cl.induztek.app.model.Usuario
+import androidx.compose.ui.res.stringResource
+import cl.induztek.app.ui.components.AccionMenu
+import cl.induztek.app.ui.screens.PerfilScreen
+import cl.induztek.app.ui.screens.RecuperarClaveScreen
 import cl.induztek.app.ui.screens.ActasScreen
 import cl.induztek.app.ui.screens.AltaEquipoScreen
 import cl.induztek.app.ui.screens.CambiarClaveScreen
@@ -34,6 +40,14 @@ import cl.induztek.app.ui.screens.CrearUsuarioScreen
 import cl.induztek.app.model.CodigoRol
 import cl.induztek.app.viewmodel.ActasViewModel
 import cl.induztek.app.viewmodel.CierreVisitaViewModel
+import cl.induztek.app.viewmodel.ClientesViewModel
+import cl.induztek.app.viewmodel.CrearUsuarioViewModel
+import cl.induztek.app.viewmodel.InstalacionFormViewModel
+import cl.induztek.app.ui.screens.ClientesScreen
+import cl.induztek.app.ui.screens.InstalacionFormScreen
+import cl.induztek.app.viewmodel.ReportesActaViewModel
+import cl.induztek.app.viewmodel.ReportesViewModel
+import cl.induztek.app.ui.screens.ReportesScreen
 import cl.induztek.app.ui.screens.EquiposScreen
 import cl.induztek.app.ui.screens.HistorialEquipoScreen
 import cl.induztek.app.ui.screens.InstalacionesScreen
@@ -84,7 +98,7 @@ fun AppNavegacion() {
     val entradaActual by navController.currentBackStackEntryAsState()
     LaunchedEffect(usuarioActual, entradaActual?.destination?.route) {
         val ruta = entradaActual?.destination?.route
-        if (usuarioActual == null && ruta != null && ruta != Rutas.LOGIN) irAlLogin(navController)
+        if (usuarioActual == null && ruta != null && ruta != Rutas.LOGIN && ruta != Rutas.RECUPERAR_CLAVE) irAlLogin(navController)
     }
 
     // Recurso nativo: estado de la red. El aviso se dibuja encima de TODAS las pantallas (abajo).
@@ -110,6 +124,7 @@ fun AppNavegacion() {
 
             composable(Rutas.LOGIN) {
                 LoginScreen(
+                    onOlvideClave = { navController.navigate(Rutas.RECUPERAR_CLAVE) },
                     onIngresoExitoso = { usuario ->
                         sesionViewModel.iniciarSesion(usuario)
                         // Con clave temporal -> primero debe cambiarla; si no, entra directo.
@@ -137,14 +152,79 @@ fun AppNavegacion() {
                 )
             }
 
+            // Pública (sin sesión): se abre desde el enlace "¿Olvidaste tu contraseña?" del login
+            composable(Rutas.RECUPERAR_CLAVE) {
+                RecuperarClaveScreen(
+                    onVolver = { navController.popBackStack() },
+                    onClaveCambiada = { navController.popBackStack() }
+                )
+            }
+
+            // Mi perfil: editar nombre/teléfono y llegar al cambio de contraseña voluntario
+            composable(Rutas.PERFIL) {
+                val usuario = usuarioActual ?: return@composable
+                PerfilScreen(
+                    usuario = usuario,
+                    onVolver = { navController.popBackStack() },
+                    onUsuarioActualizado = { actualizado -> sesionViewModel.actualizarUsuario(actualizado) },
+                    onCambiarClave = { navController.navigate(Rutas.CAMBIAR_CLAVE_VOLUNTARIO) }
+                )
+            }
+
+            composable(Rutas.CAMBIAR_CLAVE_VOLUNTARIO) {
+                val usuario = usuarioActual ?: return@composable
+                CambiarClaveScreen(
+                    usuario = usuario,
+                    obligatorio = false,
+                    onClaveCambiada = { navController.popBackStack() },
+                    onCerrarSesion = { sesionViewModel.cerrarSesion() },
+                    onVolver = { navController.popBackStack() }
+                )
+            }
+
             // Solo el Jefe técnico: si otro rol llegara aquí, vuelve atrás sin mostrar nada
             composable(Rutas.CREAR_USUARIO) {
                 val usuario = usuarioActual ?: return@composable
-                if (usuario.codigoRol != CodigoRol.JEFE_TECNICO) {
+                // El cliente no crea cuentas; Técnico e Ingeniero solo pueden crear clientes; el Jefe crea cualquier rol
+                if (usuario.esCliente) {
                     LaunchedEffect(Unit) { navController.popBackStack() }
                     return@composable
                 }
-                CrearUsuarioScreen(jefe = usuario, onVolver = { navController.popBackStack() })
+                val viewModel: CrearUsuarioViewModel = viewModel()
+                LaunchedEffect(usuario.codigoRol) {
+                    if (usuario.codigoRol != CodigoRol.JEFE_TECNICO) viewModel.soloClientes()
+                }
+                CrearUsuarioScreen(jefe = usuario, onVolver = { navController.popBackStack() }, viewModel = viewModel)
+            }
+
+            composable(Rutas.CLIENTES) { entrada ->
+                val usuario = usuarioActual ?: return@composable
+                if (usuario.esCliente) {
+                    LaunchedEffect(Unit) { navController.popBackStack() }
+                    return@composable
+                }
+                val viewModel: ClientesViewModel = viewModel()
+                AlReanudar(entrada) { viewModel.cargar(usuario) }
+                ClientesScreen(
+                    onVolver = { navController.popBackStack() },
+                    onNuevoCliente = { navController.navigate(Rutas.CREAR_USUARIO) },
+                    viewModel = viewModel
+                )
+            }
+
+            composable(
+                route = Rutas.INSTALACION_FORM,
+                arguments = listOf(navArgument(Rutas.ARG_ID_INSTALACION) { type = NavType.LongType })
+            ) { entrada ->
+                val usuario = usuarioActual ?: return@composable
+                if (usuario.esCliente) {
+                    LaunchedEffect(Unit) { navController.popBackStack() }
+                    return@composable
+                }
+                val idInstalacion = entrada.arguments?.getLong(Rutas.ARG_ID_INSTALACION) ?: 0L
+                val viewModel: InstalacionFormViewModel = viewModel()
+                LaunchedEffect(idInstalacion) { viewModel.cargar(idInstalacion, usuario) }
+                InstalacionFormScreen(onVolver = { navController.popBackStack() }, viewModel = viewModel)
             }
 
             composable(Rutas.INSTALACIONES) { entrada ->
@@ -155,7 +235,9 @@ fun AppNavegacion() {
                     usuario = usuario,
                     onVerEquipos = { idInstalacion -> navController.navigate(Rutas.equipos(idInstalacion)) },
                     onCerrarSesion = { sesionViewModel.cerrarSesion() },
-                    onCrearUsuario = { navController.navigate(Rutas.CREAR_USUARIO) },
+                    acciones = accionesDelMenu(usuario, navController),
+                    onNuevaInstalacion = { navController.navigate(Rutas.instalacionForm()) },
+                    onEditarInstalacion = { id -> navController.navigate(Rutas.instalacionForm(id)) },
                     viewModel = viewModel
                 )
             }
@@ -272,10 +354,30 @@ fun AppNavegacion() {
                 val usuario = usuarioActual ?: return@composable
                 val idVisita = entrada.arguments?.getLong(Rutas.ARG_ID_VISITA) ?: 0L
                 val viewModel: CierreVisitaViewModel = viewModel()
-                AlReanudar(entrada) { viewModel.cargar(idVisita, usuario) }
+                val reportesVm: ReportesActaViewModel = viewModel()
+                AlReanudar(entrada) {
+                    viewModel.cargar(idVisita, usuario)
+                    if (usuario.esCliente) reportesVm.cargar(idVisita, usuario)
+                }
                 CierreVisitaScreen(
                     onVolver = { navController.popBackStack() },
                     onAbrirProtocolo = { idProtocolo -> navController.navigate(Rutas.mediciones(idProtocolo)) },
+                    viewModel = viewModel,
+                    reportesViewModel = if (usuario.esCliente) reportesVm else null,
+                    // Si el reporte devolvió un protocolo a "observado", se recarga el acta para verlo
+                    alReportar = { viewModel.cargar(idVisita, usuario) }
+                )
+            }
+
+            composable(Rutas.REPORTES) { entrada ->
+                val usuario = usuarioActual ?: return@composable
+                val viewModel: ReportesViewModel = viewModel()
+                AlReanudar(entrada) { viewModel.cargar(usuario) }
+                ReportesScreen(
+                    usuario = usuario,
+                    onVolver = { navController.popBackStack() },
+                    onVerActa = { idVisita -> navController.navigate(Rutas.cierreVisita(idVisita)) },
+                    onVerProtocolo = { idProtocolo -> navController.navigate(Rutas.mediciones(idProtocolo)) },
                     viewModel = viewModel
                 )
             }
@@ -285,6 +387,26 @@ fun AppNavegacion() {
             if (usuarioActual != null) BarraSincronizacion(hayRed = hayRed)
             AvisoSinSenal(visible = !hayRed)
         }
+    }
+}
+
+// Los ítems del menú lateral según el rol (cada rol ve solo lo que le corresponde)
+@Composable
+private fun accionesDelMenu(usuario: Usuario, navController: NavHostController): List<AccionMenu> = buildList {
+    add(AccionMenu(stringResource(R.string.menu_perfil), R.drawable.ic_persona) { navController.navigate(Rutas.PERFIL) })
+    // Clientes: el personal los crea y edita (el Jefe además los desactiva)
+    if (!usuario.esCliente) {
+        add(AccionMenu(stringResource(R.string.menu_clientes), R.drawable.ic_lista) { navController.navigate(Rutas.CLIENTES) })
+    }
+    // Reportes de actas: el cliente ve los suyos; el personal los atiende (responden Ingeniero y Jefe)
+    add(AccionMenu(
+        stringResource(if (usuario.esCliente) R.string.menu_mis_reportes else R.string.menu_reportes),
+        R.drawable.ic_nota
+    ) { navController.navigate(Rutas.REPORTES) })
+    if (usuario.codigoRol == CodigoRol.JEFE_TECNICO) {
+        add(AccionMenu(stringResource(R.string.menu_crear_usuario), R.drawable.ic_agregar) {
+            navController.navigate(Rutas.CREAR_USUARIO)
+        })
     }
 }
 
