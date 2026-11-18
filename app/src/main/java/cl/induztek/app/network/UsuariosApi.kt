@@ -6,6 +6,7 @@ import retrofit2.http.Header
 import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 // =====================================================================
 //  UsuariosApi.kt — los endpoints de usuarios-service (puerto 8081)
@@ -37,4 +38,31 @@ interface UsuariosApi {
 
     @GET("api/roles")
     suspend fun roles(): List<RolDto>
+
+    @GET("api/usuarios")
+    suspend fun listar(@Query("rolId") rolId: Long?): List<UsuarioDto>
+
+    @GET("api/usuarios/{id}")
+    suspend fun obtener(@Path("id") idUsuario: Long): UsuarioDto
+
+    @PUT("api/usuarios/{id}")
+    suspend fun actualizarPerfil(
+        @Header("X-Usuario-Id") idActor: Long,
+        @Path("id") idUsuario: Long,
+        @Body solicitud: ActualizarPerfilSolicitud
+    ): UsuarioDto
+
+    @PUT("api/usuarios/{id}/estado")
+    suspend fun cambiarEstado(
+        @Header("X-Usuario-Id") idActor: Long,
+        @Path("id") idUsuario: Long,
+        @Body solicitud: CambiarEstadoSolicitud
+    ): UsuarioDto
+
+    @POST("api/usuarios/recuperacion")
+    suspend fun solicitarRecuperacion(@Body solicitud: RecuperacionSolicitud): RecuperacionDto
+
+    // Responde 204 (sin cuerpo)
+    @POST("api/usuarios/recuperacion/confirmar")
+    suspend fun confirmarRecuperacion(@Body solicitud: ConfirmarRecuperacionSolicitud)
 }

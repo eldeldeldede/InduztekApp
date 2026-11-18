@@ -22,6 +22,13 @@ sealed interface ResultadoRed<out T> {
     data object SinConexion : ResultadoRed<Nothing>
 }
 
+// Transforma el dato de un Exito (por ejemplo, de DTO a modelo) y deja pasar los errores tal cual.
+inline fun <T, R> ResultadoRed<T>.mapear(transformar: (T) -> R): ResultadoRed<R> = when (this) {
+    is ResultadoRed.Exito -> ResultadoRed.Exito(transformar(datos))
+    is ResultadoRed.ErrorServidor -> this
+    ResultadoRed.SinConexion -> ResultadoRed.SinConexion
+}
+
 // Ejecuta una llamada de Retrofit y traduce lo que pase a un ResultadoRed (nunca lanza excepciones de red).
 suspend fun <T> llamarApi(llamada: suspend () -> T): ResultadoRed<T> =
     try {
@@ -61,4 +68,11 @@ internal fun mensajePorCodigo(codigo: Int): String = when (codigo) {
     409 -> "Ya existe un registro con esos datos"
     in 500..599 -> "El servidor tuvo un problema. Intenta de nuevo"
     else -> "Error al comunicarse con el servidor ($codigo)"
+}
+
+// Texto listo para mostrar al usuario cuando una llamada NO fue exitosa (null si fue Exito).
+fun ResultadoRed<*>.mensajeError(): String? = when (this) {
+    is ResultadoRed.Exito -> null
+    is ResultadoRed.ErrorServidor -> mensaje
+    ResultadoRed.SinConexion -> "Sin conexión con el servidor. Revisa tu red e intenta de nuevo."
 }

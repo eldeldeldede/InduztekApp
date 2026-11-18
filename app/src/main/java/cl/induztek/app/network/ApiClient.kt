@@ -32,4 +32,7 @@ object ApiClient {
 
     // `by lazy`: se crea la primera vez que alguien lo usa
     val usuarios: UsuariosApi by lazy { retrofit(ApiConfig.URL_USUARIOS).create(UsuariosApi::class.java) }
+    val equipos: EquiposApi by lazy { retrofit(ApiConfig.URL_EQUIPOS).create(EquiposApi::class.java) }
+    val protocolos: ProtocolosApi by lazy { retrofit(ApiConfig.URL_PROTOCOLOS).create(ProtocolosApi::class.java) }
+    val reportes: ReportesApi by lazy { retrofit(ApiConfig.URL_REPORTES).create(ReportesApi::class.java) }
 }

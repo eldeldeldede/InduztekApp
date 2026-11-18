@@ -31,6 +31,28 @@ data class CrearUsuarioSolicitud(
 data class CambiarContrasenaSolicitud(val actual: String, val nueva: String)
 
 @Keep
+data class ActualizarPerfilSolicitud(
+    val nombre: String,
+    val correo: String?,
+    val telefono: String?,
+    val giro: String?,
+    val contactoNombre: String?,
+    val contactoCargo: String?
+)
+
+@Keep
+data class CambiarEstadoSolicitud(val activo: Boolean)
+
+@Keep
+data class RecuperacionSolicitud(val correo: String)
+
+@Keep
+data class RecuperacionDto(val mensaje: String?, val expiraEn: String?)
+
+@Keep
+data class ConfirmarRecuperacionSolicitud(val correo: String, val codigo: String, val nueva: String)
+
+@Keep
 data class RolDto(val id: Long, val codigo: String, val nombre: String)
 
 @Keep
