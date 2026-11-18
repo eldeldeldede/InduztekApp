@@ -26,7 +26,10 @@ import cl.induztek.app.ui.components.AvisoSinSenal
 import cl.induztek.app.ui.components.rememberHayRed
 import cl.induztek.app.ui.screens.ActasScreen
 import cl.induztek.app.ui.screens.AltaEquipoScreen
+import cl.induztek.app.ui.screens.CambiarClaveScreen
 import cl.induztek.app.ui.screens.CierreVisitaScreen
+import cl.induztek.app.ui.screens.CrearUsuarioScreen
+import cl.induztek.app.model.CodigoRol
 import cl.induztek.app.viewmodel.ActasViewModel
 import cl.induztek.app.viewmodel.CierreVisitaViewModel
 import cl.induztek.app.ui.screens.EquiposScreen
@@ -41,22 +44,48 @@ import cl.induztek.app.viewmodel.HistorialEquipoViewModel
 import cl.induztek.app.viewmodel.InstalacionesViewModel
 import cl.induztek.app.viewmodel.SesionViewModel
 
+// =====================================================================
+//  AppNavegacion.kt — el mapa de pantallas (como AppNavegacion de MiRegistro)
+//  ---------------------------------------------------------------------
+//  NavHost = el "contenedor" que muestra UNA pantalla a la vez según la ruta actual.
+//  navController.navigate("ruta") cambia de pantalla.
+//
+//  - Las pantallas NO reciben el navController: reciben funciones (onVolver, onVerEquipos...).
+//    Así no dependen de la navegación y se pueden previsualizar solas (@Preview).
+//  - SesionViewModel se crea UNA vez aquí y guarda quién inició sesión.
+//  - Todas las pantallas, salvo el login, exigen un usuario con sesión: si no hay, vuelven al login.
+//  - Los ViewModels de lista se crean AQUÍ (viewModel()) para poder pedirles que recarguen los
+//    datos cada vez que la pantalla vuelve a mostrarse (AlReanudar).
+//
+//  Flujo del personal:  instalaciones -> equipos -> nuevo protocolo -> mediciones -> cierre de visita.
+// =====================================================================
 @Composable
 fun AppNavegacion() {
     val navController = rememberNavController()
     val sesionViewModel: SesionViewModel = viewModel()
     val usuarioActual by sesionViewModel.usuarioActual.collectAsStateWithLifecycle()
 
+    // Si hay sesión guardada se entra directo; si no, al login.
+    // remember { }: se calcula UNA sola vez al abrir la app. Si cambiara en cada recomposición
+    // (al iniciar o cerrar sesión), el NavHost reiniciaría todo el recorrido de pantallas.
     val destinoInicial = remember {
-        if (sesionViewModel.usuarioActual.value != null) Rutas.INSTALACIONES else Rutas.LOGIN
+        val usuarioGuardado = sesionViewModel.usuarioActual.value
+        when {
+            usuarioGuardado == null -> Rutas.LOGIN
+            // Si cerró la app sin cambiar la clave temporal, al volver sigue obligado a cambiarla
+            usuarioGuardado.debeCambiarContrasena -> Rutas.CAMBIAR_CLAVE
+            else -> Rutas.INSTALACIONES
+        }
     }
 
+    // Al cerrar sesión (usuarioActual pasa a null) se vuelve al login y se borra el historial de pantallas
     val entradaActual by navController.currentBackStackEntryAsState()
     LaunchedEffect(usuarioActual, entradaActual?.destination?.route) {
         val ruta = entradaActual?.destination?.route
         if (usuarioActual == null && ruta != null && ruta != Rutas.LOGIN) irAlLogin(navController)
     }
 
+    // Recurso nativo: estado de la red. El aviso se dibuja encima de TODAS las pantallas (abajo).
     val hayRed by rememberHayRed()
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -81,12 +110,39 @@ fun AppNavegacion() {
                 LoginScreen(
                     onIngresoExitoso = { usuario ->
                         sesionViewModel.iniciarSesion(usuario)
-
-                        navController.navigate(Rutas.INSTALACIONES) {
+                        // Con clave temporal -> primero debe cambiarla; si no, entra directo.
+                        // popUpTo: el login sale del historial, así "atrás" no vuelve a él
+                        val destino = if (usuario.debeCambiarContrasena) Rutas.CAMBIAR_CLAVE else Rutas.INSTALACIONES
+                        navController.navigate(destino) {
                             popUpTo(Rutas.LOGIN) { inclusive = true }
                         }
                     }
                 )
+            }
+
+            // Primer ingreso: cambio obligatorio de la contraseña temporal
+            composable(Rutas.CAMBIAR_CLAVE) {
+                val usuario = usuarioActual ?: return@composable
+                CambiarClaveScreen(
+                    usuario = usuario,
+                    onClaveCambiada = { actualizado ->
+                        sesionViewModel.actualizarUsuario(actualizado)
+                        navController.navigate(Rutas.INSTALACIONES) {
+                            popUpTo(Rutas.CAMBIAR_CLAVE) { inclusive = true }
+                        }
+                    },
+                    onCerrarSesion = { sesionViewModel.cerrarSesion() }
+                )
+            }
+
+            // Solo el Jefe técnico: si otro rol llegara aquí, vuelve atrás sin mostrar nada
+            composable(Rutas.CREAR_USUARIO) {
+                val usuario = usuarioActual ?: return@composable
+                if (usuario.codigoRol != CodigoRol.JEFE_TECNICO) {
+                    LaunchedEffect(Unit) { navController.popBackStack() }
+                    return@composable
+                }
+                CrearUsuarioScreen(jefe = usuario, onVolver = { navController.popBackStack() })
             }
 
             composable(Rutas.INSTALACIONES) { entrada ->
@@ -97,10 +153,12 @@ fun AppNavegacion() {
                     usuario = usuario,
                     onVerEquipos = { idInstalacion -> navController.navigate(Rutas.equipos(idInstalacion)) },
                     onCerrarSesion = { sesionViewModel.cerrarSesion() },
+                    onCrearUsuario = { navController.navigate(Rutas.CREAR_USUARIO) },
                     viewModel = viewModel
                 )
             }
 
+            // Pantallas con ARGUMENTO: se declara su nombre y tipo, y se lee desde la entrada.
             composable(
                 route = Rutas.EQUIPOS,
                 arguments = listOf(navArgument(Rutas.ARG_ID_INSTALACION) { type = NavType.LongType })
@@ -130,7 +188,7 @@ fun AppNavegacion() {
                     idInstalacion = idInstalacion,
                     onVolver = { navController.popBackStack() },
                     onGuardado = { navController.popBackStack() },
-
+                    // HU-01: el TAG ya existía -> se abre el historial del equipo ya registrado
                     onVerExistente = { idEquipo ->
                         navController.navigate(Rutas.historialEquipo(idEquipo)) {
                             popUpTo(Rutas.ALTA_EQUIPO) { inclusive = true }
@@ -150,7 +208,7 @@ fun AppNavegacion() {
                 HistorialEquipoScreen(
                     usuario = usuario,
                     onVolver = { navController.popBackStack() },
-
+                    // El personal puede abrir un protocolo para continuarlo o revisarlo
                     onAbrirProtocolo = { idProtocolo -> navController.navigate(Rutas.mediciones(idProtocolo)) },
                     viewModel = viewModel
                 )
@@ -166,7 +224,7 @@ fun AppNavegacion() {
                     idEquipo = idEquipo,
                     usuario = usuario,
                     onVolver = { navController.popBackStack() },
-
+                    // Al crear el protocolo se pasa a las mediciones; "atrás" ya no vuelve a este formulario
                     onProtocoloListo = { idProtocolo ->
                         navController.navigate(Rutas.mediciones(idProtocolo)) {
                             popUpTo(Rutas.NUEVO_PROTOCOLO) { inclusive = true }
@@ -224,6 +282,7 @@ fun AppNavegacion() {
     }
 }
 
+// Vuelve al login y vacía el historial de pantallas (popUpTo(0) = hasta el principio)
 private fun irAlLogin(navController: NavHostController) {
     navController.navigate(Rutas.LOGIN) {
         popUpTo(0) { inclusive = true }

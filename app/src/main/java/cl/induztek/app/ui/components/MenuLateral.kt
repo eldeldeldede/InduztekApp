@@ -22,20 +22,28 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import cl.induztek.app.R
+import cl.induztek.app.model.CodigoRol
 import cl.induztek.app.model.Usuario
 import cl.induztek.app.ui.theme.Dimens
 import kotlinx.coroutines.launch
 
+// =====================================================================
+//  MenuLateral.kt — el menú que se abre con el ícono de las tres rayas (el drawer de FormularioScreen
+//  en MiRegistro): saludo con el nombre y el rol, y "Cerrar sesión" con confirmación.
+//  `contenido` recibe la función para ABRIR el menú (la usa el ícono de la barra superior).
+// =====================================================================
 @Composable
 fun MenuLateral(
     usuario: Usuario,
     estadoMenu: DrawerState,
     onCerrarSesion: () -> Unit,
+    onCrearUsuario: (() -> Unit)? = null,   // solo se muestra al Jefe técnico
     contenido: @Composable (abrirMenu: () -> Unit) -> Unit
 ) {
     val scope = rememberCoroutineScope()
     var mostrarDialogo by remember { mutableStateOf(false) }
 
+    // Confirmación antes de cerrar sesión (AlertDialog, como en MiRegistro)
     if (mostrarDialogo) {
         AlertDialog(
             onDismissRequest = { mostrarDialogo = false },
@@ -70,6 +78,18 @@ fun MenuLateral(
                     modifier = Modifier.padding(start = Dimens.espacioMedio, bottom = Dimens.espacioMedio)
                 )
                 HorizontalDivider()
+                // Solo el Jefe técnico crea usuarios (regla del profesor); para el resto el ítem no existe
+                if (onCrearUsuario != null && usuario.codigoRol == CodigoRol.JEFE_TECNICO) {
+                    NavigationDrawerItem(
+                        label = { Text(stringResource(R.string.menu_crear_usuario)) },
+                        icon = { Icon(painterResource(R.drawable.ic_persona), contentDescription = null) },
+                        selected = false,
+                        onClick = {
+                            scope.launch { estadoMenu.close() }
+                            onCrearUsuario()
+                        }
+                    )
+                }
                 NavigationDrawerItem(
                     label = { Text(stringResource(R.string.menu_cerrar_sesion)) },
                     icon = { Icon(painterResource(R.drawable.ic_salir), contentDescription = null) },

@@ -1,8 +1,17 @@
 package cl.induztek.app.navigation
 
+// =====================================================================
+//  Rutas.kt — las "direcciones" de cada pantalla
+//  ---------------------------------------------------------------------
+//  Navigation Compose navega con texto, como una URL. Las partes entre llaves son
+//  ARGUMENTOS: "equipos/{idInstalacion}" se convierte en "equipos/1" al navegar.
+//  Las funciones de abajo arman la ruta con el id y evitan errores al escribir el texto a mano.
+// =====================================================================
 object Rutas {
     const val LOGIN = "login"
     const val INSTALACIONES = "instalaciones"
+    const val CAMBIAR_CLAVE = "cambiar_clave"   // primer ingreso: obliga a reemplazar la clave temporal
+    const val CREAR_USUARIO = "crear_usuario"   // solo Jefe técnico
 
     const val ARG_ID_INSTALACION = "idInstalacion"
     const val ARG_ID_EQUIPO = "idEquipo"
