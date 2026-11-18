@@ -10,6 +10,7 @@ object TiposEquipoIds {
 
 data class AltaEquipoUiState(
     val tipos: List<TipoEquipo> = emptyList(),
+    val guardando: Boolean = false,
     val idTipoEquipo: Long = TiposEquipoIds.TRANSFORMADOR,
 
     val tag: String = "",

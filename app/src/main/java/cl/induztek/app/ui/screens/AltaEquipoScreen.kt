@@ -127,7 +127,7 @@ fun AltaEquipoScreen(
         onObservacionesCambia = viewModel::onObservacionesCambia,
         onLimpiar = viewModel::onLimpiar,
 
-        onGuardar = { if (viewModel.onGuardar(idInstalacion)) onGuardado() },
+        onGuardar = { viewModel.onGuardar(idInstalacion, onGuardado) },
         onVerExistente = onVerExistente
     )
 }

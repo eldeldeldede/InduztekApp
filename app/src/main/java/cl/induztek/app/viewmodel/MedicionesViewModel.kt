@@ -2,15 +2,21 @@ package cl.induztek.app.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
-import cl.induztek.app.data.InduztekDbHelper
+import androidx.lifecycle.viewModelScope
+import cl.induztek.app.local.ContextoPruebaLocal
 import cl.induztek.app.model.FormularioPrueba
 import cl.induztek.app.model.MedicionesUiState
 import cl.induztek.app.model.Momento
-import cl.induztek.app.model.Prueba
 import cl.induztek.app.model.PruebaRegistrada
-import cl.induztek.app.model.ResultadoGuardado
+import cl.induztek.app.network.MedicionSolicitud
+import cl.induztek.app.network.ProtocoloDto
+import cl.induztek.app.repository.aPruebaRegistrada
+import cl.induztek.app.repository.aProtocolo
+import cl.induztek.app.network.PruebaSolicitud
+import cl.induztek.app.network.ResultadoRed
+import cl.induztek.app.network.mensajeError
+import cl.induztek.app.repository.Repositorios
 import cl.induztek.app.model.TipoEstadoProtocolo
-import cl.induztek.app.model.TipoPrueba
 import cl.induztek.app.model.TipoResultado
 import cl.induztek.app.model.TipoVisita
 import cl.induztek.app.model.Usuario
@@ -25,11 +31,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import java.time.LocalDate
+import kotlinx.coroutines.launch
 
 class MedicionesViewModel(application: Application) : AndroidViewModel(application) {
-
-    private val db = InduztekDbHelper(application)
 
     private val _uiState = MutableStateFlow(MedicionesUiState())
     val uiState: StateFlow<MedicionesUiState> = _uiState.asStateFlow()
@@ -39,15 +43,25 @@ class MedicionesViewModel(application: Application) : AndroidViewModel(applicati
 
     fun cargar(idProtocolo: Long, usuarioActual: Usuario) {
         usuario = usuarioActual
-        val protocolo = db.buscarProtocolo(idProtocolo)
-        if (protocolo == null) {
-            _uiState.value = MedicionesUiState(cargado = true)
+        viewModelScope.launch { refrescar(idProtocolo, usuarioActual) }
+    }
+
+    // Vuelve a pedir al servidor el protocolo con sus pruebas y deja la pantalla al día.
+    private suspend fun refrescar(idProtocolo: Long, usuarioActual: Usuario) {
+        val detalleRes = Repositorios.protocolos.protocoloDetalle(idProtocolo)
+        val detalle = (detalleRes as? ResultadoRed.Exito)?.datos
+        if (detalle == null) {
+            _uiState.value = MedicionesUiState(cargado = true, errorGeneral = detalleRes.mensajeError())
             return
         }
-        val equipo = db.buscarEquipo(protocolo.idEquipo, usuarioActual)
-        val visita = db.buscarVisita(protocolo.idVisita)
+        val protocolo = detalle.aProtocolo()
+        val equipo = (Repositorios.equipos.equipo(protocolo.idEquipo, usuarioActual) as? ResultadoRed.Exito)?.datos
+        val visita = (Repositorios.protocolos.visita(protocolo.idVisita) as? ResultadoRed.Exito)?.datos
         val estado = TipoEstadoProtocolo.desdeId(protocolo.idEstadoProtocolo)
-        val tipos = equipo?.let { db.listarPruebasDeTipoEquipo(it.idTipoEquipo) } ?: emptyList()
+        val tipos = equipo?.let {
+            (Repositorios.protocolos.pruebasDeTipoEquipo(it.idTipoEquipo) as? ResultadoRed.Exito)?.datos
+        } ?: emptyList()
+        val instrumentos = (Repositorios.protocolos.instrumentosVigentes() as? ResultadoRed.Exito)?.datos ?: emptyList()
         val posibles = ReglasProtocolo.estadosPosibles(estado, usuarioActual.codigoRol)
         val primeraVez = idCargado != idProtocolo
         idCargado = idProtocolo
@@ -65,10 +79,10 @@ class MedicionesViewModel(application: Application) : AndroidViewModel(applicati
                 ),
                 puedeRevisar = TipoEstadoProtocolo.FORMALIZADO in posibles,
                 puedeAnular = TipoEstadoProtocolo.ANULADO in posibles,
-                motivoUltimoCambio = motivoDelUltimoCambio(idProtocolo, estado),
+                motivoUltimoCambio = motivoDelUltimoCambio(detalle, estado),
                 tiposPrueba = tipos,
-                instrumentosVigentes = db.listarInstrumentosVigentes(LocalDate.now()),
-                pruebas = armarPruebas(idProtocolo, tipos),
+                instrumentosVigentes = instrumentos,
+                pruebas = (detalle.pruebas ?: emptyList()).map { it.aPruebaRegistrada() },
                 condicionesGuardadas = protocolo.temperaturaAmbiente != null && protocolo.pctHumedad != null,
                 temperatura = if (primeraVez) protocolo.temperaturaAmbiente?.let { Unidades.formatear(it) } ?: ""
                 else previo.temperatura,
@@ -95,29 +109,37 @@ class MedicionesViewModel(application: Application) : AndroidViewModel(applicati
             _uiState.update { it.copy(errorTemperatura = errorT, errorHumedad = errorH) }
             return
         }
-        val guardado = db.actualizarCondicionesAmbientales(
-            protocolo.idProtocolo,
-            Unidades.parsearDecimal(s.temperatura)!!,
-            Unidades.parsearDecimal(s.humedad)!!
-        )
-        _uiState.update {
-            if (guardado) it.copy(condicionesGuardadas = true, mensaje = "Condiciones ambientales guardadas", errorGeneral = null)
-            else it.copy(errorGeneral = "No se pudieron guardar las condiciones ambientales.")
+        val u = usuario ?: return
+        viewModelScope.launch {
+            val r = Repositorios.protocolos.actualizarCondiciones(
+                protocolo,
+                Unidades.parsearDecimal(s.temperatura)!!,
+                Unidades.parsearDecimal(s.humedad)!!,
+                u.idUsuario
+            )
+            _uiState.update {
+                if (r is ResultadoRed.Exito)
+                    it.copy(protocolo = r.datos, condicionesGuardadas = true, mensaje = "Condiciones ambientales guardadas", errorGeneral = null)
+                else it.copy(errorGeneral = r.mensajeError(), mensaje = null)
+            }
         }
     }
 
     fun onTipoPruebaSeleccionado(idTipoPrueba: Long) {
-        val parametros = db.listarParametrosDeTipoPrueba(idTipoPrueba)
+        val idTipoEquipo = _uiState.value.equipo?.idTipoEquipo ?: return
         val codigo = _uiState.value.tiposPrueba.firstOrNull { it.idTipoPrueba == idTipoPrueba }?.codigo
-        _uiState.update { s ->
-            val nuevo = FormularioPrueba(
-                idTipoPrueba = idTipoPrueba,
-                elemento = s.formulario.elemento,
-                momento = s.formulario.momento,
-
-                unidadBaja = if (codigo == "DEVANADOS") UnidadBaja.MOHM else UnidadBaja.UOHM
-            )
-            s.copy(parametros = parametros, formulario = nuevo, mensaje = null, errorGeneral = null)
+        viewModelScope.launch {
+            val parametros = (Repositorios.protocolos.parametrosDeTipoPrueba(idTipoEquipo, idTipoPrueba)
+                as? ResultadoRed.Exito)?.datos ?: emptyList()
+            _uiState.update { s ->
+                val nuevo = FormularioPrueba(
+                    idTipoPrueba = idTipoPrueba,
+                    elemento = s.formulario.elemento,
+                    momento = s.formulario.momento,
+                    unidadBaja = if (codigo == "DEVANADOS") UnidadBaja.MOHM else UnidadBaja.UOHM
+                )
+                s.copy(parametros = parametros, formulario = nuevo, mensaje = null, errorGeneral = null)
+            }
         }
     }
 
@@ -234,36 +256,46 @@ class MedicionesViewModel(application: Application) : AndroidViewModel(applicati
         val mediciones: Map<Long, Double> = if (!f.realizada) emptyMap()
         else s.parametrosVisibles.mapNotNull { p -> valoresBase[p.codigo]?.let { p.idParametro to it } }.toMap()
 
-        val prueba = Prueba(
-            idProtocolo = protocolo.idProtocolo,
-            idTipoPrueba = tipo.idTipoPrueba,
+        val u = usuario ?: return
+        val solicitud = PruebaSolicitud(
+            tipoPruebaId = tipo.idTipoPrueba,
             elemento = f.elemento.trim(),
-            momento = f.momento,
+            momento = f.momento.name,
             realizada = f.realizada,
             motivoNoRealizada = if (f.realizada) null else f.motivo.trim(),
-            idInstrumento = if (f.realizada) f.idInstrumento else null,
-            idResultado = resultado?.id,
-            comentario = if (f.realizada && tipo.codigo == "OPERACION_RELE" && !f.opero) "El relé no operó" else null
+            instrumentoId = if (f.realizada) f.idInstrumento else null,
+            noOpera = if (f.realizada && tipo.codigo == "OPERACION_RELE") !f.opero else null,
+            resultadoManual = if (f.realizada && s.requiereResultadoManual) resultado?.name else null,
+            comentario = if (f.realizada && tipo.codigo == "OPERACION_RELE" && !f.opero) "El relé no operó" else null,
+            mediciones = if (f.realizada)
+                s.parametrosVisibles.mapNotNull { p -> valoresBase[p.codigo]?.let { MedicionSolicitud(p.codigo, it) } }
+            else emptyList()
         )
-
-        when (db.insertarPrueba(prueba, mediciones)) {
-            is ResultadoGuardado.Creado -> _uiState.update {
-                it.copy(
-                    pruebas = armarPruebas(protocolo.idProtocolo, it.tiposPrueba),
-
-                    formulario = FormularioPrueba(
-                        idTipoPrueba = f.idTipoPrueba, momento = f.momento, unidadAislacion = f.unidadAislacion,
-                        unidadBaja = f.unidadBaja, idInstrumento = f.idInstrumento
-                    ),
-                    mensaje = "Prueba guardada",
-                    errorGeneral = null
-                )
-            }
-            is ResultadoGuardado.Duplicado -> _uiState.update {
-                it.copy(formulario = f.copy(errores = mapOf("elemento" to "Ya registraste esta prueba para ese elemento y momento")))
-            }
-            ResultadoGuardado.Fallo -> _uiState.update {
-                it.copy(errorGeneral = "No se pudo guardar la prueba. Intenta de nuevo.")
+        viewModelScope.launch {
+            when (val r = Repositorios.protocolos.registrarPrueba(
+                protocolo.idProtocolo, solicitud, u.idUsuario,
+                ContextoPruebaLocal(tipo, s.parametros, resultado?.name)
+            )) {
+                is ResultadoRed.Exito -> {
+                    val pruebas = (Repositorios.protocolos.pruebas(protocolo.idProtocolo) as? ResultadoRed.Exito)?.datos
+                    _uiState.update {
+                        it.copy(
+                            pruebas = pruebas ?: (it.pruebas + r.datos),
+                            formulario = FormularioPrueba(
+                                idTipoPrueba = f.idTipoPrueba, momento = f.momento, unidadAislacion = f.unidadAislacion,
+                                unidadBaja = f.unidadBaja, idInstrumento = f.idInstrumento
+                            ),
+                            mensaje = "Prueba guardada",
+                            errorGeneral = null
+                        )
+                    }
+                }
+                is ResultadoRed.ErrorServidor -> _uiState.update {
+                    if (r.codigo == 409)
+                        it.copy(formulario = f.copy(errores = mapOf("elemento" to "Ya registraste esta prueba para ese elemento y momento")))
+                    else it.copy(errorGeneral = r.mensaje)
+                }
+                ResultadoRed.SinConexion -> _uiState.update { it.copy(errorGeneral = r.mensajeError()) }
             }
         }
     }
@@ -272,9 +304,14 @@ class MedicionesViewModel(application: Application) : AndroidViewModel(applicati
         val s = _uiState.value
         val protocolo = s.protocolo ?: return
         if (!s.puedeModificar) return
-        db.eliminarPrueba(idPrueba)
-        _uiState.update {
-            it.copy(pruebas = armarPruebas(protocolo.idProtocolo, it.tiposPrueba), mensaje = "Prueba eliminada")
+        val u = usuario ?: return
+        viewModelScope.launch {
+            when (val r = Repositorios.protocolos.eliminarPrueba(protocolo.idProtocolo, idPrueba, u.idUsuario)) {
+                is ResultadoRed.Exito -> _uiState.update {
+                    it.copy(pruebas = it.pruebas.filter { p -> p.idPrueba != idPrueba }, mensaje = "Prueba eliminada")
+                }
+                else -> _uiState.update { it.copy(errorGeneral = r.mensajeError(), mensaje = null) }
+            }
         }
     }
 
@@ -298,11 +335,12 @@ class MedicionesViewModel(application: Application) : AndroidViewModel(applicati
             _uiState.update { it.copy(errorGeneral = error, mensaje = null) }
             return
         }
-        if (db.cambiarEstadoProtocolo(protocolo.idProtocolo, TipoEstadoProtocolo.REGISTRADO_TERRENO, u.idUsuario)) {
-            cargar(protocolo.idProtocolo, u)
-            _uiState.update { it.copy(mensaje = "Protocolo registrado en terreno", errorGeneral = null) }
-        } else {
-            _uiState.update { it.copy(errorGeneral = "No se pudo cambiar el estado del protocolo.") }
+        viewModelScope.launch {
+            val r = Repositorios.protocolos.cambiarEstado(protocolo.idProtocolo, TipoEstadoProtocolo.REGISTRADO_TERRENO, u.idUsuario)
+            if (r is ResultadoRed.Exito) {
+                refrescar(protocolo.idProtocolo, u)
+                _uiState.update { it.copy(mensaje = "Protocolo registrado en terreno", errorGeneral = null) }
+            } else _uiState.update { it.copy(errorGeneral = r.mensajeError(), mensaje = null) }
         }
     }
 
@@ -335,47 +373,23 @@ class MedicionesViewModel(application: Application) : AndroidViewModel(applicati
             _uiState.update { it.copy(errorGeneral = error, mensaje = null) }
             return
         }
-        if (db.cambiarEstadoProtocolo(protocolo.idProtocolo, nuevo, u.idUsuario, motivo)) {
-            cargar(protocolo.idProtocolo, u)
-            _uiState.update {
-                it.copy(mensaje = mensajeExito, errorGeneral = null, motivoRevision = "", errorMotivoRevision = null)
-            }
-        } else {
-            _uiState.update { it.copy(errorGeneral = "No se pudo cambiar el estado del protocolo.") }
+        viewModelScope.launch {
+            val r = Repositorios.protocolos.cambiarEstado(protocolo.idProtocolo, nuevo, u.idUsuario, motivo)
+            if (r is ResultadoRed.Exito) {
+                refrescar(protocolo.idProtocolo, u)
+                _uiState.update {
+                    it.copy(mensaje = mensajeExito, errorGeneral = null, motivoRevision = "", errorMotivoRevision = null)
+                }
+            } else _uiState.update { it.copy(errorGeneral = r.mensajeError(), mensaje = null) }
         }
     }
 
-    private fun motivoDelUltimoCambio(idProtocolo: Long, estado: TipoEstadoProtocolo): String? {
+    // Motivo escrito en el último cambio al estado actual (solo para OBSERVADO y ANULADO).
+    private fun motivoDelUltimoCambio(detalle: ProtocoloDto, estado: TipoEstadoProtocolo): String? {
         if (estado != TipoEstadoProtocolo.OBSERVADO && estado != TipoEstadoProtocolo.ANULADO) return null
-        return db.listarHistorialEstados(idProtocolo)
-            .filter { it.idEstadoNuevo == estado.id }
+        return (detalle.historial ?: emptyList())
+            .filter { it.estadoNuevo == estado.name }
             .maxByOrNull { it.fechaHora }
             ?.motivo
-    }
-
-    private fun armarPruebas(idProtocolo: Long, tipos: List<TipoPrueba>): List<PruebaRegistrada> =
-        db.listarPruebas(idProtocolo).map { prueba ->
-            val tipo = tipos.firstOrNull { it.idTipoPrueba == prueba.idTipoPrueba }
-            val parametros = db.listarParametrosDeTipoPrueba(prueba.idTipoPrueba).associateBy { it.idParametro }
-            PruebaRegistrada(
-                idPrueba = prueba.idPrueba,
-                nombreTipoPrueba = tipo?.nombre ?: "",
-                elemento = prueba.elemento,
-                momento = prueba.momento,
-                realizada = prueba.realizada,
-                motivoNoRealizada = prueba.motivoNoRealizada,
-                resultado = prueba.idResultado?.let { TipoResultado.desdeId(it) },
-                lineas = db.listarMediciones(prueba.idPrueba).mapNotNull { m ->
-                    parametros[m.idParametro]?.let { p ->
-                        val unidad = if (p.unidad == "—") "" else " ${p.unidad}"
-                        "${p.nombre}: ${Unidades.formatear(m.valor)}$unidad"
-                    }
-                }
-            )
-        }
-
-    override fun onCleared() {
-        db.close()
-        super.onCleared()
     }
 }

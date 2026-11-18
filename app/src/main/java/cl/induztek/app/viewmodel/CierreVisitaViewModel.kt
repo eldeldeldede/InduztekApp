@@ -2,28 +2,34 @@ package cl.induztek.app.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
-import cl.induztek.app.data.InduztekDbHelper
+import androidx.lifecycle.viewModelScope
+import cl.induztek.app.network.ProtocoloDto
+import cl.induztek.app.network.RecepcionSolicitud
+import cl.induztek.app.network.ResultadoRed
+import cl.induztek.app.network.mensajeError
+import cl.induztek.app.repository.Repositorios
 import cl.induztek.app.model.ActaProtocolo
 import cl.induztek.app.model.CierreVisitaUiState
 import cl.induztek.app.model.ProtocoloPendiente
-import cl.induztek.app.model.RecepcionActa
 import cl.induztek.app.model.ResumenProtocolo
 import cl.induztek.app.model.TipoEstadoProtocolo
 import cl.induztek.app.model.TipoResultado
 import cl.induztek.app.model.Usuario
 import cl.induztek.app.validacion.ReglasProtocolo
-import cl.induztek.app.validacion.Unidades
 import cl.induztek.app.validacion.ValidacionesFormulario
 import cl.induztek.app.validacion.ValidadorRut
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import java.time.LocalDateTime
+import kotlinx.coroutines.launch
 
+// =====================================================================
+//  CierreVisitaViewModel — acta de la visita, cierre y recepción por el cliente
+//  Todo se consulta/guarda en protocolos-service a través del repositorio; las reglas de cierre se
+//  validan aquí (para avisar al técnico) y de nuevo en el servidor (la regla definitiva).
+// =====================================================================
 class CierreVisitaViewModel(application: Application) : AndroidViewModel(application) {
-
-    private val db = InduztekDbHelper(application)
 
     private val _uiState = MutableStateFlow(CierreVisitaUiState())
     val uiState: StateFlow<CierreVisitaUiState> = _uiState.asStateFlow()
@@ -33,20 +39,31 @@ class CierreVisitaViewModel(application: Application) : AndroidViewModel(applica
 
     fun cargar(idVisita: Long, usuarioActual: Usuario) {
         usuario = usuarioActual
-        val visita = db.buscarVisita(idVisita)
+        viewModelScope.launch { refrescar(idVisita, usuarioActual) }
+    }
+
+    private suspend fun refrescar(idVisita: Long, usuarioActual: Usuario) {
+        val visitaRes = Repositorios.protocolos.visita(idVisita)
+        val visita = (visitaRes as? ResultadoRed.Exito)?.datos
         if (visita == null) {
-            _uiState.value = CierreVisitaUiState(cargado = true)
+            _uiState.value = CierreVisitaUiState(cargado = true, errorGeneral = visitaRes.mensajeError())
             return
         }
-        val instalacion = db.buscarInstalacion(visita.idInstalacion, usuarioActual)
+        // Si la instalación no es de la empresa del cliente, el servidor responde error y no se muestra nada.
+        val instalacion = (Repositorios.equipos.instalacion(visita.idInstalacion, usuarioActual) as? ResultadoRed.Exito)?.datos
         if (instalacion == null || (usuarioActual.esCliente && !visita.estaCerrada)) {
             _uiState.value = CierreVisitaUiState(cargado = true)
             return
         }
-        val protocolos = db.listarProtocolosPorVisita(idVisita, usuarioActual)
+        val protocolos = (Repositorios.protocolos.protocolosPorVisita(idVisita, visita.idInstalacion, usuarioActual)
+            as? ResultadoRed.Exito)?.datos ?: emptyList()
+        val nombres = Repositorios.usuarios.nombres()
+        val idsParticipantes = (Repositorios.protocolos.participantes(idVisita) as? ResultadoRed.Exito)?.datos ?: emptyList()
+        val recepcion = (Repositorios.protocolos.recepcion(idVisita) as? ResultadoRed.Exito)?.datos
+        val (acta, pendientes) = armarActaYPendientes(protocolos, usuarioActual)
+
         val primeraVez = idCargado != idVisita
         idCargado = idVisita
-
         _uiState.update { previo ->
             val base = if (primeraVez) CierreVisitaUiState() else previo
             base.copy(
@@ -54,12 +71,12 @@ class CierreVisitaViewModel(application: Application) : AndroidViewModel(applica
                 visita = visita,
                 instalacion = instalacion,
                 soloConsulta = usuarioActual.esCliente,
-                ingenieroNombre = db.buscarUsuarioPorId(visita.idUsuario)?.nombre ?: "",
-                participantes = db.listarNombresParticipantes(idVisita),
+                ingenieroNombre = nombres[visita.idUsuario] ?: "",
+                participantes = idsParticipantes.mapNotNull { nombres[it] },
                 protocolos = protocolos,
-                acta = armarActa(protocolos, usuarioActual),
-                pendientes = armarPendientes(protocolos, usuarioActual),
-                recepcion = db.buscarRecepcion(idVisita)
+                acta = acta,
+                pendientes = pendientes,
+                recepcion = recepcion
             )
         }
     }
@@ -85,11 +102,14 @@ class CierreVisitaViewModel(application: Application) : AndroidViewModel(applica
             }
             return
         }
-        if (db.cerrarVisita(visita.idVisita, LocalDateTime.now())) {
-            cargar(visita.idVisita, u)
-            _uiState.update { it.copy(mensaje = "Visita cerrada. Entrega el acta al cliente.", errorGeneral = null) }
-        } else {
-            _uiState.update { it.copy(errorGeneral = "No se pudo cerrar la visita (quizás ya estaba cerrada).") }
+        viewModelScope.launch {
+            when (val r = Repositorios.protocolos.cerrarVisita(visita.idVisita, u.idUsuario)) {
+                is ResultadoRed.Exito -> {
+                    refrescar(visita.idVisita, u)
+                    _uiState.update { it.copy(mensaje = "Visita cerrada. Entrega el acta al cliente.", errorGeneral = null) }
+                }
+                else -> _uiState.update { it.copy(errorGeneral = r.mensajeError(), mensaje = null) }
+            }
         }
     }
 
@@ -110,31 +130,58 @@ class CierreVisitaViewModel(application: Application) : AndroidViewModel(applica
             return
         }
 
-        val guardado = db.insertarRecepcion(
-            RecepcionActa(
-                idVisita = visita.idVisita,
-                receptorNombre = s.receptorNombre,
+        viewModelScope.launch {
+            val solicitud = RecepcionSolicitud(
+                receptorNombre = s.receptorNombre.trim(),
                 receptorRut = ValidadorRut.formatear(s.receptorRut),
-                receptorCargo = s.receptorCargo,
-                fechaHoraRecepcion = LocalDateTime.now()
+                receptorCargo = s.receptorCargo.trim()
             )
-        )
-        if (guardado) {
-            cargar(visita.idVisita, u)
-            _uiState.update { it.copy(mensaje = "Recepción del acta registrada", errorGeneral = null) }
-        } else {
-            _uiState.update { it.copy(errorGeneral = "No se pudo registrar la recepción (quizás ya estaba registrada).") }
+            when (val r = Repositorios.protocolos.registrarRecepcion(visita.idVisita, solicitud)) {
+                is ResultadoRed.Exito -> {
+                    refrescar(visita.idVisita, u)
+                    _uiState.update { it.copy(mensaje = "Recepción del acta registrada", errorGeneral = null) }
+                }
+                else -> _uiState.update { it.copy(errorGeneral = r.mensajeError(), mensaje = null) }
+            }
         }
     }
 
-    private fun armarPendientes(protocolos: List<ResumenProtocolo>, usuarioActual: Usuario): List<ProtocoloPendiente> =
-        protocolos
-            .filter { it.estado != TipoEstadoProtocolo.REGISTRADO_TERRENO && it.estado != TipoEstadoProtocolo.ANULADO }
-            .map { resumen ->
-                val equipo = db.buscarEquipo(resumen.idEquipo, usuarioActual)
-                val tipos = equipo?.let { db.listarPruebasDeTipoEquipo(it.idTipoEquipo) } ?: emptyList()
-                val registradas = db.listarPruebas(resumen.idProtocolo).map { it.idTipoPrueba }.toSet()
-                ProtocoloPendiente(
+    // Arma, con el detalle de cada protocolo (pruebas y mediciones), el texto del acta y la lista de pendientes.
+    private suspend fun armarActaYPendientes(
+        protocolos: List<ResumenProtocolo>,
+        usuarioActual: Usuario
+    ): Pair<List<ActaProtocolo>, List<ProtocoloPendiente>> {
+        val acta = mutableListOf<ActaProtocolo>()
+        val pendientes = mutableListOf<ProtocoloPendiente>()
+        val tiposPorEquipo = mutableMapOf<Long, List<cl.induztek.app.model.TipoPrueba>>()
+
+        for (resumen in protocolos.filter { it.estado != TipoEstadoProtocolo.ANULADO }) {
+            val detalle: ProtocoloDto = (Repositorios.protocolos.protocoloDetalle(resumen.idProtocolo)
+                as? ResultadoRed.Exito)?.datos ?: continue
+            val pruebas = detalle.pruebas ?: emptyList()
+
+            val lineas = mutableListOf<String>()
+            pruebas.forEach { prueba ->
+                val resultado = prueba.resultado?.let { TipoResultado.valueOf(it).etiqueta } ?: "No realizada"
+                lineas += "${prueba.tipoPruebaNombre ?: prueba.tipoPruebaCodigo} · ${prueba.elemento} · $resultado"
+                if (prueba.realizada) {
+                    (prueba.mediciones ?: emptyList()).forEach { m ->
+                        val unidad = if (m.unidad.isNullOrBlank() || m.unidad == "—") "" else " ${m.unidad}"
+                        lineas += "    ${m.parametroNombre ?: m.parametroCodigo}: ${cl.induztek.app.validacion.Unidades.formatear(m.valor)}$unidad"
+                    }
+                } else {
+                    prueba.motivoNoRealizada?.let { lineas += "    Motivo: $it" }
+                }
+            }
+            acta += ActaProtocolo(resumen.numero, resumen.tagEquipo, resumen.resultadoGlobal, lineas, resumen.estado)
+
+            if (resumen.estado != TipoEstadoProtocolo.REGISTRADO_TERRENO) {
+                val equipo = (Repositorios.equipos.equipo(resumen.idEquipo, usuarioActual) as? ResultadoRed.Exito)?.datos
+                val tipos = if (equipo == null) emptyList() else tiposPorEquipo.getOrPut(equipo.idTipoEquipo) {
+                    (Repositorios.protocolos.pruebasDeTipoEquipo(equipo.idTipoEquipo) as? ResultadoRed.Exito)?.datos ?: emptyList()
+                }
+                val registradas = pruebas.map { it.tipoPruebaId }.toSet()
+                pendientes += ProtocoloPendiente(
                     idProtocolo = resumen.idProtocolo,
                     numero = resumen.numero,
                     tagEquipo = resumen.tagEquipo,
@@ -142,33 +189,7 @@ class CierreVisitaViewModel(application: Application) : AndroidViewModel(applica
                     pruebasFaltantes = tipos.filter { it.idTipoPrueba !in registradas }.map { it.nombre }
                 )
             }
-
-    private fun armarActa(protocolos: List<ResumenProtocolo>, usuarioActual: Usuario): List<ActaProtocolo> =
-        protocolos.filter { it.estado != TipoEstadoProtocolo.ANULADO }.map { resumen ->
-            val equipo = db.buscarEquipo(resumen.idEquipo, usuarioActual)
-            val tipos = equipo?.let { db.listarPruebasDeTipoEquipo(it.idTipoEquipo) } ?: emptyList()
-            val lineas = mutableListOf<String>()
-            db.listarPruebas(resumen.idProtocolo).forEach { prueba ->
-                val nombreTipo = tipos.firstOrNull { it.idTipoPrueba == prueba.idTipoPrueba }?.nombre ?: ""
-                val resultado = prueba.idResultado?.let { TipoResultado.desdeId(it).etiqueta } ?: "No realizada"
-                lineas += "$nombreTipo · ${prueba.elemento} · $resultado"
-                if (prueba.realizada) {
-                    val parametros = db.listarParametrosDeTipoPrueba(prueba.idTipoPrueba).associateBy { it.idParametro }
-                    db.listarMediciones(prueba.idPrueba).forEach { m ->
-                        parametros[m.idParametro]?.let { p ->
-                            val unidad = if (p.unidad == "—") "" else " ${p.unidad}"
-                            lineas += "    ${p.nombre}: ${Unidades.formatear(m.valor)}$unidad"
-                        }
-                    }
-                } else {
-                    prueba.motivoNoRealizada?.let { lineas += "    Motivo: $it" }
-                }
-            }
-            ActaProtocolo(resumen.numero, resumen.tagEquipo, resumen.resultadoGlobal, lineas, resumen.estado)
         }
-
-    override fun onCleared() {
-        db.close()
-        super.onCleared()
+        return acta to pendientes
     }
 }
