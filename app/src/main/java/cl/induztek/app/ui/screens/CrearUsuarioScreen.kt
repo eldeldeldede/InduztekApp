@@ -48,7 +48,7 @@ import cl.induztek.app.viewmodel.CrearUsuarioViewModel
 // =====================================================================
 @Composable
 fun CrearUsuarioScreen(
-    jefe: Usuario,
+    jefe: Usuario, // quien crea la cuenta (Jefe técnico; Técnico/Ingeniero solo pueden crear clientes)
     onVolver: () -> Unit,
     viewModel: CrearUsuarioViewModel = viewModel()
 ) {
@@ -89,7 +89,7 @@ fun CrearUsuarioContent(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.titulo_crear_usuario)) },
+                title = { Text(stringResource(if (uiState.rolFijo) R.string.titulo_crear_cliente else R.string.titulo_crear_usuario)) },
                 navigationIcon = {
                     IconButton(onClick = onVolver) {
                         Icon(
@@ -117,7 +117,7 @@ fun CrearUsuarioContent(
             verticalArrangement = Arrangement.spacedBy(Dimens.espacioMedio)
         ) {
             Text(
-                text = stringResource(R.string.crear_usuario_ayuda),
+                text = stringResource(if (uiState.rolFijo) R.string.crear_cliente_ayuda else R.string.crear_usuario_ayuda),
                 style = MaterialTheme.typography.bodyMedium
             )
 
@@ -151,14 +151,17 @@ fun CrearUsuarioContent(
                     error = uiState.errorTelefono,
                     tipoTeclado = KeyboardType.Phone
                 )
-                ListaDesplegable(
-                    etiqueta = stringResource(R.string.campo_rol),
-                    seleccionado = uiState.rol?.nombre ?: "",
-                    opciones = uiState.roles,
-                    textoDe = { it.nombre },
-                    onSeleccionar = onRolCambia,
-                    error = uiState.errorRol
-                )
+                // Si el rol está fijo (Técnico/Ingeniero creando un cliente) no se muestra la lista
+                if (!uiState.rolFijo) {
+                    ListaDesplegable(
+                        etiqueta = stringResource(R.string.campo_rol),
+                        seleccionado = uiState.rol?.nombre ?: "",
+                        opciones = uiState.roles,
+                        textoDe = { it.nombre },
+                        onSeleccionar = onRolCambia,
+                        error = uiState.errorRol
+                    )
+                }
             }
 
             // Los datos de empresa solo aparecen si el rol elegido es CLIENTE

@@ -2,6 +2,7 @@ package cl.induztek.app.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import cl.induztek.app.model.CodigoRol
 import cl.induztek.app.model.CrearUsuarioUiState
 import cl.induztek.app.model.Usuario
 import cl.induztek.app.network.CrearUsuarioSolicitud
@@ -36,8 +37,14 @@ class CrearUsuarioViewModel : ViewModel() {
             val r = Repositorios.usuarios.roles()
             if (r is ResultadoRed.Exito && r.datos.isNotEmpty()) {
                 _uiState.update { it.copy(roles = r.datos) }
+                if (_uiState.value.rolFijo) soloClientes()
             }
         }
+    }
+
+    // El personal que no es Jefe técnico solo puede crear cuentas de CLIENTE: se fija el rol y se oculta la lista
+    fun soloClientes() = _uiState.update { e ->
+        e.copy(rolFijo = true, rol = e.roles.firstOrNull { it.codigo == CodigoRol.CLIENTE.codigo })
     }
 
     fun onRutCambia(v: String) = _uiState.update { it.copy(rut = v, errorRut = null, errorGeneral = null, exito = null) }
@@ -49,7 +56,7 @@ class CrearUsuarioViewModel : ViewModel() {
     fun onContactoNombreCambia(v: String) = _uiState.update { it.copy(contactoNombre = v) }
     fun onContactoCargoCambia(v: String) = _uiState.update { it.copy(contactoCargo = v) }
 
-    fun onLimpiar() = _uiState.update { CrearUsuarioUiState(roles = it.roles) }
+    fun onLimpiar() = _uiState.update { CrearUsuarioUiState(roles = it.roles, rolFijo = it.rolFijo, rol = if (it.rolFijo) it.rol else null) }
 
     fun onCrear(jefe: Usuario) {
         val e = _uiState.value
@@ -86,7 +93,7 @@ class CrearUsuarioViewModel : ViewModel() {
             when (val r = Repositorios.usuarios.crear(jefe.idUsuario, solicitud)) {
                 is ResultadoRed.Exito -> _uiState.update {
                     CrearUsuarioUiState(
-                        roles = it.roles,
+                        roles = it.roles, rolFijo = it.rolFijo, rol = if (it.rolFijo) it.rol else null,
                         exito = "Usuario creado. Se envió una contraseña temporal a ${r.datos.correo}."
                     )
                 }

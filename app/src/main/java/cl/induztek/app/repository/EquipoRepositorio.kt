@@ -79,6 +79,9 @@ class EquipoRepositorio(private val usuarios: UsuarioRepositorio) {
     suspend fun crearInstalacion(solicitud: InstalacionSolicitud): ResultadoRed<Instalacion> =
         llamarApi { ApiClient.equipos.crearInstalacion(solicitud) }.mapear { it.aInstalacion() }
 
+    suspend fun actualizarInstalacion(idInstalacion: Long, solicitud: InstalacionSolicitud): ResultadoRed<Instalacion> =
+        llamarApi { ApiClient.equipos.actualizarInstalacion(idInstalacion, solicitud) }.mapear { it.aInstalacion() }
+
     suspend fun tiposEquipo(): ResultadoRed<List<TipoEquipo>> =
         llamarConCache<List<TipoEquipoDto>>("tipos_equipo") { ApiClient.equipos.tiposEquipo() }.mapear { lista -> lista.map { it.aTipoEquipo() } }
 

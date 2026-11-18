@@ -10,6 +10,8 @@ data class CrearUsuarioUiState(
     val correo: String = "",
     val telefono: String = "",
     val rol: RolDto? = null,
+    // true cuando quien crea es Técnico/Ingeniero: solo pueden crear CLIENTES, el rol no se elige
+    val rolFijo: Boolean = false,
     // Roles para la lista desplegable. Parte con los 4 roles del caso y se reemplaza por los del servidor.
     val roles: List<RolDto> = CodigoRol.entries.map { RolDto(it.id, it.codigo, it.etiqueta) },
     // Solo si el rol es CLIENTE
