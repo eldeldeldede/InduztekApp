@@ -17,7 +17,10 @@ private val EsquemaClaro = lightColorScheme(
     secondaryContainer = AmbarInduztekClaro,
     onSecondaryContainer = Color(0xFF3B2A00),
     background = Color(0xFFF4F6F8),
-    surface = Color(0xFFF4F6F8)
+    surface = Color.White,
+    surfaceVariant = Color(0xFFE3E8EC),
+    onSurfaceVariant = Neutro,
+    outline = Color(0xFF8396A3)
 )
 
 private val EsquemaOscuro = darkColorScheme(
