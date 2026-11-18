@@ -4,13 +4,17 @@ import java.time.LocalDate
 
 data class InstalacionesUiState(
     val filtro: String = "",
-    val instalaciones: List<Instalacion> = emptyList()
+    val instalaciones: List<Instalacion> = emptyList(),
+    val cargando: Boolean = false,
+    val error: String? = null
 )
 
 data class EquiposUiState(
     val instalacion: Instalacion? = null,
     val filtro: String = "",
-    val equipos: List<Equipo> = emptyList()
+    val equipos: List<Equipo> = emptyList(),
+    val cargando: Boolean = false,
+    val error: String? = null
 )
 
 data class ComparacionValor(
@@ -25,5 +29,7 @@ data class HistorialEquipoUiState(
     val equipo: Equipo? = null,
     val protocolos: List<ResumenProtocolo> = emptyList(),
     val comparaciones: List<ComparacionValor> = emptyList(),
-    val hoy: LocalDate = LocalDate.now()
+    val hoy: LocalDate = LocalDate.now(),
+    val cargando: Boolean = false,
+    val error: String? = null
 )

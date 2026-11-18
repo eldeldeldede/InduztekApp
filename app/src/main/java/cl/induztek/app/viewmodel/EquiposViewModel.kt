@@ -2,29 +2,42 @@ package cl.induztek.app.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
-import cl.induztek.app.data.InduztekDbHelper
+import androidx.lifecycle.viewModelScope
 import cl.induztek.app.model.Equipo
 import cl.induztek.app.model.EquiposUiState
 import cl.induztek.app.model.Usuario
+import cl.induztek.app.network.ResultadoRed
+import cl.induztek.app.network.mensajeError
+import cl.induztek.app.repository.Repositorios
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
+// EquiposViewModel — equipos de una instalación con buscador (datos desde el repositorio).
 class EquiposViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val db = InduztekDbHelper(application)
     private var todos: List<Equipo> = emptyList()
 
     private val _uiState = MutableStateFlow(EquiposUiState())
     val uiState: StateFlow<EquiposUiState> = _uiState.asStateFlow()
 
     fun cargar(idInstalacion: Long, usuario: Usuario) {
-
-        val instalacion = db.buscarInstalacion(idInstalacion, usuario)
-        todos = if (instalacion == null) emptyList() else db.listarEquipos(idInstalacion, usuario)
-        _uiState.update { it.copy(instalacion = instalacion) }
-        aplicarFiltro(_uiState.value.filtro)
+        _uiState.update { it.copy(cargando = true, error = null) }
+        viewModelScope.launch {
+            val instalacion = Repositorios.equipos.instalacion(idInstalacion, usuario)
+            val equipos = Repositorios.equipos.equipos(idInstalacion, usuario)
+            if (equipos is ResultadoRed.Exito) todos = equipos.datos
+            _uiState.update {
+                it.copy(
+                    instalacion = (instalacion as? ResultadoRed.Exito)?.datos,
+                    cargando = false,
+                    error = instalacion.mensajeError() ?: equipos.mensajeError()
+                )
+            }
+            aplicarFiltro(_uiState.value.filtro)
+        }
     }
 
     fun buscar(texto: String) = aplicarFiltro(texto)
@@ -37,10 +50,5 @@ class EquiposViewModel(application: Application) : AndroidViewModel(application)
                 (it.marca ?: "").contains(buscado, ignoreCase = true)
         }
         _uiState.update { it.copy(filtro = texto, equipos = lista) }
-    }
-
-    override fun onCleared() {
-        db.close()
-        super.onCleared()
     }
 }

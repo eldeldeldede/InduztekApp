@@ -2,34 +2,36 @@ package cl.induztek.app.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
-import cl.induztek.app.data.InduztekDbHelper
+import androidx.lifecycle.viewModelScope
 import cl.induztek.app.model.ActasUiState
 import cl.induztek.app.model.Usuario
+import cl.induztek.app.network.ResultadoRed
+import cl.induztek.app.network.mensajeError
+import cl.induztek.app.repository.Repositorios
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
+// ActasViewModel — visitas (actas) de una instalación. Al cliente solo le llegan las de su empresa.
 class ActasViewModel(application: Application) : AndroidViewModel(application) {
-
-    private val db = InduztekDbHelper(application)
 
     private val _uiState = MutableStateFlow(ActasUiState())
     val uiState: StateFlow<ActasUiState> = _uiState.asStateFlow()
 
     fun cargar(idInstalacion: Long, usuario: Usuario) {
-
-        val instalacion = db.buscarInstalacion(idInstalacion, usuario)
-        val visitas = if (instalacion == null) emptyList() else db.listarVisitas(idInstalacion, usuario)
-        _uiState.value = ActasUiState(
-            cargado = true,
-            instalacion = instalacion,
-            visitas = visitas,
-            esCliente = usuario.esCliente
-        )
-    }
-
-    override fun onCleared() {
-        db.close()
-        super.onCleared()
+        _uiState.value = _uiState.value.copy(cargando = true, error = null, esCliente = usuario.esCliente)
+        viewModelScope.launch {
+            val instalacion = Repositorios.equipos.instalacion(idInstalacion, usuario)
+            val visitas = Repositorios.protocolos.visitas(idInstalacion, usuario)
+            _uiState.value = ActasUiState(
+                cargado = true,
+                instalacion = (instalacion as? ResultadoRed.Exito)?.datos,
+                visitas = (visitas as? ResultadoRed.Exito)?.datos ?: emptyList(),
+                esCliente = usuario.esCliente,
+                cargando = false,
+                error = instalacion.mensajeError() ?: visitas.mensajeError()
+            )
+        }
     }
 }
