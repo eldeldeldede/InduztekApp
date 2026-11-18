@@ -12,7 +12,7 @@ android {
     defaultConfig {
         applicationId = "cl.induztek.app"
         minSdk = 26 // java.time (LocalDate...) necesita API 26; RNF-08: celulares Android estándar
-        targetSdk = 37
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
 
