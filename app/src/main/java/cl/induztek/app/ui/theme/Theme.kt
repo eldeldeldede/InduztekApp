@@ -16,13 +16,13 @@ private val EsquemaClaro = lightColorScheme(
     onSecondary = Color.Black,
     secondaryContainer = AmbarInduztekClaro,
     onSecondaryContainer = Color(0xFF3B2A00),
-    background = Color(0xFFF7F9FC),
-    surface = Color(0xFFF7F9FC)
+    background = Color(0xFFF4F6F8),
+    surface = Color(0xFFF4F6F8)
 )
 
 private val EsquemaOscuro = darkColorScheme(
     primary = AzulOscuro80,
-    onPrimary = Color(0xFF00315E),
+    onPrimary = Color(0xFF0E2A3B),
     primaryContainer = AzulOscuroContenedor,
     onPrimaryContainer = AzulInduztekClaro,
     secondary = Ambar80,
