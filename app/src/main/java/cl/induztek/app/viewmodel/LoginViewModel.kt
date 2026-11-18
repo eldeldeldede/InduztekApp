@@ -7,10 +7,8 @@ import cl.induztek.app.data.Seguridad
 import cl.induztek.app.data.SesionPreferencias
 import cl.induztek.app.model.LoginUiState
 import cl.induztek.app.model.Usuario
-import cl.induztek.app.network.ApiClient
-import cl.induztek.app.network.LoginSolicitud
 import cl.induztek.app.network.ResultadoRed
-import cl.induztek.app.network.llamarApi
+import cl.induztek.app.repository.Repositorios
 import cl.induztek.app.validacion.ValidacionesFormulario
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -61,9 +59,9 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
 
         _uiState.update { it.copy(cargando = true, errorGeneral = null) }
         viewModelScope.launch {
-            when (val resultado = llamarApi { ApiClient.usuarios.login(LoginSolicitud(estado.correo, estado.clave)) }) {
+            when (val resultado = Repositorios.usuarios.iniciarSesion(estado.correo, estado.clave)) {
                 is ResultadoRed.Exito -> {
-                    val usuario = resultado.datos.aUsuario()
+                    val usuario = resultado.datos
                     if (!usuario.activo) {
                         terminar("Tu cuenta está desactivada. Contacta al Jefe técnico.")
                     } else {

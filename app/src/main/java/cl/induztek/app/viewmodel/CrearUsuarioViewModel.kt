@@ -4,11 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cl.induztek.app.model.CrearUsuarioUiState
 import cl.induztek.app.model.Usuario
-import cl.induztek.app.network.ApiClient
 import cl.induztek.app.network.CrearUsuarioSolicitud
 import cl.induztek.app.network.ResultadoRed
 import cl.induztek.app.network.RolDto
-import cl.induztek.app.network.llamarApi
+import cl.induztek.app.repository.Repositorios
 import cl.induztek.app.validacion.ValidacionesFormulario
 import cl.induztek.app.validacion.ValidadorRut
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -34,7 +33,7 @@ class CrearUsuarioViewModel : ViewModel() {
     // Pide los roles al servidor; si no hay conexión se quedan los 4 roles locales del caso.
     private fun cargarRoles() {
         viewModelScope.launch {
-            val r = llamarApi { ApiClient.usuarios.roles() }
+            val r = Repositorios.usuarios.roles()
             if (r is ResultadoRed.Exito && r.datos.isNotEmpty()) {
                 _uiState.update { it.copy(roles = r.datos) }
             }
@@ -84,7 +83,7 @@ class CrearUsuarioViewModel : ViewModel() {
                 contactoNombre = if (e.esCliente) e.contactoNombre.trim().ifBlank { null } else null,
                 contactoCargo = if (e.esCliente) e.contactoCargo.trim().ifBlank { null } else null
             )
-            when (val r = llamarApi { ApiClient.usuarios.crear(jefe.idUsuario, solicitud) }) {
+            when (val r = Repositorios.usuarios.crear(jefe.idUsuario, solicitud)) {
                 is ResultadoRed.Exito -> _uiState.update {
                     CrearUsuarioUiState(
                         roles = it.roles,

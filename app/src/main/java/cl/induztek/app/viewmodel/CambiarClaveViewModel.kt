@@ -7,10 +7,8 @@ import cl.induztek.app.data.Seguridad
 import cl.induztek.app.data.SesionPreferencias
 import cl.induztek.app.model.CambiarClaveUiState
 import cl.induztek.app.model.Usuario
-import cl.induztek.app.network.ApiClient
-import cl.induztek.app.network.CambiarContrasenaSolicitud
 import cl.induztek.app.network.ResultadoRed
-import cl.induztek.app.network.llamarApi
+import cl.induztek.app.repository.Repositorios
 import cl.induztek.app.validacion.ValidacionesFormulario
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -52,8 +50,7 @@ class CambiarClaveViewModel(application: Application) : AndroidViewModel(applica
 
         _uiState.update { it.copy(cargando = true, errorGeneral = null) }
         viewModelScope.launch {
-            val solicitud = CambiarContrasenaSolicitud(actual = e.actual, nueva = e.nueva)
-            when (val r = llamarApi { ApiClient.usuarios.cambiarContrasena(usuario.idUsuario, solicitud) }) {
+            when (val r = Repositorios.usuarios.cambiarContrasena(usuario.idUsuario, e.actual, e.nueva)) {
                 is ResultadoRed.Exito -> {
                     val actualizado = usuario.copy(debeCambiarContrasena = false)
                     // La clave nueva reemplaza a la guardada para el ingreso sin conexión
