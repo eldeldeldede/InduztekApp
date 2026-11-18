@@ -56,6 +56,9 @@ import cl.induztek.app.ui.theme.Dimens
 import cl.induztek.app.ui.theme.Exito
 import cl.induztek.app.ui.theme.InduztekAppTheme
 import cl.induztek.app.viewmodel.CierreVisitaViewModel
+import cl.induztek.app.viewmodel.ReportesActaViewModel
+import cl.induztek.app.model.ReportesActaUiState
+import cl.induztek.app.ui.components.SeccionReportesCliente
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -63,9 +66,13 @@ import java.time.LocalDateTime
 fun CierreVisitaScreen(
     onVolver: () -> Unit,
     onAbrirProtocolo: (Long) -> Unit,
-    viewModel: CierreVisitaViewModel = viewModel()
+    viewModel: CierreVisitaViewModel = viewModel(),
+    // Solo el cliente usa la sección "Reportar un problema" (para el personal queda en null)
+    reportesViewModel: ReportesActaViewModel? = null,
+    alReportar: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val reportesState = reportesViewModel?.uiState?.collectAsStateWithLifecycle()?.value
 
     CierreVisitaContent(
         uiState = uiState,
@@ -75,7 +82,11 @@ fun CierreVisitaScreen(
         onRutCambia = viewModel::onRutCambia,
         onCargoCambia = viewModel::onCargoCambia,
         onCerrarVisita = viewModel::onCerrarVisita,
-        onRegistrarRecepcion = viewModel::onRegistrarRecepcion
+        onRegistrarRecepcion = viewModel::onRegistrarRecepcion,
+        reportes = reportesState,
+        onReporteTextoCambia = { reportesViewModel?.onTextoCambia(it) },
+        onReporteProtocolo = { reportesViewModel?.onProtocoloSeleccionado(it) },
+        onEnviarReporte = { reportesViewModel?.onEnviar(alReportar) }
     )
 }
 
@@ -89,7 +100,11 @@ fun CierreVisitaContent(
     onCargoCambia: (String) -> Unit,
     onCerrarVisita: () -> Unit,
     onRegistrarRecepcion: () -> Unit,
-    onAbrirProtocolo: (Long) -> Unit = {}
+    onAbrirProtocolo: (Long) -> Unit = {},
+    reportes: ReportesActaUiState? = null,
+    onReporteTextoCambia: (String) -> Unit = {},
+    onReporteProtocolo: (Long?) -> Unit = {},
+    onEnviarReporte: () -> Unit = {}
 ) {
     Scaffold(
         topBar = {
@@ -213,6 +228,17 @@ fun CierreVisitaContent(
                         )
                     }
                 }
+            }
+
+            // El cliente puede reportar un problema del acta y ver cómo va el seguimiento
+            if (reportes != null && uiState.soloConsulta) {
+                SeccionReportesCliente(
+                    uiState = reportes,
+                    protocolos = uiState.protocolos,
+                    onTextoCambia = onReporteTextoCambia,
+                    onProtocoloSeleccionado = onReporteProtocolo,
+                    onEnviar = onEnviarReporte
+                )
             }
 
             AnimatedVisibility(visible = uiState.mensaje != null) {
