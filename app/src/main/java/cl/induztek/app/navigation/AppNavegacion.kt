@@ -23,6 +23,8 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import cl.induztek.app.ui.components.AlReanudar
 import cl.induztek.app.ui.components.AvisoSinSenal
+import cl.induztek.app.ui.components.BarraSincronizacion
+import androidx.compose.foundation.layout.Column
 import cl.induztek.app.ui.components.rememberHayRed
 import cl.induztek.app.ui.screens.ActasScreen
 import cl.induztek.app.ui.screens.AltaEquipoScreen
@@ -278,7 +280,11 @@ fun AppNavegacion() {
                 )
             }
         }
-        AvisoSinSenal(visible = !hayRed, modifier = Modifier.align(Alignment.BottomCenter))
+        Column(modifier = Modifier.align(Alignment.BottomCenter)) {
+            // Solo con sesión iniciada: avisa si hay cambios hechos sin conexión esperando enviarse
+            if (usuarioActual != null) BarraSincronizacion(hayRed = hayRed)
+            AvisoSinSenal(visible = !hayRed)
+        }
     }
 }
 

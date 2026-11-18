@@ -4,6 +4,8 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import cl.induztek.app.data.SesionPreferencias
 import cl.induztek.app.model.Usuario
+import cl.induztek.app.repository.Repositorios
+import cl.induztek.app.repository.Sincronizador
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -23,6 +25,12 @@ class SesionViewModel(application: Application) : AndroidViewModel(application) 
     private val _usuarioActual = MutableStateFlow(restaurar())
     val usuarioActual: StateFlow<Usuario?> = _usuarioActual.asStateFlow()
 
+    init {
+        // Sesión recuperada al abrir la app: se envía lo pendiente y se actualiza la caché (si hay red)
+        Repositorios.establecerUsuario(_usuarioActual.value)
+        Sincronizador.alVolverConexion(_usuarioActual.value)
+    }
+
     private fun restaurar(): Usuario? {
         val usuario = sesion.leer() ?: return null
         // Una cuenta desactivada (RF-22) no puede seguir con la sesión guardada
@@ -36,6 +44,8 @@ class SesionViewModel(application: Application) : AndroidViewModel(application) 
     fun iniciarSesion(usuario: Usuario) {
         _usuarioActual.value = usuario
         sesion.guardar(usuario)
+        Repositorios.establecerUsuario(usuario)
+        Sincronizador.alVolverConexion(usuario)
     }
 
     // Se usa al cambiar la contraseña: el usuario es el mismo pero ya no debe cambiarla
@@ -44,5 +54,6 @@ class SesionViewModel(application: Application) : AndroidViewModel(application) 
     fun cerrarSesion() {
         _usuarioActual.value = null
         sesion.borrar()
+        Repositorios.establecerUsuario(null)
     }
 }
