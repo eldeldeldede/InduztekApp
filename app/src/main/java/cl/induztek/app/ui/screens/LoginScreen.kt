@@ -35,6 +35,12 @@ import cl.induztek.app.ui.theme.Dimens
 import cl.induztek.app.ui.theme.InduztekAppTheme
 import cl.induztek.app.viewmodel.LoginViewModel
 
+// =====================================================================
+//  LoginScreen.kt — RF-14: ingreso por correo y contraseña.
+//  Misma estructura que FormularioScreen de MiRegistro:
+//    LoginScreen  -> conecta con el ViewModel (viewModel(), collectAsStateWithLifecycle)
+//    LoginContent -> SOLO dibuja el uiState y avisa con funciones (por eso tiene @Preview)
+// =====================================================================
 @Composable
 fun LoginScreen(
     onIngresoExitoso: (Usuario) -> Unit,
@@ -47,8 +53,8 @@ fun LoginScreen(
         onCorreoCambia = viewModel::onCorreoCambia,
         onClaveCambia = viewModel::onClaveCambia,
         onAlternarVisibilidad = viewModel::onAlternarVisibilidad,
-
-        onIngresar = { viewModel.onIngresar()?.let { usuario -> onIngresoExitoso(usuario) } }
+        // El ViewModel consulta al servidor; si las credenciales son correctas llama a onIngresoExitoso
+        onIngresar = { viewModel.onIngresar(onIngresoExitoso) }
     )
 }
 
@@ -95,18 +101,21 @@ fun LoginContent(
                         error = uiState.errorClave
                     )
 
+                    // ANIMACIÓN: el mensaje de error aparece y desaparece suavemente
                     AnimatedVisibility(visible = uiState.errorGeneral != null) {
                         MensajeError(mensaje = uiState.errorGeneral ?: "")
                     }
 
                     BotonPrincipal(
-                        texto = stringResource(R.string.btn_ingresar),
+                        texto = stringResource(if (uiState.cargando) R.string.btn_ingresando else R.string.btn_ingresar),
                         onClick = onIngresar,
+                        habilitado = !uiState.cargando,
                         icono = R.drawable.ic_check,
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
 
+                // Ayuda para probar la app (datos de demostración). Se puede borrar al terminar.
                 Text(
                     text = stringResource(R.string.login_demo),
                     style = MaterialTheme.typography.bodySmall,

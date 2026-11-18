@@ -1,23 +1,27 @@
 <resources>
     <string name="app_name">InduztekApp</string>
 
+    <!-- Login -->
     <string name="login_subtitulo">Protocolos de prueba y mantención eléctrica</string>
     <string name="login_titulo">Iniciar sesión</string>
-    <string name="login_demo">Datos de prueba — técnico: mgodoy@induztek.ejemplo · ingeniero: acontreras@induztek.ejemplo · jefe técnico: respinoza@induztek.ejemplo · cliente: mfuentes@envpacifico.ejemplo. Contraseña de todos: Induztek2026</string>
+    <string name="login_demo">Con los microservicios encendidos, el Jefe técnico inicial es jefe@induztek.cl (contraseña temporal: Induztek2026; la app te pedirá cambiarla). Los demás usuarios los crea el Jefe desde el menú. Sin conexión solo entra el último usuario que ya inició sesión en este teléfono.</string>
     <string name="campo_correo">Correo electrónico</string>
     <string name="campo_contrasena">Contraseña</string>
     <string name="btn_ingresar">Ingresar</string>
 
+    <!-- Menú y sesión -->
     <string name="saludo">Hola, %1$s</string>
     <string name="menu_cerrar_sesion">Cerrar sesión</string>
     <string name="dialogo_titulo">¿Cerrar sesión?</string>
     <string name="dialogo_mensaje">Tendrás que ingresar de nuevo con tu correo y contraseña.</string>
     <string name="dialogo_cancelar">Cancelar</string>
 
+    <!-- Instalaciones -->
     <string name="titulo_instalaciones">Instalaciones</string>
     <string name="campo_buscar_instalacion">Buscar por nombre, comuna o cliente</string>
     <string name="lista_vacia_instalaciones">No se encontraron instalaciones</string>
 
+    <!-- Equipos -->
     <string name="titulo_equipos">Equipos</string>
     <string name="campo_buscar_equipo">Buscar por TAG, tipo o marca</string>
     <string name="lista_vacia_equipos">No se encontraron equipos</string>
@@ -25,6 +29,7 @@
     <string name="cd_nuevo_equipo">Registrar equipo nuevo</string>
     <string name="cd_ver_historial">Ver historial del equipo</string>
 
+    <!-- Alta de equipo -->
     <string name="titulo_alta_equipo">Nuevo equipo</string>
     <string name="seccion_identificacion">Identificación</string>
     <string name="seccion_placa">Datos de placa</string>
@@ -45,6 +50,7 @@
     <string name="equipo_existente_mensaje">Este equipo ya está registrado en la instalación. Puedes usar el equipo existente en vez de crear uno nuevo.</string>
     <string name="btn_usar_equipo_existente">Usar el equipo registrado</string>
 
+    <!-- Historial del equipo -->
     <string name="titulo_historial">Historial del equipo</string>
     <string name="equipo_no_encontrado">No se encontró el equipo.</string>
     <string name="seccion_comparacion">Comparación con la prueba anterior</string>
@@ -63,6 +69,7 @@
     <string name="dato_corriente">Corriente nominal: %1$s A</string>
     <string name="dato_max_contactos">Contactos, máximo de placa: %1$s µΩ</string>
 
+    <!-- Nuevo protocolo (HU-02) -->
     <string name="titulo_nuevo_protocolo">Nuevo protocolo</string>
     <string name="protocolo_para_equipo">Protocolo para %1$s (%2$s)</string>
     <string name="seccion_visita">Visita</string>
@@ -72,6 +79,7 @@
     <string name="btn_iniciar_protocolo">Iniciar protocolo</string>
     <string name="cd_nuevo_protocolo">Iniciar un protocolo para este equipo</string>
 
+    <!-- Mediciones (HU-02 / HU-03) -->
     <string name="titulo_mediciones">Mediciones</string>
     <string name="protocolo_no_encontrado">No se encontró el protocolo.</string>
     <string name="protocolo_solo_lectura">Solo lectura: no puedes modificar este protocolo en su estado actual.</string>
@@ -114,6 +122,7 @@
     <string name="confirmar_anular_texto">El protocolo anulado no se podrá modificar y dejará de mostrarse al cliente.</string>
     <string name="motivo_ultimo_cambio">Motivo indicado: %1$s</string>
 
+    <!-- Cierre de visita y acta (HU-07 / HU-08) -->
     <string name="titulo_cierre_visita">Cierre de visita</string>
     <string name="titulo_acta_visita">Acta de la visita</string>
     <string name="titulo_actas">Visitas y actas</string>
@@ -156,6 +165,7 @@
     <string name="dato_receptor_cargo">Cargo: %1$s</string>
     <string name="dato_recepcion_fecha">Fecha y hora: %1$s</string>
 
+    <!-- Foto de la placa (cámara) y estado de la red -->
     <string name="seccion_foto_placa">Foto de la placa</string>
     <string name="btn_tomar_foto">Tomar foto</string>
     <string name="btn_repetir_foto">Repetir foto</string>
@@ -164,9 +174,36 @@
     <string name="error_foto_no_guardada">No se pudo guardar la foto. Intenta de nuevo.</string>
     <string name="aviso_sin_senal">Sin señal: modo offline. Tus datos se guardan en el teléfono y puedes consultar el historial de los equipos.</string>
 
+    <!-- Accesibilidad -->
     <string name="cd_foto_placa">Foto de la placa del equipo</string>
     <string name="cd_menu">Abrir menú</string>
     <string name="cd_volver">Volver</string>
     <string name="cd_mostrar_contrasena">Mostrar contraseña</string>
     <string name="cd_ocultar_contrasena">Ocultar contraseña</string>
+
+    <!-- Fase 1: red y sesión -->
+    <string name="btn_ingresando">Ingresando…</string>
+    <string name="menu_crear_usuario">Crear usuario</string>
+
+    <string name="titulo_cambiar_clave">Cambia tu contraseña</string>
+    <string name="cambiar_clave_ayuda">Entraste con una contraseña temporal. Por seguridad debes elegir una nueva antes de continuar.</string>
+    <string name="campo_clave_actual">Contraseña actual (temporal)</string>
+    <string name="campo_clave_nueva">Nueva contraseña</string>
+    <string name="campo_clave_confirmar">Repite la nueva contraseña</string>
+    <string name="btn_guardar_clave">Guardar contraseña</string>
+    <string name="btn_guardando">Guardando…</string>
+
+    <string name="titulo_crear_usuario">Crear usuario</string>
+    <string name="crear_usuario_ayuda">Tú eliges el rol; la contraseña la genera el sistema y se envía al correo del nuevo usuario.</string>
+    <string name="seccion_datos_usuario">Datos del usuario</string>
+    <string name="seccion_datos_cliente">Datos de la empresa cliente</string>
+    <string name="campo_rut">RUT</string>
+    <string name="campo_nombre_usuario">Nombre o razón social</string>
+    <string name="campo_telefono">Teléfono (opcional)</string>
+    <string name="campo_rol">Rol</string>
+    <string name="campo_giro">Giro</string>
+    <string name="campo_contacto_nombre">Nombre del contacto</string>
+    <string name="campo_contacto_cargo">Cargo del contacto</string>
+    <string name="btn_crear_usuario">Crear usuario</string>
+    <string name="btn_creando">Creando…</string>
 </resources>
