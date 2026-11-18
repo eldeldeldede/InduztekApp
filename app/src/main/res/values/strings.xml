@@ -4,7 +4,7 @@
     <!-- Login -->
     <string name="login_subtitulo">Protocolos de prueba y mantención eléctrica</string>
     <string name="login_titulo">Iniciar sesión</string>
-    <string name="login_demo">Con los microservicios encendidos, el Jefe técnico inicial es jefe@induztek.cl (contraseña temporal: Induztek2026; la app te pedirá cambiarla). Los demás usuarios los crea el Jefe desde el menú. Sin conexión solo entra el último usuario que ya inició sesión en este teléfono.</string>
+    <string name="login_demo">Para iniciar sesión por primera vez debes estar conectado a internet.</string>
     <string name="campo_correo">Correo electrónico</string>
     <string name="campo_contrasena">Contraseña</string>
     <string name="btn_ingresar">Ingresar</string>
