@@ -131,6 +131,14 @@ object ValidacionesFormulario {
         else -> null
     }
 
+    // ---------- Recuperar contraseña ----------
+    // El servidor envía por correo un código de 6 dígitos.
+    fun codigoRecuperacion(texto: String): String? = when {
+        texto.isBlank() -> "Ingresa el código que te llegó por correo"
+        texto.trim().length != 6 || !texto.trim().all { it.isDigit() } -> "El código tiene 6 dígitos"
+        else -> null
+    }
+
     // ---------- Crear usuario (solo Jefe técnico) ----------
     fun nombreUsuario(texto: String): String? =
         if (texto.trim().length < 3) "Ingresa el nombre (mínimo 3 caracteres)" else null

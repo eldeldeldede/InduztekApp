@@ -10,7 +10,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.ui.res.painterResource
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -43,6 +49,10 @@ fun CambiarClaveScreen(
     usuario: Usuario,
     onClaveCambiada: (Usuario) -> Unit,
     onCerrarSesion: () -> Unit,
+    // obligatorio = true: primer ingreso con clave temporal (sin botón volver).
+    // obligatorio = false: el usuario la cambia cuando quiere desde "Mi perfil" (con flecha para volver).
+    obligatorio: Boolean = true,
+    onVolver: () -> Unit = {},
     viewModel: CambiarClaveViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -54,10 +64,13 @@ fun CambiarClaveScreen(
         onConfirmacionCambia = viewModel::onConfirmacionCambia,
         onAlternarVisibilidad = viewModel::onAlternarVisibilidad,
         onGuardar = { viewModel.onGuardar(usuario, onClaveCambiada) },
-        onCerrarSesion = onCerrarSesion
+        onCerrarSesion = onCerrarSesion,
+        obligatorio = obligatorio,
+        onVolver = onVolver
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CambiarClaveContent(
     uiState: CambiarClaveUiState,
@@ -66,9 +79,33 @@ fun CambiarClaveContent(
     onConfirmacionCambia: (String) -> Unit,
     onAlternarVisibilidad: () -> Unit,
     onGuardar: () -> Unit,
-    onCerrarSesion: () -> Unit
+    onCerrarSesion: () -> Unit,
+    obligatorio: Boolean = true,
+    onVolver: () -> Unit = {}
 ) {
-    Scaffold(containerColor = MaterialTheme.colorScheme.background) { innerPadding ->
+    Scaffold(
+        topBar = {
+            if (!obligatorio) {
+                TopAppBar(
+                    title = { Text(stringResource(R.string.titulo_cambiar_clave_voluntaria)) },
+                    navigationIcon = {
+                        IconButton(onClick = onVolver) {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_volver),
+                                contentDescription = stringResource(R.string.cd_volver)
+                            )
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                        navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
+                    )
+                )
+            }
+        },
+        containerColor = MaterialTheme.colorScheme.background
+    ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -76,23 +113,29 @@ fun CambiarClaveContent(
                 .imePadding()
                 .verticalScroll(rememberScrollState())
         ) {
-            EncabezadoMarca(
-                titulo = stringResource(R.string.app_name),
-                subtitulo = stringResource(R.string.titulo_cambiar_clave)
-            )
+            if (obligatorio) {
+                EncabezadoMarca(
+                    titulo = stringResource(R.string.app_name),
+                    subtitulo = stringResource(R.string.titulo_cambiar_clave)
+                )
+            }
             Column(
                 modifier = Modifier.padding(Dimens.espacioPantalla),
                 verticalArrangement = Arrangement.spacedBy(Dimens.espacioMedio)
             ) {
                 Text(
-                    text = stringResource(R.string.cambiar_clave_ayuda),
+                    text = stringResource(
+                        if (obligatorio) R.string.cambiar_clave_ayuda else R.string.cambiar_clave_ayuda_voluntaria
+                    ),
                     style = MaterialTheme.typography.bodyMedium
                 )
                 TarjetaSeccion(titulo = stringResource(R.string.titulo_cambiar_clave)) {
                     CampoContrasena(
                         valor = uiState.actual,
                         onValorCambia = onActualCambia,
-                        etiqueta = stringResource(R.string.campo_clave_actual),
+                        etiqueta = stringResource(
+                            if (obligatorio) R.string.campo_clave_actual else R.string.campo_clave_actual_voluntaria
+                        ),
                         visible = uiState.clavesVisibles,
                         onAlternarVisible = onAlternarVisibilidad,
                         error = uiState.errorActual
@@ -124,12 +167,15 @@ fun CambiarClaveContent(
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
-                BotonSecundario(
-                    texto = stringResource(R.string.menu_cerrar_sesion),
-                    onClick = onCerrarSesion,
-                    icono = R.drawable.ic_salir,
-                    modifier = Modifier.fillMaxWidth()
-                )
+                // Solo en el cambio obligatorio: la única otra salida es cerrar sesión
+                if (obligatorio) {
+                    BotonSecundario(
+                        texto = stringResource(R.string.menu_cerrar_sesion),
+                        onClick = onCerrarSesion,
+                        icono = R.drawable.ic_salir,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
             }
         }
     }

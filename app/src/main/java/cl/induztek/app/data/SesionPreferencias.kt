@@ -64,6 +64,12 @@ class SesionPreferencias(context: Context) {
         }
     }
 
+    // Si el usuario cambia su nombre/teléfono, el "último ingreso" (modo sin conexión) se actualiza sin tocar el hash.
+    fun actualizarUltimoIngreso(usuario: Usuario) {
+        val ultimo = leerUltimoIngreso() ?: return
+        if (ultimo.usuario.idUsuario == usuario.idUsuario) guardarUltimoIngreso(usuario, ultimo.hashClave)
+    }
+
     fun leerUltimoIngreso(): UltimoIngreso? {
         val usuario = leerUsuario(prefsUltimo) ?: return null
         val hash = prefsUltimo.getString(HASH, null) ?: return null

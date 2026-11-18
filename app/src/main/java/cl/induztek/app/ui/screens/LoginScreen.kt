@@ -13,6 +13,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -44,6 +45,7 @@ import cl.induztek.app.viewmodel.LoginViewModel
 @Composable
 fun LoginScreen(
     onIngresoExitoso: (Usuario) -> Unit,
+    onOlvideClave: () -> Unit = {},
     viewModel: LoginViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -54,7 +56,8 @@ fun LoginScreen(
         onClaveCambia = viewModel::onClaveCambia,
         onAlternarVisibilidad = viewModel::onAlternarVisibilidad,
         // El ViewModel consulta al servidor; si las credenciales son correctas llama a onIngresoExitoso
-        onIngresar = { viewModel.onIngresar(onIngresoExitoso) }
+        onIngresar = { viewModel.onIngresar(onIngresoExitoso) },
+        onOlvideClave = onOlvideClave
     )
 }
 
@@ -64,7 +67,8 @@ fun LoginContent(
     onCorreoCambia: (String) -> Unit,
     onClaveCambia: (String) -> Unit,
     onAlternarVisibilidad: () -> Unit,
-    onIngresar: () -> Unit
+    onIngresar: () -> Unit,
+    onOlvideClave: () -> Unit = {}
 ) {
     Scaffold(containerColor = MaterialTheme.colorScheme.background) { innerPadding ->
         Column(
@@ -113,6 +117,10 @@ fun LoginContent(
                         icono = R.drawable.ic_check,
                         modifier = Modifier.fillMaxWidth()
                     )
+                }
+
+                TextButton(onClick = onOlvideClave, modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(R.string.login_olvide_clave))
                 }
 
                 // Ayuda para probar la app (datos de demostración). Se puede borrar al terminar.
