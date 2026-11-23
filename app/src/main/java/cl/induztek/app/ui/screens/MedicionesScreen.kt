@@ -27,6 +27,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -59,6 +60,7 @@ import cl.induztek.app.ui.components.ListaDesplegable
 import cl.induztek.app.ui.components.MensajeError
 import cl.induztek.app.ui.components.TarjetaSeccion
 import cl.induztek.app.ui.theme.Advertencia
+import cl.induztek.app.ui.theme.Peligro
 import cl.induztek.app.ui.theme.AdvertenciaFondo
 import cl.induztek.app.ui.theme.Dimens
 import cl.induztek.app.ui.theme.Exito
@@ -219,7 +221,7 @@ fun MedicionesContent(
                 Text(stringResource(R.string.sin_pruebas), style = MaterialTheme.typography.bodyMedium)
             }
             uiState.pruebas.forEach { prueba ->
-                TarjetaPrueba(
+                TarjetaPruebaEliminable(
                     prueba = prueba,
                     puedeEliminar = uiState.puedeModificar,
                     onEliminar = { acciones.onEliminarPrueba(prueba.idPrueba) }
@@ -376,6 +378,83 @@ private fun EncabezadoProtocolo(uiState: MedicionesUiState) {
             }
         }
     }
+}
+
+// Eliminar una prueba no se puede deshacer: antes de borrarla se pasa por varias advertencias.
+@Composable
+private fun TarjetaPruebaEliminable(prueba: PruebaRegistrada, puedeEliminar: Boolean, onEliminar: () -> Unit) {
+    var confirmando by remember { mutableStateOf(false) }
+    TarjetaPrueba(prueba = prueba, puedeEliminar = puedeEliminar, onEliminar = { confirmando = true })
+    if (confirmando) {
+        ConfirmarEliminarPrueba(
+            prueba = prueba,
+            onConfirmar = {
+                confirmando = false
+                onEliminar()
+            },
+            onCancelar = { confirmando = false }
+        )
+    }
+}
+
+// Tres pasos: 1) aviso, 2) "esto no se puede deshacer", 3) escribir ELIMINAR para habilitar el botón final.
+@Composable
+private fun ConfirmarEliminarPrueba(prueba: PruebaRegistrada, onConfirmar: () -> Unit, onCancelar: () -> Unit) {
+    var paso by remember { mutableIntStateOf(1) }
+    var texto by remember { mutableStateOf("") }
+    val palabra = stringResource(R.string.eliminar_palabra_clave)
+    AlertDialog(
+        onDismissRequest = onCancelar,
+        title = {
+            Text(
+                stringResource(
+                    when (paso) {
+                        1 -> R.string.eliminar_prueba_titulo_1
+                        2 -> R.string.eliminar_prueba_titulo_2
+                        else -> R.string.eliminar_prueba_titulo_3
+                    }
+                )
+            )
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(Dimens.espacioChico)) {
+                Text(
+                    text = "${prueba.nombreTipoPrueba} · ${prueba.elemento} · ${prueba.momento.etiqueta}",
+                    style = MaterialTheme.typography.titleSmall
+                )
+                Text(
+                    stringResource(
+                        when (paso) {
+                            1 -> R.string.eliminar_prueba_texto_1
+                            2 -> R.string.eliminar_prueba_texto_2
+                            else -> R.string.eliminar_prueba_texto_3
+                        }
+                    ),
+                    color = if (paso == 1) MaterialTheme.colorScheme.onSurface else Peligro
+                )
+                if (paso == 3) {
+                    CampoTexto(
+                        valor = texto,
+                        onValorCambia = { texto = it },
+                        etiqueta = stringResource(R.string.eliminar_campo_confirmacion, palabra)
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            if (paso < 3) {
+                TextButton(onClick = { paso++ }) { Text(stringResource(R.string.btn_continuar)) }
+            } else {
+                TextButton(
+                    onClick = onConfirmar,
+                    enabled = texto.trim().equals(palabra, ignoreCase = true)
+                ) { Text(stringResource(R.string.btn_eliminar_definitivo), color = Peligro) }
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onCancelar) { Text(stringResource(R.string.btn_cancelar)) }
+        }
+    )
 }
 
 @Composable

@@ -97,6 +97,16 @@
     <string name="no_realizada">No realizada</string>
     <string name="motivo_no_realizada">Motivo: %1$s</string>
     <string name="btn_eliminar_prueba">Eliminar prueba</string>
+    <string name="eliminar_prueba_titulo_1">Eliminar prueba</string>
+    <string name="eliminar_prueba_titulo_2">Esto no se puede deshacer</string>
+    <string name="eliminar_prueba_titulo_3">Última advertencia</string>
+    <string name="eliminar_prueba_texto_1">Vas a eliminar esta prueba y todas sus mediciones del protocolo. Si solo hay un valor equivocado, es mejor corregirlo que eliminar la prueba.</string>
+    <string name="eliminar_prueba_texto_2">La prueba y sus mediciones se borrarán de forma permanente y no podrás recuperarlas. El resultado global del protocolo se volverá a calcular sin ella.</string>
+    <string name="eliminar_prueba_texto_3">Para confirmar que de verdad quieres eliminarla, escribe la palabra indicada. Después de esto no hay vuelta atrás.</string>
+    <string name="eliminar_campo_confirmacion">Escribe %1$s para confirmar</string>
+    <string name="eliminar_palabra_clave">ELIMINAR</string>
+    <string name="btn_continuar">Continuar</string>
+    <string name="btn_eliminar_definitivo">Eliminar definitivamente</string>
     <string name="seccion_nueva_prueba">Nueva prueba</string>
     <string name="campo_tipo_prueba">Tipo de prueba</string>
     <string name="campo_elemento">Elemento medido (ej.: AT-T, Fase H1-X1)</string>
