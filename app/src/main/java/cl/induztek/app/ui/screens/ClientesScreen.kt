@@ -189,7 +189,7 @@ fun ClientesContent(
                 }
             },
             confirmButton = {
-                TextButton(onClick = onGuardar, enabled = !uiState.guardando) { Text(stringResource(R.string.btn_guardar_respuesta)) }
+                TextButton(onClick = onGuardar, enabled = !uiState.guardando) { Text(stringResource(R.string.btn_guardar)) }
             },
             dismissButton = { TextButton(onClick = onCancelar) { Text(stringResource(R.string.dialogo_cancelar)) } }
         )

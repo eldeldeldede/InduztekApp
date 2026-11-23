@@ -153,28 +153,6 @@ data class PruebaSolicitud(
 data class MotivoSolicitud(val motivo: String)
 
 @Keep
-data class ReporteActaSolicitud(val protocoloId: Long?, val texto: String)
-
-@Keep
-data class ResponderReporteSolicitud(val estado: String, val respuesta: String?)
-
-@Keep
-data class ReporteActaDto(
-    val id: Long,
-    val visitaId: Long,
-    val numeroOt: String?,
-    val protocoloId: Long?,
-    val protocoloNumero: String?,
-    val clienteId: Long,
-    val texto: String,
-    val estado: String,
-    val respuesta: String?,
-    val respondidoPorId: Long?,
-    val fechaHoraCreacion: String,
-    val fechaHoraActualizacion: String
-)
-
-@Keep
 data class ActaDto(val visita: VisitaDto, val instalacionNombre: String?, val protocolos: List<ProtocoloDto>?)
 
 @Keep

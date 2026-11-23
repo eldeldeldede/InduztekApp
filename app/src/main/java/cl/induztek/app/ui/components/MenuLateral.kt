@@ -39,7 +39,7 @@ fun MenuLateral(
     usuario: Usuario,
     estadoMenu: DrawerState,
     onCerrarSesion: () -> Unit,
-    acciones: List<AccionMenu> = emptyList(),   // ítems según el rol (perfil, clientes, reportes...)
+    acciones: List<AccionMenu> = emptyList(),   // ítems según el rol (perfil, clientes...)
     contenido: @Composable (abrirMenu: () -> Unit) -> Unit
 ) {
     val scope = rememberCoroutineScope()

@@ -91,24 +91,4 @@ interface ProtocolosApi {
 
     @GET("api/tipos-prueba")
     suspend fun tiposPrueba(@Query("tipoEquipoId") tipoEquipoId: Long?): List<TipoPruebaDto>
-
-    @POST("api/visitas/{id}/reportes")
-    suspend fun crearReporte(
-        @Header("X-Usuario-Id") idActor: Long,
-        @Path("id") idVisita: Long,
-        @Body solicitud: ReporteActaSolicitud
-    ): ReporteActaDto
-
-    @GET("api/reportes-acta")
-    suspend fun reportes(
-        @Header("X-Usuario-Id") idActor: Long,
-        @Query("visitaId") visitaId: Long?
-    ): List<ReporteActaDto>
-
-    @PUT("api/reportes-acta/{id}")
-    suspend fun responderReporte(
-        @Header("X-Usuario-Id") idActor: Long,
-        @Path("id") id: Long,
-        @Body solicitud: ResponderReporteSolicitud
-    ): ReporteActaDto
 }

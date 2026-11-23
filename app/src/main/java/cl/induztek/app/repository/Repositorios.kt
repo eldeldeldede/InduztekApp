@@ -11,7 +11,6 @@ object Repositorios {
     val usuarios: UsuarioRepositorio by lazy { UsuarioRepositorio() }
     val equipos: EquipoRepositorio by lazy { EquipoRepositorio(usuarios) }
     val protocolos: ProtocoloRepositorio by lazy { ProtocoloRepositorio(usuarios) }
-    val reportes: ReporteRepositorio by lazy { ReporteRepositorio() }
 
     // Quién tiene la sesión ahora (null = nadie). La caché local se separa por usuario.
     @Volatile

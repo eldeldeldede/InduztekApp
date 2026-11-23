@@ -45,9 +45,6 @@ import cl.induztek.app.viewmodel.CrearUsuarioViewModel
 import cl.induztek.app.viewmodel.InstalacionFormViewModel
 import cl.induztek.app.ui.screens.ClientesScreen
 import cl.induztek.app.ui.screens.InstalacionFormScreen
-import cl.induztek.app.viewmodel.ReportesActaViewModel
-import cl.induztek.app.viewmodel.ReportesViewModel
-import cl.induztek.app.ui.screens.ReportesScreen
 import cl.induztek.app.ui.screens.EquiposScreen
 import cl.induztek.app.ui.screens.HistorialEquipoScreen
 import cl.induztek.app.ui.screens.InstalacionesScreen
@@ -354,30 +351,10 @@ fun AppNavegacion() {
                 val usuario = usuarioActual ?: return@composable
                 val idVisita = entrada.arguments?.getLong(Rutas.ARG_ID_VISITA) ?: 0L
                 val viewModel: CierreVisitaViewModel = viewModel()
-                val reportesVm: ReportesActaViewModel = viewModel()
-                AlReanudar(entrada) {
-                    viewModel.cargar(idVisita, usuario)
-                    if (usuario.esCliente) reportesVm.cargar(idVisita, usuario)
-                }
+                AlReanudar(entrada) { viewModel.cargar(idVisita, usuario) }
                 CierreVisitaScreen(
                     onVolver = { navController.popBackStack() },
                     onAbrirProtocolo = { idProtocolo -> navController.navigate(Rutas.mediciones(idProtocolo)) },
-                    viewModel = viewModel,
-                    reportesViewModel = if (usuario.esCliente) reportesVm else null,
-                    // Si el reporte devolvió un protocolo a "observado", se recarga el acta para verlo
-                    alReportar = { viewModel.cargar(idVisita, usuario) }
-                )
-            }
-
-            composable(Rutas.REPORTES) { entrada ->
-                val usuario = usuarioActual ?: return@composable
-                val viewModel: ReportesViewModel = viewModel()
-                AlReanudar(entrada) { viewModel.cargar(usuario) }
-                ReportesScreen(
-                    usuario = usuario,
-                    onVolver = { navController.popBackStack() },
-                    onVerActa = { idVisita -> navController.navigate(Rutas.cierreVisita(idVisita)) },
-                    onVerProtocolo = { idProtocolo -> navController.navigate(Rutas.mediciones(idProtocolo)) },
                     viewModel = viewModel
                 )
             }
@@ -398,11 +375,6 @@ private fun accionesDelMenu(usuario: Usuario, navController: NavHostController):
     if (!usuario.esCliente) {
         add(AccionMenu(stringResource(R.string.menu_clientes), R.drawable.ic_lista) { navController.navigate(Rutas.CLIENTES) })
     }
-    // Reportes de actas: el cliente ve los suyos; el personal los atiende (responden Ingeniero y Jefe)
-    add(AccionMenu(
-        stringResource(if (usuario.esCliente) R.string.menu_mis_reportes else R.string.menu_reportes),
-        R.drawable.ic_nota
-    ) { navController.navigate(Rutas.REPORTES) })
     if (usuario.codigoRol == CodigoRol.JEFE_TECNICO) {
         add(AccionMenu(stringResource(R.string.menu_crear_usuario), R.drawable.ic_agregar) {
             navController.navigate(Rutas.CREAR_USUARIO)
