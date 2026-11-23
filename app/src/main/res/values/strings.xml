@@ -241,6 +241,16 @@
     <string name="campo_observaciones_acceso">Observaciones de acceso</string>
     <string name="btn_guardar">Guardar</string>
     <string name="menu_clientes">Clientes</string>
+    <string name="menu_trabajadores">Trabajadores</string>
+    <string name="campo_buscar_trabajador">Buscar trabajador</string>
+    <string name="trabajadores_vacio">No hay trabajadores para mostrar.</string>
+    <string name="btn_ver_perfil">Ver perfil</string>
+    <string name="perfil_dato_rol">Rol: %1$s</string>
+    <string name="perfil_dato_rut">RUT: %1$s</string>
+    <string name="perfil_dato_correo">Correo: %1$s</string>
+    <string name="perfil_dato_telefono">Teléfono: %1$s</string>
+    <string name="perfil_dato_estado">Estado: %1$s</string>
+    <string name="btn_cerrar">Cerrar</string>
     <string name="titulo_perfil">Mi perfil</string>
     <string name="perfil_seccion_cuenta">Cuenta</string>
     <string name="perfil_seccion_datos">Mis datos</string>

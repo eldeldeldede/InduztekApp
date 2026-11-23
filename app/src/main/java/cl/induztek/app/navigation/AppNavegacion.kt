@@ -41,9 +41,11 @@ import cl.induztek.app.model.CodigoRol
 import cl.induztek.app.viewmodel.ActasViewModel
 import cl.induztek.app.viewmodel.CierreVisitaViewModel
 import cl.induztek.app.viewmodel.ClientesViewModel
+import cl.induztek.app.viewmodel.TrabajadoresViewModel
 import cl.induztek.app.viewmodel.CrearUsuarioViewModel
 import cl.induztek.app.viewmodel.InstalacionFormViewModel
 import cl.induztek.app.ui.screens.ClientesScreen
+import cl.induztek.app.ui.screens.TrabajadoresScreen
 import cl.induztek.app.ui.screens.InstalacionFormScreen
 import cl.induztek.app.ui.screens.EquiposScreen
 import cl.induztek.app.ui.screens.HistorialEquipoScreen
@@ -192,6 +194,20 @@ fun AppNavegacion() {
                     if (usuario.codigoRol != CodigoRol.JEFE_TECNICO) viewModel.soloClientes()
                 }
                 CrearUsuarioScreen(jefe = usuario, onVolver = { navController.popBackStack() }, viewModel = viewModel)
+            }
+
+            composable(Rutas.TRABAJADORES) { entrada ->
+                val usuario = usuarioActual ?: return@composable
+                if (usuario.codigoRol != CodigoRol.JEFE_TECNICO) {
+                    LaunchedEffect(Unit) { navController.popBackStack() }
+                    return@composable
+                }
+                val viewModel: TrabajadoresViewModel = viewModel()
+                AlReanudar(entrada) { viewModel.cargar(usuario) }
+                TrabajadoresScreen(
+                    onVolver = { navController.popBackStack() },
+                    viewModel = viewModel
+                )
             }
 
             composable(Rutas.CLIENTES) { entrada ->
@@ -398,6 +414,7 @@ private fun accionesDelMenu(usuario: Usuario, navController: NavHostController):
         add(AccionMenu(stringResource(R.string.menu_clientes), R.drawable.ic_lista) { navController.navigate(Rutas.CLIENTES) })
     }
     if (usuario.codigoRol == CodigoRol.JEFE_TECNICO) {
+        add(AccionMenu(stringResource(R.string.menu_trabajadores), R.drawable.ic_persona) { navController.navigate(Rutas.TRABAJADORES) })
         add(AccionMenu(stringResource(R.string.menu_crear_usuario), R.drawable.ic_agregar) {
             navController.navigate(Rutas.CREAR_USUARIO)
         })

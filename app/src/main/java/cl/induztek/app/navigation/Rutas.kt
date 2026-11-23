@@ -13,6 +13,7 @@ object Rutas {
     const val CAMBIAR_CLAVE = "cambiar_clave"   // primer ingreso: obliga a reemplazar la clave temporal
     const val CREAR_USUARIO = "crear_usuario"   // solo Jefe técnico
     const val RECUPERAR_CLAVE = "recuperar_clave"           // pública: se abre desde el login
+    const val TRABAJADORES = "trabajadores"   // solo Jefe técnico
     const val CLIENTES = "clientes"                         // personal: lista, alta y edición de clientes
     const val PERFIL = "perfil"                             // cada usuario edita sus datos
     const val CAMBIAR_CLAVE_VOLUNTARIO = "cambiar_clave_voluntario"

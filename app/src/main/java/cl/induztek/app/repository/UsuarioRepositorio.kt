@@ -44,6 +44,10 @@ class UsuarioRepositorio {
         llamarConCache<List<UsuarioDto>>("usuarios_rol_${rol.id}") { ApiClient.usuarios.listar(rol.id) }
             .mapear { lista -> lista.filter { it.activo }.map { it.aUsuario() } }
 
+    suspend fun listarPersonal(): ResultadoRed<List<Usuario>> =
+        llamarApi { ApiClient.usuarios.listar(null) }
+            .mapear { lista -> lista.map { it.aUsuario() }.filter { !it.esCliente } }
+
     suspend fun listarClientes(): ResultadoRed<List<Usuario>> =
         llamarApi { ApiClient.usuarios.listar(CodigoRol.CLIENTE.id) }.mapear { lista -> lista.map { it.aUsuario() } }
 
