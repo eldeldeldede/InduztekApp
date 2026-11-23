@@ -56,25 +56,28 @@ class EquipoRepositorio(private val usuarios: UsuarioRepositorio) {
         }.mapear { it.aEquipo() }
 
     suspend fun crearEquipo(equipo: Equipo): ResultadoRed<Equipo> =
-        llamarApi {
-            ApiClient.equipos.crearEquipo(
-                EquipoSolicitud(
-                    instalacionId = equipo.idInstalacion,
-                    tag = equipo.tag,
-                    tipoEquipoId = equipo.idTipoEquipo,
-                    marca = equipo.marca,
-                    modelo = equipo.modelo,
-                    numeroSerie = equipo.numeroSerie,
-                    anioFabricacion = equipo.anioFabricacion,
-                    potenciaKva = equipo.potenciaKva,
-                    tensionPrimariaKv = equipo.tensionPrimariaKv,
-                    tensionSecundariaKv = equipo.tensionSecundariaKv,
-                    corrienteNominalA = equipo.corrienteNominalA,
-                    maxContactosUohm = equipo.maxContactosUohm,
-                    observaciones = equipo.observaciones
-                )
-            )
-        }.mapear { it.aEquipo() }
+        llamarApi { ApiClient.equipos.crearEquipo(equipo.aSolicitud()) }.mapear { it.aEquipo() }
+
+    // Solo el Jefe técnico puede editar un equipo: el servidor lo valida con el id de quien hace el cambio.
+    suspend fun actualizarEquipo(idActor: Long, equipo: Equipo): ResultadoRed<Equipo> =
+        llamarApi { ApiClient.equipos.actualizarEquipo(idActor, equipo.idEquipo, equipo.aSolicitud()) }
+            .mapear { it.aEquipo() }
+
+    private fun Equipo.aSolicitud() = EquipoSolicitud(
+        instalacionId = idInstalacion,
+        tag = tag,
+        tipoEquipoId = idTipoEquipo,
+        marca = marca,
+        modelo = modelo,
+        numeroSerie = numeroSerie,
+        anioFabricacion = anioFabricacion,
+        potenciaKva = potenciaKva,
+        tensionPrimariaKv = tensionPrimariaKv,
+        tensionSecundariaKv = tensionSecundariaKv,
+        corrienteNominalA = corrienteNominalA,
+        maxContactosUohm = maxContactosUohm,
+        observaciones = observaciones
+    )
 
     suspend fun crearInstalacion(solicitud: InstalacionSolicitud): ResultadoRed<Instalacion> =
         llamarApi { ApiClient.equipos.crearInstalacion(solicitud) }.mapear { it.aInstalacion() }

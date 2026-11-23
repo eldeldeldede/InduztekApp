@@ -2,6 +2,7 @@ package cl.induztek.app.network
 
 import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.Header
 import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path
@@ -38,7 +39,11 @@ interface EquiposApi {
     suspend fun crearEquipo(@Body solicitud: EquipoSolicitud): EquipoDto
 
     @PUT("api/equipos/{id}")
-    suspend fun actualizarEquipo(@Path("id") id: Long, @Body solicitud: EquipoSolicitud): EquipoDto
+    suspend fun actualizarEquipo(
+        @Header("X-Usuario-Id") idActor: Long,
+        @Path("id") id: Long,
+        @Body solicitud: EquipoSolicitud
+    ): EquipoDto
 
     @GET("api/comunas")
     suspend fun comunas(): List<ComunaDto>

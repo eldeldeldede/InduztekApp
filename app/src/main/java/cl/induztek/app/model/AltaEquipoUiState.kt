@@ -37,7 +37,9 @@ data class AltaEquipoUiState(
 
     val idEquipoExistente: Long? = null,
     val errorGeneral: String? = null,
-    val guardadoExitoso: Boolean = false
+    val guardadoExitoso: Boolean = false,
+    // true cuando el Jefe técnico edita un equipo que ya existe (la pantalla es la misma del alta)
+    val modoEdicion: Boolean = false
 ) {
     val mostrarPotencia get() = idTipoEquipo == TiposEquipoIds.TRANSFORMADOR
     val mostrarTensionPrimaria get() = idTipoEquipo != TiposEquipoIds.RELE

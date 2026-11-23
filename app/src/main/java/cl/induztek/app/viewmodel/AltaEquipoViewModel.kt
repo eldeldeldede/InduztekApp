@@ -5,6 +5,8 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import cl.induztek.app.model.AltaEquipoUiState
 import cl.induztek.app.model.Equipo
+import cl.induztek.app.model.Usuario
+import cl.induztek.app.network.mensajeError
 import cl.induztek.app.network.ResultadoRed
 import cl.induztek.app.repository.Repositorios
 import cl.induztek.app.util.FotosPlaca
@@ -29,6 +31,39 @@ class AltaEquipoViewModel(application: Application) : AndroidViewModel(applicati
                     it.copy(tipos = r.datos, idTipoEquipo = if (it.idTipoEquipo == 0L) r.datos.firstOrNull()?.idTipoEquipo ?: 0L else it.idTipoEquipo)
                 }
                 else -> _uiState.update { it.copy(errorGeneral = "No se pudieron cargar los tipos de equipo. Revisa tu conexión.") }
+            }
+        }
+    }
+
+    // ---------- Edición (solo Jefe técnico) ----------
+    private var idEquipoEdicion = 0L
+    private var idInstalacionEdicion = 0L
+    private var idActor = 0L
+
+    fun cargarParaEditar(idEquipo: Long, usuario: Usuario) {
+        if (idEquipoEdicion == idEquipo) return
+        idEquipoEdicion = idEquipo
+        idActor = usuario.idUsuario
+        viewModelScope.launch {
+            when (val r = Repositorios.equipos.equipo(idEquipo, usuario)) {
+                is ResultadoRed.Exito -> {
+                    val q = r.datos
+                    idInstalacionEdicion = q.idInstalacion
+                    _uiState.update {
+                        it.copy(
+                            modoEdicion = true, tag = q.tag, idTipoEquipo = q.idTipoEquipo,
+                            marca = q.marca ?: "", modelo = q.modelo ?: "", numeroSerie = q.numeroSerie ?: "",
+                            anioFabricacion = q.anioFabricacion?.toString() ?: "",
+                            potenciaKva = q.potenciaKva?.let { v -> Unidades.formatear(v) } ?: "",
+                            tensionPrimariaKv = q.tensionPrimariaKv?.let { v -> Unidades.formatear(v) } ?: "",
+                            tensionSecundariaKv = q.tensionSecundariaKv?.let { v -> Unidades.formatear(v) } ?: "",
+                            corrienteNominalA = q.corrienteNominalA?.let { v -> Unidades.formatear(v) } ?: "",
+                            maxContactosUohm = q.maxContactosUohm?.let { v -> Unidades.formatear(v) } ?: "",
+                            observaciones = q.observaciones ?: ""
+                        )
+                    }
+                }
+                else -> _uiState.update { it.copy(errorGeneral = r.mensajeError()) }
             }
         }
     }
@@ -111,7 +146,15 @@ class AltaEquipoViewModel(application: Application) : AndroidViewModel(applicati
 
         _uiState.update { it.copy(guardando = true, errorGeneral = null) }
         viewModelScope.launch {
-            when (val r = Repositorios.equipos.crearEquipo(equipo)) {
+            // En edición se actualiza el equipo existente; en el alta se crea uno nuevo
+            val resultado = if (e.modoEdicion) {
+                Repositorios.equipos.actualizarEquipo(
+                    idActor, equipo.copy(idEquipo = idEquipoEdicion, idInstalacion = idInstalacionEdicion)
+                )
+            } else {
+                Repositorios.equipos.crearEquipo(equipo)
+            }
+            when (val r = resultado) {
                 is ResultadoRed.Exito -> {
                     _uiState.update { it.copy(guardando = false, guardadoExitoso = true, errorGeneral = null) }
                     alGuardar()

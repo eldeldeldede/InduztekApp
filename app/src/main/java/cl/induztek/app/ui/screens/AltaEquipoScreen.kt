@@ -66,6 +66,8 @@ import cl.induztek.app.ui.theme.AzulInduztek
 import cl.induztek.app.ui.theme.Dimens
 import cl.induztek.app.ui.theme.InduztekAppTheme
 import cl.induztek.app.viewmodel.AltaEquipoViewModel
+import cl.induztek.app.model.Usuario
+import androidx.compose.runtime.LaunchedEffect
 
 @Composable
 fun AltaEquipoScreen(
@@ -73,9 +75,15 @@ fun AltaEquipoScreen(
     onVolver: () -> Unit,
     onGuardado: () -> Unit,
     onVerExistente: (Long) -> Unit,
-    viewModel: AltaEquipoViewModel = viewModel()
+    viewModel: AltaEquipoViewModel = viewModel(),
+    // Para editar un equipo (solo Jefe técnico): se entrega su id y quien lo edita. Con idEquipo = 0 es un alta.
+    idEquipo: Long = 0L,
+    usuario: Usuario? = null
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    LaunchedEffect(idEquipo) {
+        if (idEquipo != 0L && usuario != null) viewModel.cargarParaEditar(idEquipo, usuario)
+    }
     val contexto = LocalContext.current
     val mensajePermiso = stringResource(R.string.error_permiso_camara)
     val mensajeFoto = stringResource(R.string.error_foto_no_guardada)
@@ -158,7 +166,7 @@ fun AltaEquipoContent(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.titulo_alta_equipo)) },
+                title = { Text(stringResource(if (uiState.modoEdicion) R.string.titulo_editar_equipo else R.string.titulo_alta_equipo)) },
                 navigationIcon = {
                     IconButton(onClick = onVolver) {
                         Icon(
@@ -281,7 +289,8 @@ fun AltaEquipoContent(
                 )
             }
 
-            TarjetaSeccion(titulo = stringResource(R.string.seccion_foto_placa)) {
+            // La foto de la placa solo se toma al registrar el equipo; al editar se cambian los datos
+            if (!uiState.modoEdicion) TarjetaSeccion(titulo = stringResource(R.string.seccion_foto_placa)) {
                 uiState.fotoPlaca?.let { FotoPlaca(ruta = it) }
                 Row(horizontalArrangement = Arrangement.spacedBy(Dimens.espacioMedio)) {
                     BotonSecundario(
@@ -302,13 +311,15 @@ fun AltaEquipoContent(
             uiState.errorGeneral?.let { MensajeError(mensaje = it) }
 
             Row(horizontalArrangement = Arrangement.spacedBy(Dimens.espacioMedio)) {
-                BotonSecundario(
-                    texto = stringResource(R.string.btn_limpiar),
-                    onClick = onLimpiar,
-                    modifier = Modifier.weight(1f)
-                )
+                if (!uiState.modoEdicion) {
+                    BotonSecundario(
+                        texto = stringResource(R.string.btn_limpiar),
+                        onClick = onLimpiar,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
                 BotonPrincipal(
-                    texto = stringResource(R.string.btn_guardar_equipo),
+                    texto = stringResource(if (uiState.modoEdicion) R.string.btn_guardar_cambios else R.string.btn_guardar_equipo),
                     onClick = onGuardar,
                     icono = R.drawable.ic_check,
                     modifier = Modifier.weight(1f)

@@ -31,6 +31,9 @@
 
     <!-- Alta de equipo -->
     <string name="titulo_alta_equipo">Nuevo equipo</string>
+    <string name="titulo_editar_equipo">Editar equipo</string>
+    <string name="btn_guardar_cambios">Guardar cambios</string>
+    <string name="cd_editar_equipo">Editar equipo</string>
     <string name="seccion_identificacion">Identificación</string>
     <string name="seccion_placa">Datos de placa</string>
     <string name="campo_tag">TAG del equipo (ej.: TR-01)</string>

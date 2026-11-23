@@ -49,7 +49,8 @@ fun EquiposScreen(
     onVerHistorial: (Long) -> Unit,
     onNuevoProtocolo: (Long) -> Unit,
     onVerActas: () -> Unit,
-    viewModel: EquiposViewModel
+    viewModel: EquiposViewModel,
+    onEditarEquipo: (Long) -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -61,7 +62,8 @@ fun EquiposScreen(
         onAltaEquipo = onAltaEquipo,
         onVerHistorial = onVerHistorial,
         onNuevoProtocolo = onNuevoProtocolo,
-        onVerActas = onVerActas
+        onVerActas = onVerActas,
+        onEditarEquipo = onEditarEquipo
     )
 }
 
@@ -75,7 +77,8 @@ fun EquiposContent(
     onAltaEquipo: () -> Unit,
     onVerHistorial: (Long) -> Unit,
     onNuevoProtocolo: (Long) -> Unit,
-    onVerActas: () -> Unit = {}
+    onVerActas: () -> Unit = {},
+    onEditarEquipo: (Long) -> Unit = {}
 ) {
     Scaffold(
         topBar = {
@@ -161,6 +164,15 @@ fun EquiposContent(
                             trailingContent = {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
 
+                                    // Editar un equipo es exclusivo del Jefe técnico
+                                    if (usuario.codigoRol == CodigoRol.JEFE_TECNICO) {
+                                        IconButton(onClick = { onEditarEquipo(equipo.idEquipo) }) {
+                                            Icon(
+                                                painter = painterResource(R.drawable.ic_nota),
+                                                contentDescription = stringResource(R.string.cd_editar_equipo)
+                                            )
+                                        }
+                                    }
                                     if (!usuario.esCliente) {
                                         IconButton(onClick = { onNuevoProtocolo(equipo.idEquipo) }) {
                                             Icon(

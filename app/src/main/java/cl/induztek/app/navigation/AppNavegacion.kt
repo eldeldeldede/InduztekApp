@@ -254,6 +254,7 @@ fun AppNavegacion() {
                     onAltaEquipo = { navController.navigate(Rutas.altaEquipo(idInstalacion)) },
                     onVerHistorial = { idEquipo -> navController.navigate(Rutas.historialEquipo(idEquipo)) },
                     onNuevoProtocolo = { idEquipo -> navController.navigate(Rutas.nuevoProtocolo(idEquipo)) },
+                    onEditarEquipo = { idEquipo -> navController.navigate(Rutas.editarEquipo(idEquipo)) },
                     onVerActas = { navController.navigate(Rutas.actas(idInstalacion)) },
                     viewModel = viewModel
                 )
@@ -275,6 +276,27 @@ fun AppNavegacion() {
                             popUpTo(Rutas.ALTA_EQUIPO) { inclusive = true }
                         }
                     }
+                )
+            }
+
+            composable(
+                route = Rutas.EDITAR_EQUIPO,
+                arguments = listOf(navArgument(Rutas.ARG_ID_EQUIPO) { type = NavType.LongType })
+            ) { entrada ->
+                val usuario = usuarioActual ?: return@composable
+                // Solo el Jefe técnico edita equipos (el servidor también lo exige)
+                if (usuario.codigoRol != CodigoRol.JEFE_TECNICO) {
+                    LaunchedEffect(Unit) { navController.popBackStack() }
+                    return@composable
+                }
+                val idEquipo = entrada.arguments?.getLong(Rutas.ARG_ID_EQUIPO) ?: 0L
+                AltaEquipoScreen(
+                    idInstalacion = 0L,
+                    idEquipo = idEquipo,
+                    usuario = usuario,
+                    onVolver = { navController.popBackStack() },
+                    onGuardado = { navController.popBackStack() },
+                    onVerExistente = {}
                 )
             }
 
