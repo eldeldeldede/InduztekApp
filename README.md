@@ -12,6 +12,7 @@ Backend (microservicios Spring Boot): [DemoInduztek-microservicio](https://githu
 - Cambio obligatorio de la contraseña temporal en el primer ingreso.
 - El Jefe Técnico crea los usuarios (elige el rol; la contraseña temporal la genera el servidor y se envía por correo).
 - Técnico e Ingeniero pueden crear clientes e instalaciones.
+- El Jefe Técnico ve el perfil de cada trabajador (rol, RUT, correo, teléfono y estado) y puede activar o desactivar sus cuentas desde el menú **Trabajadores**.
 - Cuatro perfiles: Técnico, Ingeniero, Jefe Técnico y Cliente.
 - Alta de equipos con TAG, tipo, datos de placa y foto de la placa. Solo el Jefe Técnico puede editar un equipo; los equipos no se eliminan.
 - Creación de protocolos y registro de mediciones por prueba (aislación, TTR, devanados, contactos, operación de relé), con resultado calculado al instante.
