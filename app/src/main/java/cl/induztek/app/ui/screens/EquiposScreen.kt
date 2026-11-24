@@ -168,7 +168,7 @@ fun EquiposContent(
                                     if (usuario.codigoRol == CodigoRol.JEFE_TECNICO) {
                                         IconButton(onClick = { onEditarEquipo(equipo.idEquipo) }) {
                                             Icon(
-                                                painter = painterResource(R.drawable.ic_nota),
+                                                painter = painterResource(R.drawable.ic_editar),
                                                 contentDescription = stringResource(R.string.cd_editar_equipo)
                                             )
                                         }
