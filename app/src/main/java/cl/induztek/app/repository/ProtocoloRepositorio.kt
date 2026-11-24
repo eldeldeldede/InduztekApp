@@ -21,7 +21,9 @@ import cl.induztek.app.model.PuntoHistorial
 import cl.induztek.app.model.RecepcionActa
 import cl.induztek.app.model.ResumenProtocolo
 import cl.induztek.app.model.SerieMedicion
+import cl.induztek.app.model.EstadoActa
 import cl.induztek.app.model.TipoEstadoProtocolo
+import cl.induztek.app.model.TipoResultado
 import cl.induztek.app.model.TipoPrueba
 import cl.induztek.app.model.Usuario
 import cl.induztek.app.model.Visita
@@ -105,17 +107,19 @@ class ProtocoloRepositorio(private val usuarios: UsuarioRepositorio) {
             }
         }
 
-    suspend fun visitasPendientes(idInstalacion: Long, usuario: Usuario): Set<Long> =
+    suspend fun estadosDeActas(idInstalacion: Long, usuario: Usuario): Map<Long, EstadoActa> =
         (llamarConCache<List<ActaDto>>("actas_${usuario.idUsuario}_$idInstalacion") {
             ApiClient.reportes.actas(usuario.idUsuario, idInstalacion)
-        } as? ResultadoRed.Exito)?.datos.orEmpty()
-            .filter { acta ->
-                acta.protocolos.orEmpty().any {
+        } as? ResultadoRed.Exito)?.datos.orEmpty().associate { acta ->
+            val vigentes = acta.protocolos.orEmpty().filter { it.estado != TipoEstadoProtocolo.ANULADO.name }
+            acta.visita.id to EstadoActa(
+                pendiente = vigentes.any {
                     it.estado == TipoEstadoProtocolo.REGISTRADO_TERRENO.name || it.estado == TipoEstadoProtocolo.OBSERVADO.name
-                }
-            }
-            .map { it.visita.id }
-            .toSet()
+                },
+                formalizada = vigentes.isNotEmpty() && vigentes.all { it.estado == TipoEstadoProtocolo.FORMALIZADO.name },
+                resultado = vigentes.mapNotNull { p -> p.resultadoGlobal?.let { TipoResultado.valueOf(it) } }.maxOrNull()
+            )
+        }
 
     private suspend fun visitaDto(idVisita: Long): ResultadoRed<VisitaDto> {
         AlmacenLocal.visitaLocal(idVisita)?.let { return ResultadoRed.Exito(it) }

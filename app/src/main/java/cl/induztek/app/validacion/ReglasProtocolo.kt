@@ -77,7 +77,7 @@ object ReglasProtocolo {
     ): Boolean = when (rol) {
         CodigoRol.CLIENTE -> false
         CodigoRol.TECNICO -> idUsuario == idDuenoProtocolo && (estado == BORRADOR || estado == OBSERVADO)
-        CodigoRol.INGENIERO, CodigoRol.JEFE_TECNICO -> estado != FORMALIZADO && estado != ANULADO
+        CodigoRol.INGENIERO, CodigoRol.JEFE_TECNICO -> estado == BORRADOR || estado == OBSERVADO
     }
 
     fun puedeGestionarInstrumentos(rol: CodigoRol): Boolean = rol == CodigoRol.JEFE_TECNICO
