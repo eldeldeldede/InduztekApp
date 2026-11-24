@@ -52,7 +52,7 @@ class CierreVisitaViewModel(application: Application) : AndroidViewModel(applica
         }
         // Si la instalación no es de la empresa del cliente, el servidor responde error y no se muestra nada.
         val instalacion = (Repositorios.equipos.instalacion(visita.idInstalacion, usuarioActual) as? ResultadoRed.Exito)?.datos
-        if (instalacion == null || (usuarioActual.esCliente && !visita.estaCerrada)) {
+        if (instalacion == null) {
             _uiState.value = CierreVisitaUiState(cargado = true)
             return
         }
@@ -159,9 +159,19 @@ class CierreVisitaViewModel(application: Application) : AndroidViewModel(applica
         val pendientes = mutableListOf<ProtocoloPendiente>()
         val tiposPorEquipo = mutableMapOf<Long, List<cl.induztek.app.model.TipoPrueba>>()
 
-        for (resumen in protocolos.filter { it.estado != TipoEstadoProtocolo.ANULADO }) {
+        for (resumen in protocolos) {
             val detalle: ProtocoloDto = (Repositorios.protocolos.protocoloDetalle(resumen.idProtocolo)
                 as? ResultadoRed.Exito)?.datos ?: continue
+            if (resumen.estado == TipoEstadoProtocolo.ANULADO) {
+                val motivo = (detalle.historial ?: emptyList())
+                    .filter { it.estadoNuevo == TipoEstadoProtocolo.ANULADO.name }
+                    .maxByOrNull { it.fechaHora }?.motivo
+                acta += ActaProtocolo(
+                    resumen.idProtocolo, resumen.numero, resumen.tagEquipo, null,
+                    listOfNotNull(motivo?.let { "Motivo de la anulación: $it" }), resumen.estado
+                )
+                continue
+            }
             val pruebas = detalle.pruebas ?: emptyList()
 
             val lineas = mutableListOf<String>()
@@ -176,6 +186,12 @@ class CierreVisitaViewModel(application: Application) : AndroidViewModel(applica
                 } else {
                     prueba.motivoNoRealizada?.let { lineas += "    Motivo: $it" }
                 }
+            }
+            if (resumen.estado == TipoEstadoProtocolo.OBSERVADO && !usuarioActual.esCliente) {
+                (detalle.historial ?: emptyList())
+                    .filter { it.estadoNuevo == TipoEstadoProtocolo.OBSERVADO.name }
+                    .maxByOrNull { it.fechaHora }?.motivo
+                    ?.let { lineas += "Motivo de la observación: $it" }
             }
             acta += ActaProtocolo(resumen.idProtocolo, resumen.numero, resumen.tagEquipo, resumen.resultadoGlobal, lineas, resumen.estado)
 

@@ -245,7 +245,7 @@ fun MedicionesContent(
                 )
             }
 
-            if (uiState.tiposSinRegistro.isNotEmpty()) {
+            if (uiState.tiposSinRegistro.isNotEmpty() && uiState.estado != TipoEstadoProtocolo.ANULADO) {
                 Card(colors = CardDefaults.cardColors(containerColor = AdvertenciaFondo, contentColor = Advertencia)) {
                     Text(
                         text = stringResource(

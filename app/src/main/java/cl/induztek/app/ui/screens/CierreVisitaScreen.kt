@@ -245,7 +245,8 @@ private fun ActaDeTerreno(uiState: CierreVisitaUiState, visita: Visita, onAbrirP
         ) {
             Text(stringResource(R.string.acta_titulo), style = MaterialTheme.typography.titleLarge)
 
-            val todoFormalizado = uiState.acta.isNotEmpty() && uiState.acta.all { it.estado == TipoEstadoProtocolo.FORMALIZADO }
+            val vigentes = uiState.acta.filter { it.estado != TipoEstadoProtocolo.ANULADO }
+            val todoFormalizado = vigentes.isNotEmpty() && vigentes.all { it.estado == TipoEstadoProtocolo.FORMALIZADO }
             if (todoFormalizado) Etiqueta(stringResource(R.string.acta_formalizada), Exito, ExitoFondo)
             else Etiqueta(stringResource(R.string.acta_pendiente), Advertencia, AdvertenciaFondo)
 
