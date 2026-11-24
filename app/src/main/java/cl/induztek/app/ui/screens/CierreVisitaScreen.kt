@@ -17,6 +17,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Button
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -40,6 +41,7 @@ import cl.induztek.app.model.ActaProtocolo
 import cl.induztek.app.model.CierreVisitaUiState
 import cl.induztek.app.model.Instalacion
 import cl.induztek.app.model.RecepcionActa
+import cl.induztek.app.model.TipoEstadoProtocolo
 import cl.induztek.app.model.TipoResultado
 import cl.induztek.app.model.TipoVisita
 import cl.induztek.app.model.Visita
@@ -138,7 +140,7 @@ fun CierreVisitaContent(
                 .padding(Dimens.espacioPantalla),
             verticalArrangement = Arrangement.spacedBy(Dimens.espacioMedio)
         ) {
-            ActaDeTerreno(uiState, visita)
+            ActaDeTerreno(uiState, visita, onAbrirProtocolo)
 
             if (!uiState.soloConsulta && !uiState.estaCerrada && uiState.pendientes.isNotEmpty()) {
                 TarjetaSeccion(titulo = stringResource(R.string.seccion_pendientes)) {
@@ -230,7 +232,7 @@ fun CierreVisitaContent(
 }
 
 @Composable
-private fun ActaDeTerreno(uiState: CierreVisitaUiState, visita: Visita) {
+private fun ActaDeTerreno(uiState: CierreVisitaUiState, visita: Visita, onAbrirProtocolo: (Long) -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -280,6 +282,11 @@ private fun ActaDeTerreno(uiState: CierreVisitaUiState, visita: Visita) {
                     }
                     protocolo.estado?.let { EtiquetaEstado(it, uiState.soloConsulta) }
                     protocolo.lineas.forEach { Text(it, style = MaterialTheme.typography.bodySmall) }
+                    if (uiState.puedeFormalizar && protocolo.estado == TipoEstadoProtocolo.REGISTRADO_TERRENO) {
+                        Button(onClick = { onAbrirProtocolo(protocolo.idProtocolo) }) {
+                            Text(stringResource(R.string.btn_formalizar_protocolo))
+                        }
+                    }
                 }
             }
 
@@ -325,7 +332,7 @@ private fun CierreVisitaPreview() {
                 participantes = listOf("M. Godoy"),
                 acta = listOf(
                     ActaProtocolo(
-                        "PT-2026-T1-0001", "TR-01", TipoResultado.OBSERVADO,
+                        1, "PT-2026-T1-0001", "TR-01", TipoResultado.OBSERVADO,
                         listOf("Resistencia de aislación · AT-T · Observado", "    Lectura a 1 min: 6100 MΩ")
                     )
                 )

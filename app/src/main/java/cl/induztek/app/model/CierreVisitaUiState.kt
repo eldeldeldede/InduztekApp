@@ -1,6 +1,7 @@
 package cl.induztek.app.model
 
 data class ActaProtocolo(
+    val idProtocolo: Long,
     val numero: String,
     val tagEquipo: String,
     val resultado: TipoResultado?,
@@ -27,6 +28,7 @@ data class CierreVisitaUiState(
     val pendientes: List<ProtocoloPendiente> = emptyList(),
     val recepcion: RecepcionActa? = null,
     val soloConsulta: Boolean = false,
+    val puedeFormalizar: Boolean = false,
 
     val receptorNombre: String = "",
     val receptorRut: String = "",

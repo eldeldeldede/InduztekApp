@@ -13,8 +13,11 @@ enum class TipoEstadoProtocolo(val id: Long, val codigo: String, val etiqueta: S
     ANULADO(5, "ANULADO", "Anulado");
 
     fun etiquetaPara(esCliente: Boolean): String =
-        if (esCliente && (this == REGISTRADO_TERRENO || this == OBSERVADO)) "Pendiente de formalización"
-        else etiqueta
+        when {
+            esCliente && (this == REGISTRADO_TERRENO || this == OBSERVADO) -> "Pendiente de formalización"
+            this == REGISTRADO_TERRENO -> "Pendiente de formalizar"
+            else -> etiqueta
+        }
 
     companion object {
         fun desdeId(id: Long): TipoEstadoProtocolo = entries.first { it.id == id }

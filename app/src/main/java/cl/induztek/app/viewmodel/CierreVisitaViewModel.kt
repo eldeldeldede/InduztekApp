@@ -12,6 +12,7 @@ import cl.induztek.app.model.ActaProtocolo
 import cl.induztek.app.model.CierreVisitaUiState
 import cl.induztek.app.model.ProtocoloPendiente
 import cl.induztek.app.model.ResumenProtocolo
+import cl.induztek.app.model.CodigoRol
 import cl.induztek.app.model.TipoEstadoProtocolo
 import cl.induztek.app.model.TipoResultado
 import cl.induztek.app.model.Usuario
@@ -71,6 +72,7 @@ class CierreVisitaViewModel(application: Application) : AndroidViewModel(applica
                 visita = visita,
                 instalacion = instalacion,
                 soloConsulta = usuarioActual.esCliente,
+                puedeFormalizar = usuarioActual.codigoRol == CodigoRol.INGENIERO || usuarioActual.codigoRol == CodigoRol.JEFE_TECNICO,
                 ingenieroNombre = nombres[visita.idUsuario] ?: "",
                 participantes = idsParticipantes.mapNotNull { nombres[it] },
                 protocolos = protocolos,
@@ -175,7 +177,7 @@ class CierreVisitaViewModel(application: Application) : AndroidViewModel(applica
                     prueba.motivoNoRealizada?.let { lineas += "    Motivo: $it" }
                 }
             }
-            acta += ActaProtocolo(resumen.numero, resumen.tagEquipo, resumen.resultadoGlobal, lineas, resumen.estado)
+            acta += ActaProtocolo(resumen.idProtocolo, resumen.numero, resumen.tagEquipo, resumen.resultadoGlobal, lineas, resumen.estado)
 
             if (resumen.estado != TipoEstadoProtocolo.REGISTRADO_TERRENO) {
                 val equipo = (Repositorios.equipos.equipo(resumen.idEquipo, usuarioActual) as? ResultadoRed.Exito)?.datos

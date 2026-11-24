@@ -164,6 +164,7 @@
     <string name="solo_falta_registrar">Tiene todas sus pruebas; falta registrarlo en terreno.</string>
     <string name="pruebas_faltantes_cierre">Faltan pruebas: %1$s</string>
     <string name="btn_ir_protocolo">Ir al protocolo</string>
+    <string name="btn_formalizar_protocolo">Revisar y formalizar</string>
     <string name="seccion_cierre">Cierre de la visita</string>
     <string name="cierre_explicacion">La visita se cierra cuando todos sus protocolos están registrados en terreno (o anulados).</string>
     <string name="btn_cerrar_visita">Cerrar visita</string>
