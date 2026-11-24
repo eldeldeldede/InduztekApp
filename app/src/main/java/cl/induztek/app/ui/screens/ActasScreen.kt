@@ -32,9 +32,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import cl.induztek.app.R
 import cl.induztek.app.data.aTextoLegible
 import cl.induztek.app.model.ActasUiState
+import cl.induztek.app.model.EstadoActa
 import cl.induztek.app.model.TipoVisita
 import cl.induztek.app.model.Visita
 import cl.induztek.app.ui.components.Etiqueta
+import cl.induztek.app.ui.components.EtiquetaResultado
 import cl.induztek.app.ui.theme.Advertencia
 import cl.induztek.app.ui.theme.AdvertenciaFondo
 import cl.induztek.app.ui.theme.Dimens
@@ -105,7 +107,7 @@ fun ActasContent(
                 items(uiState.visitas, key = { it.idVisita }) { visita ->
                     TarjetaVisita(
                         visita = visita,
-                        pendiente = visita.idVisita in uiState.pendientes,
+                        estado = uiState.estados[visita.idVisita],
                         esCliente = uiState.esCliente,
                         onClick = { onAbrirVisita(visita.idVisita) }
                     )
@@ -117,7 +119,7 @@ fun ActasContent(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun TarjetaVisita(visita: Visita, pendiente: Boolean, esCliente: Boolean, onClick: () -> Unit) {
+private fun TarjetaVisita(visita: Visita, estado: EstadoActa?, esCliente: Boolean, onClick: () -> Unit) {
     Card(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
@@ -140,12 +142,20 @@ private fun TarjetaVisita(visita: Visita, pendiente: Boolean, esCliente: Boolean
                     Etiqueta(stringResource(R.string.visita_estado_abierta), Advertencia, AdvertenciaFondo)
                 }
             }
-            if (pendiente) {
+            if (estado?.pendiente == true) {
                 Etiqueta(
                     stringResource(if (esCliente) R.string.acta_pendiente else R.string.acta_pendiente_formalizar),
                     Advertencia,
                     AdvertenciaFondo
                 )
+            } else if (estado?.formalizada == true) {
+                Etiqueta(stringResource(R.string.acta_formalizada), Exito, ExitoFondo)
+            }
+            estado?.resultado?.let {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(stringResource(R.string.acta_resultado_visita), style = MaterialTheme.typography.labelLarge)
+                    EtiquetaResultado(it)
+                }
             }
             Text(stringResource(R.string.dato_fecha, visita.fecha.aTextoLegible()), style = MaterialTheme.typography.bodyMedium)
             Text(stringResource(R.string.dato_tipo_visita, visita.tipoVisita.etiqueta), style = MaterialTheme.typography.bodyMedium)
