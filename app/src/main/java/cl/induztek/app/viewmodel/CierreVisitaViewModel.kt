@@ -82,7 +82,7 @@ class CierreVisitaViewModel(application: Application) : AndroidViewModel(applica
     }
 
     fun onNombreCambia(valor: String) = _uiState.update { it.copy(receptorNombre = valor, errorNombre = null, mensaje = null) }
-    fun onRutCambia(valor: String) = _uiState.update { it.copy(receptorRut = valor, errorRut = null, mensaje = null) }
+    fun onRutCambia(valor: String) = _uiState.update { it.copy(receptorRut = ValidadorRut.formatearEntrada(valor), errorRut = null, mensaje = null) }
     fun onCargoCambia(valor: String) = _uiState.update { it.copy(receptorCargo = valor, errorCargo = null, mensaje = null) }
 
     fun onCerrarVisita() {

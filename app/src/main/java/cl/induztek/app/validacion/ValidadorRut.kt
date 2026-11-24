@@ -29,6 +29,14 @@ object ValidadorRut {
         return calcularDigito(cuerpo) == dv
     }
 
+    fun formatearEntrada(texto: String): String {
+        val limpio = limpiar(texto).take(9)
+        if (limpio.length < 2) return limpio
+        val cuerpo = limpio.dropLast(1)
+        val conPuntos = cuerpo.reversed().chunked(3).joinToString(".").reversed()
+        return "$conPuntos-${limpio.last()}"
+    }
+
     fun formatear(rut: String): String {
         val limpio = limpiar(rut)
         if (limpio.length < 2) return rut.trim()

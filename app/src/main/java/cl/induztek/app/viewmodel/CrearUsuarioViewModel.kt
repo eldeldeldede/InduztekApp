@@ -47,7 +47,7 @@ class CrearUsuarioViewModel : ViewModel() {
         e.copy(rolFijo = true, rol = e.roles.firstOrNull { it.codigo == CodigoRol.CLIENTE.codigo })
     }
 
-    fun onRutCambia(v: String) = _uiState.update { it.copy(rut = v, errorRut = null, errorGeneral = null, exito = null) }
+    fun onRutCambia(v: String) = _uiState.update { it.copy(rut = ValidadorRut.formatearEntrada(v), errorRut = null, errorGeneral = null, exito = null) }
     fun onNombreCambia(v: String) = _uiState.update { it.copy(nombre = v, errorNombre = null, errorGeneral = null, exito = null) }
     fun onCorreoCambia(v: String) = _uiState.update { it.copy(correo = v.trim(), errorCorreo = null, errorGeneral = null, exito = null) }
     fun onTelefonoCambia(v: String) = _uiState.update { it.copy(telefono = v, errorTelefono = null, errorGeneral = null, exito = null) }
