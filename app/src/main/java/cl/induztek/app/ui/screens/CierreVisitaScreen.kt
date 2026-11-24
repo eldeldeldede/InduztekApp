@@ -57,6 +57,7 @@ import cl.induztek.app.ui.theme.Advertencia
 import cl.induztek.app.ui.theme.AdvertenciaFondo
 import cl.induztek.app.ui.theme.Dimens
 import cl.induztek.app.ui.theme.Exito
+import cl.induztek.app.ui.theme.ExitoFondo
 import cl.induztek.app.ui.theme.InduztekAppTheme
 import cl.induztek.app.viewmodel.CierreVisitaViewModel
 import java.time.LocalDate
@@ -244,7 +245,9 @@ private fun ActaDeTerreno(uiState: CierreVisitaUiState, visita: Visita, onAbrirP
         ) {
             Text(stringResource(R.string.acta_titulo), style = MaterialTheme.typography.titleLarge)
 
-            Etiqueta(stringResource(R.string.acta_pendiente), Advertencia, AdvertenciaFondo)
+            val todoFormalizado = uiState.acta.isNotEmpty() && uiState.acta.all { it.estado == TipoEstadoProtocolo.FORMALIZADO }
+            if (todoFormalizado) Etiqueta(stringResource(R.string.acta_formalizada), Exito, ExitoFondo)
+            else Etiqueta(stringResource(R.string.acta_pendiente), Advertencia, AdvertenciaFondo)
 
             Text(stringResource(R.string.dato_ot, visita.numeroOt), style = MaterialTheme.typography.bodyMedium)
             uiState.instalacion?.let {
