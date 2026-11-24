@@ -79,6 +79,8 @@
     <string name="campo_ot">Número de OT (ej.: OT-2026-1187)</string>
     <string name="campo_tipo_visita">Tipo de visita</string>
     <string name="campo_ingeniero">Ingeniero a cargo</string>
+    <string name="seccion_otros_participantes">Otros participantes</string>
+    <string name="ayuda_otros_participantes">Marca a los técnicos o ingenieros que también van en esta visita. Solo se aplica si la visita es nueva; el acta los lista a todos.</string>
     <string name="btn_iniciar_protocolo">Iniciar protocolo</string>
     <string name="cd_nuevo_protocolo">Iniciar un protocolo para este equipo</string>
 

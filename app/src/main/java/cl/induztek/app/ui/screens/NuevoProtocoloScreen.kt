@@ -2,6 +2,12 @@ package cl.induztek.app.ui.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.material3.Checkbox
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.semantics.Role
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
@@ -62,6 +68,7 @@ fun NuevoProtocoloScreen(
         onOtCambia = viewModel::onOtCambia,
         onTipoVisitaCambia = viewModel::onTipoVisitaCambia,
         onIngenieroSeleccionado = viewModel::onIngenieroSeleccionado,
+        onParticipanteAlternado = viewModel::onParticipanteAlternado,
         onGuardar = { viewModel.onGuardar(usuario) }
     )
 }
@@ -74,6 +81,7 @@ fun NuevoProtocoloContent(
     onOtCambia: (String) -> Unit,
     onTipoVisitaCambia: (TipoVisita) -> Unit,
     onIngenieroSeleccionado: (Long) -> Unit,
+    onParticipanteAlternado: (Long) -> Unit,
     onGuardar: () -> Unit
 ) {
     Scaffold(
@@ -138,6 +146,39 @@ fun NuevoProtocoloContent(
                 )
             }
 
+            if (uiState.candidatosParticipantes.isNotEmpty()) {
+                TarjetaSeccion(titulo = stringResource(R.string.seccion_otros_participantes)) {
+                    Text(
+                        text = stringResource(R.string.ayuda_otros_participantes),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    uiState.candidatosParticipantes.forEach { persona ->
+                        val marcado = persona.idUsuario in uiState.idsOtrosParticipantes
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .toggleable(
+                                    value = marcado,
+                                    role = Role.Checkbox,
+                                    onValueChange = { onParticipanteAlternado(persona.idUsuario) }
+                                ),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Checkbox(checked = marcado, onCheckedChange = null)
+                            Column(modifier = Modifier.padding(start = Dimens.espacioMedio)) {
+                                Text(text = persona.nombre, style = MaterialTheme.typography.bodyLarge)
+                                Text(
+                                    text = persona.codigoRol.etiqueta,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
             uiState.errorGeneral?.let { MensajeError(mensaje = it) }
 
             BotonPrincipal(
@@ -157,7 +198,7 @@ private fun NuevoProtocoloPreview() {
         NuevoProtocoloContent(
             uiState = NuevoProtocoloUiState(numeroOt = "OT-2026-1187", errorOt = null),
             onVolver = {}, onOtCambia = {}, onTipoVisitaCambia = {},
-            onIngenieroSeleccionado = {}, onGuardar = {}
+            onIngenieroSeleccionado = {}, onParticipanteAlternado = {}, onGuardar = {}
         )
     }
 }

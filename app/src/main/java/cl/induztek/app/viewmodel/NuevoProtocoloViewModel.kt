@@ -32,10 +32,13 @@ class NuevoProtocoloViewModel(application: Application) : AndroidViewModel(appli
             val r = Repositorios.usuarios.listarActivosPorRol(CodigoRol.INGENIERO)
             if (r is ResultadoRed.Exito) _uiState.update { it.copy(ingenieros = r.datos) }
             else _uiState.update { it.copy(errorGeneral = r.mensajeError()) }
+            val t = Repositorios.usuarios.listarActivosPorRol(CodigoRol.TECNICO)
+            if (t is ResultadoRed.Exito) _uiState.update { it.copy(tecnicos = t.datos) }
         }
     }
 
     fun cargar(idEquipo: Long, usuario: Usuario) {
+        _uiState.update { it.copy(idActor = usuario.idUsuario) }
         viewModelScope.launch {
             val r = Repositorios.equipos.equipo(idEquipo, usuario)
             _uiState.update { it.copy(equipo = (r as? ResultadoRed.Exito)?.datos, errorGeneral = r.mensajeError()) }
@@ -46,6 +49,10 @@ class NuevoProtocoloViewModel(application: Application) : AndroidViewModel(appli
         it.copy(numeroOt = valor.uppercase(), errorOt = null, errorGeneral = null)
     }
     fun onTipoVisitaCambia(tipo: TipoVisita) = _uiState.update { it.copy(tipoVisita = tipo) }
+    fun onParticipanteAlternado(id: Long) = _uiState.update {
+        val nuevos = if (id in it.idsOtrosParticipantes) it.idsOtrosParticipantes - id else it.idsOtrosParticipantes + id
+        it.copy(idsOtrosParticipantes = nuevos)
+    }
     fun onIngenieroSeleccionado(id: Long) = _uiState.update { it.copy(idIngeniero = id, errorIngeniero = null) }
 
     fun onGuardar(usuario: Usuario) {
@@ -67,7 +74,8 @@ class NuevoProtocoloViewModel(application: Application) : AndroidViewModel(appli
             idUsuario = e.idIngeniero!!
         )
         viewModelScope.launch {
-            val idVisita = obtenerIdVisita(visita, usuario) ?: return@launch
+            val participantes = (listOf(usuario.idUsuario) + e.idsOtrosParticipantes).distinct()
+            val idVisita = obtenerIdVisita(visita, participantes, usuario) ?: return@launch
             when (val r = Repositorios.protocolos.crearProtocolo(idVisita, equipo.idEquipo, usuario.idUsuario)) {
                 is ResultadoRed.Exito -> _uiState.update { it.copy(idProtocoloCreado = r.datos.idProtocolo) }
                 is ResultadoRed.ErrorServidor ->
@@ -83,8 +91,8 @@ class NuevoProtocoloViewModel(application: Application) : AndroidViewModel(appli
     }
 
     // Crea la visita; si la OT ya existe (409) reutiliza la existente siempre que sea de la misma instalación y siga abierta.
-    private suspend fun obtenerIdVisita(visita: Visita, usuario: Usuario): Long? {
-        return when (val r = Repositorios.protocolos.crearVisita(visita, listOf(usuario.idUsuario), usuario.idUsuario)) {
+    private suspend fun obtenerIdVisita(visita: Visita, participantes: List<Long>, usuario: Usuario): Long? {
+        return when (val r = Repositorios.protocolos.crearVisita(visita, participantes, usuario.idUsuario)) {
             is ResultadoRed.Exito -> r.datos.idVisita
             is ResultadoRed.ErrorServidor -> {
                 if (r.codigo != 409) {
