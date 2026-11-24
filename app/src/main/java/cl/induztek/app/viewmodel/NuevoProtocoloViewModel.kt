@@ -53,7 +53,9 @@ class NuevoProtocoloViewModel(application: Application) : AndroidViewModel(appli
         val nuevos = if (id in it.idsOtrosParticipantes) it.idsOtrosParticipantes - id else it.idsOtrosParticipantes + id
         it.copy(idsOtrosParticipantes = nuevos)
     }
-    fun onIngenieroSeleccionado(id: Long) = _uiState.update { it.copy(idIngeniero = id, errorIngeniero = null) }
+    fun onIngenieroSeleccionado(id: Long) = _uiState.update {
+        it.copy(idIngeniero = id, errorIngeniero = null, idsOtrosParticipantes = it.idsOtrosParticipantes - id)
+    }
 
     fun onGuardar(usuario: Usuario) {
         val e = _uiState.value

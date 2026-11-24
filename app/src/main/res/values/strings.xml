@@ -161,6 +161,7 @@
     <string name="dato_instalacion">Instalación: %1$s</string>
     <string name="dato_fecha">Fecha: %1$s</string>
     <string name="dato_tipo_visita">Tipo de visita: %1$s</string>
+    <string name="dato_otros_ingenieros">Otros ingenieros: %1$s</string>
     <string name="dato_tecnicos">Técnicos: %1$s</string>
     <string name="dato_ingeniero">Ingeniero a cargo: %1$s</string>
     <string name="seccion_pendientes">Protocolos por completar</string>

@@ -18,7 +18,7 @@ data class NuevoProtocoloUiState(
     val idProtocoloCreado: Long? = null
 ) {
     val candidatosParticipantes: List<Usuario>
-        get() = (tecnicos + ingenieros).filter { it.idUsuario != idActor }.sortedBy { it.nombre }
+        get() = (tecnicos + ingenieros).filter { it.idUsuario != idActor && it.idUsuario != idIngeniero }.sortedBy { it.nombre }
 
     val nombreIngeniero: String
         get() = ingenieros.firstOrNull { it.idUsuario == idIngeniero }?.nombre ?: ""

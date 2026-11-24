@@ -58,6 +58,12 @@ class UsuarioRepositorio {
             else -> emptyMap()
         }
 
+    suspend fun idsIngenieros(): Set<Long> =
+        when (val r = llamarConCache<List<UsuarioDto>>("usuarios_todos") { ApiClient.usuarios.listar(null) }) {
+            is ResultadoRed.Exito -> r.datos.filter { it.rolCodigo == CodigoRol.INGENIERO.codigo }.map { it.id }.toSet()
+            else -> emptySet()
+        }
+
     suspend fun actualizarPerfil(
         idActor: Long,
         idUsuario: Long,

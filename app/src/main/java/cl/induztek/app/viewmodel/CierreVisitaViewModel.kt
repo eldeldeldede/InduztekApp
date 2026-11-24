@@ -60,6 +60,7 @@ class CierreVisitaViewModel(application: Application) : AndroidViewModel(applica
             as? ResultadoRed.Exito)?.datos ?: emptyList()
         val nombres = Repositorios.usuarios.nombres()
         val idsParticipantes = (Repositorios.protocolos.participantes(idVisita) as? ResultadoRed.Exito)?.datos ?: emptyList()
+        val idsIngenieros = Repositorios.usuarios.idsIngenieros()
         val recepcion = (Repositorios.protocolos.recepcion(idVisita) as? ResultadoRed.Exito)?.datos
         val (acta, pendientes) = armarActaYPendientes(protocolos, usuarioActual)
 
@@ -74,7 +75,8 @@ class CierreVisitaViewModel(application: Application) : AndroidViewModel(applica
                 soloConsulta = usuarioActual.esCliente,
                 puedeFormalizar = usuarioActual.codigoRol == CodigoRol.INGENIERO || usuarioActual.codigoRol == CodigoRol.JEFE_TECNICO,
                 ingenieroNombre = nombres[visita.idUsuario] ?: "",
-                participantes = idsParticipantes.mapNotNull { nombres[it] },
+                participantes = idsParticipantes.filter { it !in idsIngenieros }.mapNotNull { nombres[it] },
+                otrosIngenieros = idsParticipantes.filter { it in idsIngenieros && it != visita.idUsuario }.mapNotNull { nombres[it] },
                 protocolos = protocolos,
                 acta = acta,
                 pendientes = pendientes,

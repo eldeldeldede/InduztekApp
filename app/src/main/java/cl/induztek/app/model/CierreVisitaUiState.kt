@@ -23,6 +23,7 @@ data class CierreVisitaUiState(
     val instalacion: Instalacion? = null,
     val ingenieroNombre: String = "",
     val participantes: List<String> = emptyList(),
+    val otrosIngenieros: List<String> = emptyList(),
     val protocolos: List<ResumenProtocolo> = emptyList(),
     val acta: List<ActaProtocolo> = emptyList(),
     val pendientes: List<ProtocoloPendiente> = emptyList(),

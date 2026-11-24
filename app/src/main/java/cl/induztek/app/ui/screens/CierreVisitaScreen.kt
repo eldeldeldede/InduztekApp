@@ -264,6 +264,12 @@ private fun ActaDeTerreno(uiState: CierreVisitaUiState, visita: Visita, onAbrirP
                 )
             }
             Text(stringResource(R.string.dato_ingeniero, uiState.ingenieroNombre), style = MaterialTheme.typography.bodyMedium)
+            if (uiState.otrosIngenieros.isNotEmpty()) {
+                Text(
+                    stringResource(R.string.dato_otros_ingenieros, uiState.otrosIngenieros.joinToString()),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
 
