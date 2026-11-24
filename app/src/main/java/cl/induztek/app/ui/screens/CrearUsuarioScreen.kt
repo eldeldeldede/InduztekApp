@@ -36,6 +36,7 @@ import cl.induztek.app.ui.components.BotonSecundario
 import cl.induztek.app.ui.components.CampoTexto
 import cl.induztek.app.ui.components.ListaDesplegable
 import cl.induztek.app.ui.components.MensajeError
+import cl.induztek.app.ui.components.soltarFocoAlTocar
 import cl.induztek.app.ui.components.TarjetaSeccion
 import cl.induztek.app.ui.theme.Dimens
 import cl.induztek.app.ui.theme.InduztekAppTheme
@@ -58,6 +59,7 @@ fun CrearUsuarioScreen(
         uiState = uiState,
         onVolver = onVolver,
         onRutCambia = viewModel::onRutCambia,
+        onRutTermina = viewModel::onRutTermina,
         onNombreCambia = viewModel::onNombreCambia,
         onCorreoCambia = viewModel::onCorreoCambia,
         onTelefonoCambia = viewModel::onTelefonoCambia,
@@ -76,6 +78,7 @@ fun CrearUsuarioContent(
     uiState: CrearUsuarioUiState,
     onVolver: () -> Unit,
     onRutCambia: (String) -> Unit,
+    onRutTermina: () -> Unit = {},
     onNombreCambia: (String) -> Unit,
     onCorreoCambia: (String) -> Unit,
     onTelefonoCambia: (String) -> Unit,
@@ -111,6 +114,7 @@ fun CrearUsuarioContent(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
+                .soltarFocoAlTocar()
                 .imePadding()
                 .verticalScroll(rememberScrollState())
                 .padding(Dimens.espacioPantalla),
@@ -127,7 +131,8 @@ fun CrearUsuarioContent(
                     onValorCambia = onRutCambia,
                     etiqueta = stringResource(R.string.campo_rut),
                     icono = R.drawable.ic_credencial,
-                    error = uiState.errorRut
+                    error = uiState.errorRut,
+                    alTerminar = onRutTermina
                 )
                 CampoTexto(
                     valor = uiState.nombre,

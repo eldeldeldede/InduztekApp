@@ -49,6 +49,7 @@ import cl.induztek.app.ui.components.Etiqueta
 import cl.induztek.app.ui.components.EtiquetaEstado
 import cl.induztek.app.ui.components.EtiquetaResultado
 import cl.induztek.app.ui.components.MensajeError
+import cl.induztek.app.ui.components.soltarFocoAlTocar
 import cl.induztek.app.ui.components.TarjetaSeccion
 import cl.induztek.app.ui.theme.Advertencia
 import cl.induztek.app.ui.theme.AdvertenciaFondo
@@ -73,6 +74,7 @@ fun CierreVisitaScreen(
         onAbrirProtocolo = onAbrirProtocolo,
         onNombreCambia = viewModel::onNombreCambia,
         onRutCambia = viewModel::onRutCambia,
+        onRutTermina = viewModel::onRutTermina,
         onCargoCambia = viewModel::onCargoCambia,
         onCerrarVisita = viewModel::onCerrarVisita,
         onRegistrarRecepcion = viewModel::onRegistrarRecepcion
@@ -86,6 +88,7 @@ fun CierreVisitaContent(
     onVolver: () -> Unit,
     onNombreCambia: (String) -> Unit,
     onRutCambia: (String) -> Unit,
+    onRutTermina: () -> Unit = {},
     onCargoCambia: (String) -> Unit,
     onCerrarVisita: () -> Unit,
     onRegistrarRecepcion: () -> Unit,
@@ -129,6 +132,7 @@ fun CierreVisitaContent(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
+                .soltarFocoAlTocar()
                 .imePadding()
                 .verticalScroll(rememberScrollState())
                 .padding(Dimens.espacioPantalla),
@@ -198,7 +202,8 @@ fun CierreVisitaContent(
                             valor = uiState.receptorRut,
                             onValorCambia = onRutCambia,
                             etiqueta = stringResource(R.string.campo_receptor_rut), icono = R.drawable.ic_credencial,
-                            error = uiState.errorRut
+                            error = uiState.errorRut,
+                            alTerminar = onRutTermina
                         )
                         CampoTexto(
                             valor = uiState.receptorCargo,

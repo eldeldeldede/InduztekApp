@@ -6,9 +6,11 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -21,8 +23,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -41,8 +48,11 @@ fun CampoTexto(
     tipoTeclado: KeyboardType = KeyboardType.Text,
     sufijo: String? = null,
     soloLectura: Boolean = false,
-    lineasMaximas: Int = 1
+    lineasMaximas: Int = 1,
+    alTerminar: (() -> Unit)? = null
 ) {
+    val foco = LocalFocusManager.current
+    var tuvoFoco by remember { mutableStateOf(false) }
     var ultimoError by remember { mutableStateOf("") }
     if (error != null) ultimoError = error
     OutlinedTextField(
@@ -64,11 +74,29 @@ fun CampoTexto(
         readOnly = soloLectura,
         singleLine = lineasMaximas == 1,
         maxLines = lineasMaximas,
-        keyboardOptions = KeyboardOptions(keyboardType = tipoTeclado),
+        keyboardOptions = KeyboardOptions(
+            keyboardType = tipoTeclado,
+            imeAction = if (alTerminar != null) ImeAction.Done else ImeAction.Default
+        ),
+        keyboardActions = KeyboardActions(onDone = { foco.clearFocus() }),
         shape = EstilosCampo.forma,
         colors = EstilosCampo.colores(),
-        modifier = modifier.fillMaxWidth()
+        modifier = modifier
+            .fillMaxWidth()
+            .onFocusChanged { estado ->
+                if (estado.isFocused) {
+                    tuvoFoco = true
+                } else if (tuvoFoco) {
+                    tuvoFoco = false
+                    alTerminar?.invoke()
+                }
+            }
     )
+}
+
+fun Modifier.soltarFocoAlTocar(): Modifier = composed {
+    val foco = LocalFocusManager.current
+    pointerInput(Unit) { detectTapGestures(onTap = { foco.clearFocus() }) }
 }
 
 @Composable
