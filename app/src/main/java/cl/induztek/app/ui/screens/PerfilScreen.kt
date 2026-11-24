@@ -2,6 +2,13 @@ package cl.induztek.app.ui.screens
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.material3.FilterChip
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
+import cl.induztek.app.ui.theme.EscalaFuente
+import cl.induztek.app.ui.theme.NivelFuente
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -179,6 +186,8 @@ fun PerfilContent(
                 )
             }
 
+            SelectorTamanoLetra()
+
             BotonSecundario(
                 texto = stringResource(R.string.btn_cambiar_clave_voluntaria),
                 onClick = onCambiarClave,
@@ -201,6 +210,32 @@ private fun PerfilPreview() {
             ),
             onVolver = {}, onNombreCambia = {}, onTelefonoCambia = {}, onGiroCambia = {},
             onContactoNombreCambia = {}, onContactoCargoCambia = {}, onGuardar = {}, onCambiarClave = {}
+        )
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun SelectorTamanoLetra() {
+    val contexto = LocalContext.current
+    val actual by EscalaFuente.nivel.collectAsStateWithLifecycle()
+    TarjetaSeccion(titulo = stringResource(R.string.perfil_seccion_letra)) {
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            NivelFuente.entries.forEach { nivel ->
+                FilterChip(
+                    selected = nivel == actual,
+                    onClick = { EscalaFuente.establecer(contexto, nivel) },
+                    label = { Text(stringResource(nivel.etiqueta)) }
+                )
+            }
+        }
+        Text(
+            text = stringResource(R.string.perfil_letra_ejemplo),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }

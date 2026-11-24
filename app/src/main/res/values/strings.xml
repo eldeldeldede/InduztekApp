@@ -258,6 +258,12 @@
     <string name="titulo_perfil">Mi perfil</string>
     <string name="perfil_seccion_cuenta">Cuenta</string>
     <string name="perfil_seccion_datos">Mis datos</string>
+    <string name="perfil_seccion_letra">Tamaño de la letra</string>
+    <string name="perfil_letra_ejemplo">Así se verá el texto en toda la aplicación.</string>
+    <string name="fuente_pequena">Pequeña</string>
+    <string name="fuente_normal">Normal</string>
+    <string name="fuente_grande">Grande</string>
+    <string name="fuente_muy_grande">Muy grande</string>
     <string name="perfil_solo_lectura_jefe">El RUT y el correo no se pueden cambiar desde la app.</string>
     <string name="perfil_solo_lectura">El RUT y el correo no se pueden cambiar. Si hay un error, avisa al Jefe técnico.</string>
     <string name="btn_guardar_perfil">Guardar cambios</string>
