@@ -103,7 +103,12 @@ fun ActasContent(
                 verticalArrangement = Arrangement.spacedBy(Dimens.espacioChico)
             ) {
                 items(uiState.visitas, key = { it.idVisita }) { visita ->
-                    TarjetaVisita(visita = visita, onClick = { onAbrirVisita(visita.idVisita) })
+                    TarjetaVisita(
+                        visita = visita,
+                        pendiente = visita.idVisita in uiState.pendientes,
+                        esCliente = uiState.esCliente,
+                        onClick = { onAbrirVisita(visita.idVisita) }
+                    )
                 }
             }
         }
@@ -112,7 +117,7 @@ fun ActasContent(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun TarjetaVisita(visita: Visita, onClick: () -> Unit) {
+private fun TarjetaVisita(visita: Visita, pendiente: Boolean, esCliente: Boolean, onClick: () -> Unit) {
     Card(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
@@ -134,6 +139,13 @@ private fun TarjetaVisita(visita: Visita, onClick: () -> Unit) {
                 } else {
                     Etiqueta(stringResource(R.string.visita_estado_abierta), Advertencia, AdvertenciaFondo)
                 }
+            }
+            if (pendiente) {
+                Etiqueta(
+                    stringResource(if (esCliente) R.string.acta_pendiente else R.string.acta_pendiente_formalizar),
+                    Advertencia,
+                    AdvertenciaFondo
+                )
             }
             Text(stringResource(R.string.dato_fecha, visita.fecha.aTextoLegible()), style = MaterialTheme.typography.bodyMedium)
             Text(stringResource(R.string.dato_tipo_visita, visita.tipoVisita.etiqueta), style = MaterialTheme.typography.bodyMedium)

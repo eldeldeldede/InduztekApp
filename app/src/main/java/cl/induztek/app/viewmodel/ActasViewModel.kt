@@ -24,10 +24,13 @@ class ActasViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             val instalacion = Repositorios.equipos.instalacion(idInstalacion, usuario)
             val visitas = Repositorios.protocolos.visitas(idInstalacion, usuario)
+            val pendientes = Repositorios.protocolos.visitasPendientes(idInstalacion, usuario)
+            val lista = (visitas as? ResultadoRed.Exito)?.datos ?: emptyList()
             _uiState.value = ActasUiState(
                 cargado = true,
                 instalacion = (instalacion as? ResultadoRed.Exito)?.datos,
-                visitas = (visitas as? ResultadoRed.Exito)?.datos ?: emptyList(),
+                visitas = lista.sortedByDescending { it.idVisita in pendientes },
+                pendientes = pendientes,
                 esCliente = usuario.esCliente,
                 cargando = false,
                 error = instalacion.mensajeError() ?: visitas.mensajeError()

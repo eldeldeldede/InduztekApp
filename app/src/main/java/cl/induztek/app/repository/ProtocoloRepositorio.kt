@@ -105,6 +105,18 @@ class ProtocoloRepositorio(private val usuarios: UsuarioRepositorio) {
             }
         }
 
+    suspend fun visitasPendientes(idInstalacion: Long, usuario: Usuario): Set<Long> =
+        (llamarConCache<List<ActaDto>>("actas_${usuario.idUsuario}_$idInstalacion") {
+            ApiClient.reportes.actas(usuario.idUsuario, idInstalacion)
+        } as? ResultadoRed.Exito)?.datos.orEmpty()
+            .filter { acta ->
+                acta.protocolos.orEmpty().any {
+                    it.estado == TipoEstadoProtocolo.REGISTRADO_TERRENO.name || it.estado == TipoEstadoProtocolo.OBSERVADO.name
+                }
+            }
+            .map { it.visita.id }
+            .toSet()
+
     private suspend fun visitaDto(idVisita: Long): ResultadoRed<VisitaDto> {
         AlmacenLocal.visitaLocal(idVisita)?.let { return ResultadoRed.Exito(it) }
         if (AlmacenLocal.esLocal(idVisita)) return ResultadoRed.ErrorServidor(404, "La visita ya no existe")
