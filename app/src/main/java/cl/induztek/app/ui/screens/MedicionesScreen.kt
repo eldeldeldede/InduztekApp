@@ -64,6 +64,7 @@ import cl.induztek.app.ui.theme.Peligro
 import cl.induztek.app.ui.theme.AdvertenciaFondo
 import cl.induztek.app.ui.theme.Dimens
 import cl.induztek.app.ui.theme.Exito
+import cl.induztek.app.validacion.Unidades
 import cl.induztek.app.ui.theme.InduztekAppTheme
 import cl.induztek.app.validacion.UnidadAislacion
 import cl.induztek.app.validacion.UnidadBaja
@@ -208,6 +209,22 @@ fun MedicionesContent(
                     tipoTeclado = KeyboardType.Decimal,
                     soloLectura = !uiState.puedeModificar
                 )
+                val guardada = uiState.condicionesGuardadas && uiState.protocolo?.let { p ->
+                    p.temperaturaAmbiente != null && p.pctHumedad != null &&
+                        p.temperaturaAmbiente == Unidades.parsearDecimal(uiState.temperatura) &&
+                        p.pctHumedad == Unidades.parsearDecimal(uiState.humedad)
+                } == true
+                if (guardada) {
+                    Text(
+                        text = stringResource(
+                            R.string.condiciones_guardadas_inline,
+                            uiState.temperatura.trim(),
+                            uiState.humedad.trim()
+                        ),
+                        color = Exito,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
                 if (uiState.puedeModificar) {
                     BotonSecundario(
                         texto = stringResource(R.string.btn_guardar_condiciones),

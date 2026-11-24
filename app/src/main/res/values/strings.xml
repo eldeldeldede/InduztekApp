@@ -149,6 +149,7 @@
     <string name="btn_ir_cierre_visita">Cerrar visita y entregar acta</string>
     <string name="acta_titulo">Acta de prueba en terreno</string>
     <string name="acta_pendiente">Pendiente de formalización</string>
+    <string name="condiciones_guardadas_inline">✓ Guardado: %1$s °C · %2$s %%</string>
     <string name="acta_sin_protocolos">Esta visita aún no tiene protocolos.</string>
     <string name="acta_resultado_visita">Resultado de la visita:</string>
     <string name="dato_ot">Orden de trabajo: %1$s</string>
