@@ -1,5 +1,6 @@
 package cl.induztek.app.validacion
 
+import cl.induztek.app.model.Instrumento
 import cl.induztek.app.model.TipoResultado.APROBADO
 import cl.induztek.app.model.TipoResultado.OBSERVADO
 import cl.induztek.app.model.TipoResultado.RECHAZADO
@@ -34,5 +35,20 @@ class CriteriosResultadoTest {
         assertEquals("1.350", Unidades.formatearLegible(1350.0))
         assertEquals("33,05", Unidades.formatearLegible(33.05))
         assertEquals("812,4", Unidades.formatearLegible(812.4))
+    }
+
+    @Test
+    fun cadaPruebaMuestraSoloSuInstrumento() {
+        val vigentes = listOf(
+            Instrumento(1, "Megóhmetro", "Megger", "MIT1025", "MG-100245"),
+            Instrumento(2, "Microhmímetro", "Megger", "DLRO10", "DL-778812"),
+            Instrumento(3, "Medidor de relación de transformación", "Megger", "TTR330", "TT-330991"),
+            Instrumento(4, "Probador de relés", "Omicron", "CMC356", "OM-356120")
+        )
+        assertEquals(listOf(4L), InstrumentosPorPrueba.filtrar("OPERACION_RELE", vigentes).map { it.idInstrumento })
+        assertEquals(listOf(1L), InstrumentosPorPrueba.filtrar("AISLACION", vigentes).map { it.idInstrumento })
+        assertEquals(listOf(3L), InstrumentosPorPrueba.filtrar("TTR", vigentes).map { it.idInstrumento })
+        assertEquals(listOf(2L), InstrumentosPorPrueba.filtrar("CONTACTOS", vigentes).map { it.idInstrumento })
+        assertEquals(listOf(2L), InstrumentosPorPrueba.filtrar("DEVANADOS", vigentes).map { it.idInstrumento })
     }
 }

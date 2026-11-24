@@ -12,7 +12,7 @@ data class DatosPrueba(
 
 sealed class PruebaElectrica(val codigo: String) {
 
-    abstract val idsInstrumentos: Set<Long>
+    abstract val palabrasInstrumento: List<String>
 
     abstract val parametroPrincipal: String
 
@@ -26,7 +26,14 @@ sealed class PruebaElectrica(val codigo: String) {
     fun esPrincipal(codigoParametro: String): Boolean = parametroPrincipal == codigoParametro
 
     fun filtrarInstrumentos(vigentes: List<Instrumento>): List<Instrumento> =
-        vigentes.filter { it.idInstrumento in idsInstrumentos }
+        vigentes.filter { instrumento ->
+            val nombre = sinTildes(instrumento.nombre)
+            palabrasInstrumento.any { nombre.contains(it) }
+        }
+
+    private fun sinTildes(texto: String): String =
+        java.text.Normalizer.normalize(texto.lowercase(), java.text.Normalizer.Form.NFD)
+            .replace(Regex("\\p{M}+"), "")
 
     companion object {
         val todas: List<PruebaElectrica> by lazy {
@@ -38,7 +45,7 @@ sealed class PruebaElectrica(val codigo: String) {
 }
 
 object PruebaAislacion : PruebaElectrica("AISLACION") {
-    override val idsInstrumentos = setOf(1L, 2L)
+    override val palabrasInstrumento = listOf("megohmetro")
     override val parametroPrincipal = "LECTURA_1MIN"
 
     override fun errorParametro(codigoParametro: String, nombre: String, texto: String): String? =
@@ -68,7 +75,7 @@ object PruebaAislacion : PruebaElectrica("AISLACION") {
 }
 
 object PruebaTtr : PruebaElectrica("TTR") {
-    override val idsInstrumentos = setOf(3L)
+    override val palabrasInstrumento = listOf("relacion de transformacion")
     override val parametroPrincipal = "RELACION_MEDIDA"
 
     override fun errorParametro(codigoParametro: String, nombre: String, texto: String): String? =
@@ -90,7 +97,7 @@ object PruebaTtr : PruebaElectrica("TTR") {
 }
 
 object PruebaOperacionRele : PruebaElectrica("OPERACION_RELE") {
-    override val idsInstrumentos = setOf(5L)
+    override val palabrasInstrumento = listOf("probador de reles")
     override val parametroPrincipal = "TIEMPO_MEDIDO"
 
     override fun errorParametro(codigoParametro: String, nombre: String, texto: String): String? =
@@ -116,7 +123,7 @@ object PruebaOperacionRele : PruebaElectrica("OPERACION_RELE") {
 }
 
 sealed class PruebaDeResistencia(codigo: String) : PruebaElectrica(codigo) {
-    override val idsInstrumentos = setOf(4L)
+    override val palabrasInstrumento = listOf("microhmimetro")
 
     override fun errorParametro(codigoParametro: String, nombre: String, texto: String): String? =
         if (codigoParametro == parametroPrincipal) ValidacionesFormulario.medicionPositiva(texto, nombre)
