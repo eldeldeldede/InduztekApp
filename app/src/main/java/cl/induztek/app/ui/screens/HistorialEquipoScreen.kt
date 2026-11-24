@@ -206,7 +206,7 @@ private fun TarjetaComparacion(comparacion: ComparacionValor) {
             )
             Text(text = serie.nombreParametro, style = MaterialTheme.typography.bodySmall)
             Text(
-                text = "${Unidades.formatear(comparacion.actual.valor)} ${serie.unidad}",
+                text = "${Unidades.formatearLegible(comparacion.actual.valor)} ${serie.unidad}",
                 style = MaterialTheme.typography.titleLarge
             )
 
@@ -217,7 +217,7 @@ private fun TarjetaComparacion(comparacion: ComparacionValor) {
                 Text(
                     text = stringResource(
                         R.string.comparacion_anterior,
-                        Unidades.formatear(anterior.valor), serie.unidad,
+                        Unidades.formatearLegible(anterior.valor), serie.unidad,
                         Unidades.formatearPorcentaje(comparacion.variacionPct),
                         anterior.numeroProtocolo
                     ),

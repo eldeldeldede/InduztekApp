@@ -5,6 +5,10 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -103,7 +107,13 @@ fun AppNavegacion() {
     // Recurso nativo: estado de la red. El aviso se dibuja encima de TODAS las pantallas (abajo).
     val hayRed by rememberHayRed()
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = Modifier.fillMaxSize()) {
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
+                .then(if (!hayRed) Modifier.consumeWindowInsets(WindowInsets.navigationBars) else Modifier)
+        ) {
         NavHost(
             navController = navController,
             startDestination = destinoInicial,
@@ -397,11 +407,9 @@ fun AppNavegacion() {
                 )
             }
         }
-        Column(modifier = Modifier.align(Alignment.BottomCenter)) {
-            // Solo con sesión iniciada: avisa si hay cambios hechos sin conexión esperando enviarse
-            if (usuarioActual != null) BarraSincronizacion(hayRed = hayRed)
-            AvisoSinSenal(visible = !hayRed)
         }
+        if (usuarioActual != null) BarraSincronizacion(hayRed = hayRed)
+        AvisoSinSenal(visible = !hayRed)
     }
 }
 

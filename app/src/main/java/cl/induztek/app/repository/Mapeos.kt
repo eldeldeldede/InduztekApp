@@ -157,6 +157,6 @@ fun PruebaDto.aPruebaRegistrada(): PruebaRegistrada = PruebaRegistrada(
     resultado = resultado?.let { TipoResultado.valueOf(it) },
     lineas = (mediciones ?: emptyList()).map { m ->
         val unidad = if (m.unidad.isNullOrBlank() || m.unidad == "—" || m.unidad == "-") "" else " ${m.unidad}"
-        "${m.parametroNombre ?: m.parametroCodigo}: ${Unidades.formatear(m.valor)}$unidad"
+        "${m.parametroNombre ?: m.parametroCodigo}: ${Unidades.formatearLegible(m.valor)}$unidad"
     }
 )

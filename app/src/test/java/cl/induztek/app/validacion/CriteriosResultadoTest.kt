@@ -27,4 +27,12 @@ class CriteriosResultadoTest {
         assertEquals(OBSERVADO, CriteriosResultado.resultadoGlobal(listOf(APROBADO, OBSERVADO)))
         assertEquals(APROBADO, CriteriosResultado.resultadoGlobal(listOf(APROBADO, APROBADO)))
     }
+
+    @Test
+    fun valoresGrandesSeMuestranConSeparadorDeMiles() {
+        assertEquals("1.500.000.000", Unidades.formatearLegible(1500000000.0))
+        assertEquals("1.350", Unidades.formatearLegible(1350.0))
+        assertEquals("33,05", Unidades.formatearLegible(33.05))
+        assertEquals("812,4", Unidades.formatearLegible(812.4))
+    }
 }

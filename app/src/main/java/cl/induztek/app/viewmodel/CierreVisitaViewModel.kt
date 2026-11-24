@@ -181,7 +181,7 @@ class CierreVisitaViewModel(application: Application) : AndroidViewModel(applica
                 if (prueba.realizada) {
                     (prueba.mediciones ?: emptyList()).forEach { m ->
                         val unidad = if (m.unidad.isNullOrBlank() || m.unidad in listOf("—", "-", "–")) "" else " ${m.unidad}"
-                        lineas += "    ${m.parametroNombre ?: m.parametroCodigo}: ${cl.induztek.app.validacion.Unidades.formatear(m.valor)}$unidad"
+                        lineas += "    ${m.parametroNombre ?: m.parametroCodigo}: ${cl.induztek.app.validacion.Unidades.formatearLegible(m.valor)}$unidad"
                     }
                 } else {
                     prueba.motivoNoRealizada?.let { lineas += "    Motivo: $it" }

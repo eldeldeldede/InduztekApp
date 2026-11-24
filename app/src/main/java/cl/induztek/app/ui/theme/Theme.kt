@@ -11,25 +11,36 @@ private val EsquemaClaro = lightColorScheme(
     primary = AzulInduztek,
     onPrimary = Color.White,
     primaryContainer = AzulInduztekClaro,
-    onPrimaryContainer = AzulInduztek,
+    onPrimaryContainer = Color(0xFF1F3347),
     secondary = AmbarInduztek,
-    onSecondary = Color.Black,
+    onSecondary = Color(0xFF3B2A00),
     secondaryContainer = AmbarInduztekClaro,
     onSecondaryContainer = Color(0xFF3B2A00),
-    background = Color(0xFFF4F6F8),
-    surface = Color.White,
-    surfaceVariant = Color(0xFFE3E8EC),
+    background = FondoGris,
+    onBackground = Color(0xFF1F2933),
+    surface = SuperficieGris,
+    onSurface = Color(0xFF1F2933),
+    surfaceVariant = SuperficieGrisOscura,
     onSurfaceVariant = Neutro,
-    outline = Color(0xFF8396A3)
+    surfaceContainerLowest = Color(0xFFF8F9FB),
+    surfaceContainerLow = Color(0xFFF1F3F6),
+    surfaceContainer = Color(0xFFECEFF3),
+    surfaceContainerHigh = Color(0xFFE7EBF0),
+    surfaceContainerHighest = Color(0xFFE1E6EC),
+    outline = ContornoGris,
+    outlineVariant = Color(0xFFC3CCD5)
 )
 
 private val EsquemaOscuro = darkColorScheme(
     primary = AzulOscuro80,
-    onPrimary = Color(0xFF0E2A3B),
+    onPrimary = Color(0xFF1F3347),
     primaryContainer = AzulOscuroContenedor,
     onPrimaryContainer = AzulInduztekClaro,
     secondary = Ambar80,
-    onSecondary = Color(0xFF3B2A00)
+    onSecondary = Color(0xFF3B2A00),
+    background = Color(0xFF1D2329),
+    surface = Color(0xFF262D34),
+    surfaceVariant = Color(0xFF34404A)
 )
 
 @Composable

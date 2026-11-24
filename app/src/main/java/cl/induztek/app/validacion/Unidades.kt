@@ -36,6 +36,14 @@ object Unidades {
         return sinCeros.replace('.', ',')
     }
 
+    fun formatearLegible(valor: Double, decimales: Int = 2): String {
+        val partes = formatear(valor, decimales).split(',')
+        val negativo = partes[0].startsWith("-")
+        val digitos = partes[0].removePrefix("-")
+        val agrupado = digitos.reversed().chunked(3).joinToString(".").reversed()
+        return (if (negativo) "-" else "") + agrupado + (if (partes.size > 1) "," + partes[1] else "")
+    }
+
     fun formatearPorcentaje(valor: Double): String =
         String.format(java.util.Locale.US, "%+.1f", valor).replace('.', ',') + " %"
 }

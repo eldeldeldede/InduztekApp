@@ -167,7 +167,7 @@
     <string name="btn_ir_protocolo">Ir al protocolo</string>
     <string name="btn_formalizar_protocolo">Revisar y formalizar</string>
     <string name="seccion_cierre">Cierre de la visita</string>
-    <string name="cierre_explicacion">La visita se cierra cuando todos sus protocolos están registrados en terreno (o anulados).</string>
+    <string name="cierre_explicacion">La visita se cierra cuando todos sus protocolos están registrados en terreno (o anulados). Cerrarla no formaliza los protocolos: siguen pendientes de revisión del ingeniero.</string>
     <string name="btn_cerrar_visita">Cerrar visita</string>
     <string name="visita_cerrada_el">Visita cerrada el %1$s</string>
     <string name="seccion_recepcion">Recepción del acta</string>
@@ -189,7 +189,7 @@
     <string name="btn_quitar_foto">Quitar</string>
     <string name="error_permiso_camara">Sin permiso de cámara. Puedes registrar el equipo sin foto o dar el permiso en Ajustes.</string>
     <string name="error_foto_no_guardada">No se pudo guardar la foto. Intenta de nuevo.</string>
-    <string name="aviso_sin_senal">Sin señal: modo offline. Tus datos se guardan en el teléfono y puedes consultar el historial de los equipos.</string>
+    <string name="aviso_sin_senal">Sin conexión: trabajando en modo offline. Tus cambios se guardan en el teléfono y el historial sigue disponible.</string>
 
     <!-- Accesibilidad -->
     <string name="cd_foto_placa">Foto de la placa del equipo</string>
@@ -258,6 +258,7 @@
     <string name="titulo_perfil">Mi perfil</string>
     <string name="perfil_seccion_cuenta">Cuenta</string>
     <string name="perfil_seccion_datos">Mis datos</string>
+    <string name="perfil_solo_lectura_jefe">El RUT y el correo no se pueden cambiar desde la app.</string>
     <string name="perfil_solo_lectura">El RUT y el correo no se pueden cambiar. Si hay un error, avisa al Jefe técnico.</string>
     <string name="btn_guardar_perfil">Guardar cambios</string>
     <string name="btn_cambiar_clave_voluntaria">Cambiar contraseña</string>

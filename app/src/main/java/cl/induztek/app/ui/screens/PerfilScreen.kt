@@ -28,6 +28,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import cl.induztek.app.R
+import cl.induztek.app.model.CodigoRol
 import cl.induztek.app.model.PerfilUiState
 import cl.induztek.app.model.Usuario
 import cl.induztek.app.ui.components.BotonPrincipal
@@ -124,7 +125,10 @@ fun PerfilContent(
                     icono = R.drawable.ic_persona, soloLectura = true
                 )
                 Text(
-                    text = stringResource(R.string.perfil_solo_lectura),
+                    text = stringResource(
+                        if (uiState.rolEtiqueta == CodigoRol.JEFE_TECNICO.etiqueta) R.string.perfil_solo_lectura_jefe
+                        else R.string.perfil_solo_lectura
+                    ),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -139,7 +143,7 @@ fun PerfilContent(
                 CampoTexto(
                     valor = uiState.telefono, onValorCambia = onTelefonoCambia,
                     etiqueta = stringResource(R.string.campo_telefono),
-                    icono = R.drawable.ic_credencial, error = uiState.errorTelefono,
+                    icono = R.drawable.ic_telefono, error = uiState.errorTelefono,
                     tipoTeclado = KeyboardType.Phone
                 )
                 if (uiState.esCliente) {
