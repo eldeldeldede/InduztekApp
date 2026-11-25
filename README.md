@@ -2,7 +2,7 @@
 
 Aplicación Android para registrar en terreno los protocolos de prueba y mantención de equipos eléctricos (transformadores, relés de protección, celdas, cables) de **Induztek Ingeniería SpA**. Permite dejar un registro estructurado de cada prueba en el momento en que se realiza y consultar el historial de cada equipo, incluso sin conexión.
 
-Proyecto de la asignatura **DSY1105 – Desarrollo de Aplicaciones Móviles** (Duoc UC), Evaluaciones Parciales 2 y 3. Todos los datos son ficticios.
+Proyecto de la asignatura **DSY1105 – Desarrollo de Aplicaciones Móviles** (Duoc UC), Evaluaciones Parciales 4 y 5 (Evaluación Sumativa 3). Todos los datos son ficticios.
 
 Backend (microservicios Spring Boot): [DemoInduztek-microservicio](https://github.com/Pedro420-z/DemoInduztek-microservicio)
 
@@ -20,6 +20,7 @@ Backend (microservicios Spring Boot): [DemoInduztek-microservicio](https://githu
 - Cierre de visita con acta y datos de quien recibe.
 - Revisión del protocolo: formalizar, observar o anular, con motivo obligatorio.
 - Historial de protocolos por equipo. Protocolos, visitas y actas no se eliminan; solo se puede eliminar una prueba de un protocolo, tras tres advertencias.
+- Sugerencia de temperatura y humedad ambiente desde una API externa de clima (Open-Meteo), que el técnico puede corregir antes de guardar.
 - Trabajo sin conexión: lo que se registra sin red queda en una cola local y se sincroniza solo al volver la conexión.
 - Perfil Cliente: solo ve los equipos, visitas y actas de su propia empresa. Ve todos sus protocolos salvo borradores y anulados; los observados y los aún no formalizados aparecen como "Pendiente de formalización".
 
@@ -34,7 +35,7 @@ Backend (microservicios Spring Boot): [DemoInduztek-microservicio](https://githu
 - Arquitectura MVVM (`ViewModel`, `StateFlow`)
 - Navigation Compose
 - Los datos viven en los microservicios (MySQL). En el teléfono solo se guardan la sesión (`SharedPreferences`), una caché de consultas y la cola de operaciones pendientes (archivos JSON)
-- Retrofit, OkHttp y Gson para consumir los microservicios
+- Retrofit, OkHttp y Gson para consumir los microservicios propios y la API externa de clima (Open-Meteo)
 
 ## Requisitos
 
@@ -55,6 +56,27 @@ La app se conecta al PC desde el emulador por `10.0.2.2` (API Gateway en el puer
 
 Al primer arranque del backend se cargan datos de ejemplo (empresas, usuarios, instrumentos, equipos y actas).
 
+## Endpoints utilizados
+
+### API externa (Open-Meteo, sin clave)
+
+Se consume con Retrofit (`network/ClimaApi.kt`) directamente por https, sin pasar por el gateway ni guardar datos en nuestra base. Se usa en la pantalla del protocolo, botón **Sugerir según el clima actual**.
+
+| Método | URL | Uso |
+| --- | --- | --- |
+| GET | `https://api.open-meteo.com/v1/forecast?latitude=-33.45&longitude=-70.66&current=temperature_2m,relative_humidity_2m` | Temperatura y humedad actuales para precargar las condiciones ambientales |
+
+### Microservicios propios (vía API Gateway `http://10.0.2.2:8080`)
+
+| Servicio | Método y ruta |
+| --- | --- |
+| usuarios-service (8081) | `GET /api/roles`, `GET /api/usuarios`, `GET /api/usuarios/{id}`, `POST /api/usuarios`, `POST /api/usuarios/login`, `PUT /api/usuarios/{id}`, `PUT /api/usuarios/{id}/contrasena`, `PUT /api/usuarios/{id}/estado`, `POST /api/usuarios/recuperacion`, `POST /api/usuarios/recuperacion/confirmar` |
+| equipos-service (8082) | `GET /api/regiones`, `GET /api/comunas`, `GET /api/tipos-equipo`, `GET/POST /api/equipos`, `GET/PUT /api/equipos/{id}`, `GET/POST /api/instalaciones`, `GET/PUT /api/instalaciones/{id}` |
+| protocolos-service (8083) | `GET /api/tipos-prueba`, `GET/POST /api/instrumentos`, `GET/PUT /api/instrumentos/{id}`, `GET/POST /api/instrumentos/{id}/calibraciones`, `GET/POST /api/protocolos`, `GET/PUT /api/protocolos/{id}`, `POST /api/protocolos/{id}/pruebas`, `DELETE /api/protocolos/{id}/pruebas/{pruebaId}`, `POST /api/protocolos/{id}/registrar`, `POST /api/protocolos/{id}/observar`, `POST /api/protocolos/{id}/formalizar`, `POST /api/protocolos/{id}/anular`, `GET/POST /api/visitas`, `GET /api/visitas/{id}`, `POST /api/visitas/{id}/cierre`, `POST /api/visitas/{id}/recepcion` |
+| reportes-service (8084) | `GET /api/reportes/equipos`, `GET /api/reportes/equipos/{id}/historial`, `GET /api/reportes/actas`, `GET /api/reportes/protocolos-atrasados` |
+
+La documentación interactiva (Swagger/OpenAPI) de cada servicio está en `http://localhost:<puerto>/swagger-ui.html`.
+
 ## Usuarios
 
 Contraseña de todos: `Induztek2026` (temporal: la app pide cambiarla en el primer ingreso).
@@ -68,6 +90,23 @@ Contraseña de todos: `Induztek2026` (temporal: la app pide cambiarla en el prim
 | Cliente | tleiva@losaromos.ejemplo |
 
 Los demás usuarios los crea el Jefe desde el menú (**Crear usuario**). La contraseña temporal llega al correo del nuevo usuario por Gmail (ver el README del backend).
+
+## Firma de la aplicación (APK y .jks)
+
+La app se firma en modo release con un almacén de claves propio (`induztek.jks`, alias `induztek`). Los archivos generados están en la carpeta [`distribucion/`](distribucion/): `induztek.apk`, `induztek.aab` e `induztek.jks`.
+
+Pasos para generarlos en Android Studio:
+
+1. **Build → Generate Signed App Bundle or APK…**
+2. Elegir **Android App Bundle** y *Next*.
+3. En *Key store path* elegir **Create new…**, guardar `induztek.jks`, definir las contraseñas del almacén y de la clave, el alias `induztek` y los datos del certificado.
+4. Elegir la variante **release** y *Create*: el `.aab` queda en `app/release/`.
+5. Repetir el asistente eligiendo **APK**, con el mismo `.jks` y la variante **release**.
+6. Instalar `app-release.apk` en el emulador para comprobar que abre y se conecta a los microservicios.
+
+Captura del APK firmado y del `.jks`:
+
+![APK firmado y .jks](docs/captura-apk-jks.png)
 
 ## Estructura
 
@@ -87,11 +126,11 @@ app/src/main/java/cl/induztek/app/
 
 ## Pruebas
 
-10 pruebas unitarias en Kotlin puro (JUnit 4), repartidas en 4 archivos: criterios de resultado, validación de RUT, validaciones de recuperación y almacenamiento local, en `app/src/test`. Se ejecutan desde Android Studio: clic derecho en `app/src/test` → *Run Tests*.
+14 pruebas unitarias en Kotlin puro (JUnit 4), repartidas en 4 archivos: criterios de resultado (incluye la conversión de la API de clima), validación de RUT, validaciones de recuperación y almacenamiento local, en `app/src/test`. Se ejecutan desde Android Studio: clic derecho en `app/src/test` → *Run Tests*.
 
 Las pruebas eléctricas se modelan con una jerarquía sellada (`PruebaElectrica`) cuyas subclases implementan cada una su propia evaluación y validación de parámetros (herencia y polimorfismo). Las reglas de validación de formularios están centralizadas en `ValidacionesFormulario`.
 
-## Equipo
+## Integrantes
 
 - Gonzalo Bahamondes ([@eldeldeldede](https://github.com/eldeldeldede))
 - Pedro Cid ([@Pedro420-z](https://github.com/Pedro420-z))
