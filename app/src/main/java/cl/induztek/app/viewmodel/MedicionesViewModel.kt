@@ -100,6 +100,27 @@ class MedicionesViewModel(application: Application) : AndroidViewModel(applicati
     fun onHumedadCambia(valor: String) =
         _uiState.update { it.copy(humedad = valor, errorHumedad = null, mensaje = null) }
 
+    fun onSugerirClima() {
+        if (_uiState.value.consultandoClima) return
+        _uiState.update { it.copy(consultandoClima = true, mensaje = null, errorGeneral = null) }
+        viewModelScope.launch {
+            val r = Repositorios.clima.actual()
+            _uiState.update {
+                if (r is ResultadoRed.Exito) it.copy(
+                    consultandoClima = false,
+                    temperatura = Unidades.formatear(r.datos.temperatura, 1),
+                    humedad = Unidades.formatear(r.datos.humedad, 0),
+                    errorTemperatura = null,
+                    errorHumedad = null,
+                    mensaje = "Clima actual cargado. Revisa los valores y toca Guardar condiciones"
+                ) else it.copy(
+                    consultandoClima = false,
+                    errorGeneral = "No se pudo consultar el clima. Ingresa los valores manualmente"
+                )
+            }
+        }
+    }
+
     fun onGuardarCondiciones() {
         val s = _uiState.value
         val protocolo = s.protocolo ?: return

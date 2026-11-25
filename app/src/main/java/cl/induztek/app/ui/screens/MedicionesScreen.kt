@@ -74,6 +74,7 @@ data class MedicionesAcciones(
     val onTemperaturaCambia: (String) -> Unit = {},
     val onHumedadCambia: (String) -> Unit = {},
     val onGuardarCondiciones: () -> Unit = {},
+    val onSugerirClima: () -> Unit = {},
     val onTipoPruebaSeleccionado: (Long) -> Unit = {},
     val onElementoCambia: (String) -> Unit = {},
     val onMomentoCambia: (Momento) -> Unit = {},
@@ -110,6 +111,7 @@ fun MedicionesScreen(
             onTemperaturaCambia = viewModel::onTemperaturaCambia,
             onHumedadCambia = viewModel::onHumedadCambia,
             onGuardarCondiciones = viewModel::onGuardarCondiciones,
+            onSugerirClima = viewModel::onSugerirClima,
             onTipoPruebaSeleccionado = viewModel::onTipoPruebaSeleccionado,
             onElementoCambia = viewModel::onElementoCambia,
             onMomentoCambia = viewModel::onMomentoCambia,
@@ -226,6 +228,12 @@ fun MedicionesContent(
                     )
                 }
                 if (uiState.puedeModificar) {
+                    BotonSecundario(
+                        texto = stringResource(
+                            if (uiState.consultandoClima) R.string.btn_consultando_clima else R.string.btn_sugerir_clima
+                        ),
+                        onClick = acciones.onSugerirClima
+                    )
                     BotonSecundario(
                         texto = stringResource(R.string.btn_guardar_condiciones),
                         onClick = acciones.onGuardarCondiciones

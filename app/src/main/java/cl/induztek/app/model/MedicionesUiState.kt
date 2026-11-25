@@ -50,6 +50,7 @@ data class MedicionesUiState(
 
     val temperatura: String = "",
     val humedad: String = "",
+    val consultandoClima: Boolean = false,
     val errorTemperatura: String? = null,
     val errorHumedad: String? = null,
     val condicionesGuardadas: Boolean = false,

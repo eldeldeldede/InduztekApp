@@ -16,4 +16,8 @@ object ApiConfig {
     const val URL_EQUIPOS = URL_GATEWAY
     const val URL_PROTOCOLOS = URL_GATEWAY
     const val URL_REPORTES = URL_GATEWAY
+
+    const val URL_CLIMA = "https://api.open-meteo.com/"
+    const val LATITUD_CLIMA = -33.45
+    const val LONGITUD_CLIMA = -70.66
 }

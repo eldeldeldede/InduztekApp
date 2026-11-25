@@ -92,6 +92,8 @@
     <string name="seccion_condiciones">Condiciones ambientales</string>
     <string name="campo_temperatura">Temperatura ambiente</string>
     <string name="campo_humedad">Humedad relativa</string>
+    <string name="btn_sugerir_clima">Sugerir según el clima actual</string>
+    <string name="btn_consultando_clima">Consultando el clima…</string>
     <string name="btn_guardar_condiciones">Guardar condiciones</string>
     <string name="seccion_pruebas_registradas">Pruebas registradas</string>
     <string name="sin_pruebas">Aún no hay pruebas en este protocolo.</string>

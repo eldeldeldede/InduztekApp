@@ -4,7 +4,11 @@ import cl.induztek.app.model.Instrumento
 import cl.induztek.app.model.TipoResultado.APROBADO
 import cl.induztek.app.model.TipoResultado.OBSERVADO
 import cl.induztek.app.model.TipoResultado.RECHAZADO
+import cl.induztek.app.network.ClimaActualDto
+import cl.induztek.app.network.ClimaDto
+import cl.induztek.app.repository.aCondicion
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Test
 
 class CriteriosResultadoTest {
@@ -50,5 +54,18 @@ class CriteriosResultadoTest {
         assertEquals(listOf(3L), InstrumentosPorPrueba.filtrar("TTR", vigentes).map { it.idInstrumento })
         assertEquals(listOf(2L), InstrumentosPorPrueba.filtrar("CONTACTOS", vigentes).map { it.idInstrumento })
         assertEquals(listOf(2L), InstrumentosPorPrueba.filtrar("DEVANADOS", vigentes).map { it.idInstrumento })
+    }
+
+    @Test
+    fun climaDeLaApiExternaSeRedondeaParaElFormulario() {
+        val condicion = ClimaDto(ClimaActualDto(temperatura = 18.26, humedad = 54.6)).aCondicion()
+        assertEquals(18.3, condicion!!.temperatura, 0.0001)
+        assertEquals(55.0, condicion.humedad, 0.0001)
+    }
+
+    @Test
+    fun climaSinHumedadNoGeneraCondicion() {
+        assertNull(ClimaDto(ClimaActualDto(temperatura = 20.0, humedad = null)).aCondicion())
+        assertNull(ClimaDto(null).aCondicion())
     }
 }

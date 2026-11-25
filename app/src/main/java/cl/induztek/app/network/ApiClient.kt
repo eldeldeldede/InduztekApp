@@ -35,4 +35,5 @@ object ApiClient {
     val equipos: EquiposApi by lazy { retrofit(ApiConfig.URL_EQUIPOS).create(EquiposApi::class.java) }
     val protocolos: ProtocolosApi by lazy { retrofit(ApiConfig.URL_PROTOCOLOS).create(ProtocolosApi::class.java) }
     val reportes: ReportesApi by lazy { retrofit(ApiConfig.URL_REPORTES).create(ReportesApi::class.java) }
+    val clima: ClimaApi by lazy { retrofit(ApiConfig.URL_CLIMA).create(ClimaApi::class.java) }
 }
