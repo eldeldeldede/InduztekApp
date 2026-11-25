@@ -93,7 +93,7 @@ Los demás usuarios los crea el Jefe desde el menú (**Crear usuario**). La cont
 
 ## Firma de la aplicación (APK y .jks)
 
-La app se firma en modo release con un almacén de claves propio (`induztek.jks`, alias `induztek`). Los archivos generados están en la carpeta [`distribucion/`](distribucion/): `induztek.apk`, `induztek.aab` e `induztek.jks`.
+La app se firma en modo release con un almacén de claves propio (`induztek.jks`, alias `induztek`). Los archivos generados (`induztek.apk`, `induztek.aab` e `induztek.jks`) se entregan en un archivo ZIP aparte en AVA y no se publican en este repositorio, por seguridad.
 
 Pasos para generarlos en Android Studio:
 
